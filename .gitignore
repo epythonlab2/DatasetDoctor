@@ -1,0 +1,111 @@
+# ---------------------------
+# Python
+# ---------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ---------------------------
+# Virtual Environments
+# ---------------------------
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+
+# ---------------------------
+# Environment Variables
+# ---------------------------
+.env
+.env.*
+*.env
+
+# ---------------------------
+# Logs
+# ---------------------------
+*.log
+logs/
+
+# ---------------------------
+# Jupyter Notebooks
+# ---------------------------
+.ipynb_checkpoints/
+
+# ---------------------------
+# Data Files
+# ---------------------------
+data/
+examples/
+data/uploads
+data/raw/
+data/processed/
+data/intermediate/
+
+# ---------------------------
+# Vector Databases
+# ---------------------------
+vector_store/
+faiss_index/
+chroma_db/
+
+# ---------------------------
+# Model Files
+# ---------------------------
+models/*.bin
+models/*.pt
+models/*.gguf
+models/*.safetensors
+models/checkpoints/
+
+# ---------------------------
+# HuggingFace Cache
+# ---------------------------
+.cache/
+huggingface/
+hf_cache/
+
+# ---------------------------
+# Streamlit
+# ---------------------------
+.streamlit/secrets.toml
+
+# ---------------------------
+# OS Files
+# ---------------------------
+.DS_Store
+Thumbs.db
+
+# ---------------------------
+# IDE
+# ---------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ---------------------------
+# Temporary Files
+# ---------------------------
+tmp/
+temp/
+*.tmp
+
+# ---------------------------
+# Coverage / Testing
+# ---------------------------
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ---------------------------
+# Local experiment notebooks
+# ---------------------------
+notebooks/output/

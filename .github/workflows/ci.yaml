@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test & Quality Checks
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.13"]
+
+    steps:
+      # -------------------------------------------------
+      # Checkout
+      # -------------------------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -------------------------------------------------
+      # Python setup
+      # -------------------------------------------------
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # -------------------------------------------------
+      # Cache dependencies (speed)
+      # -------------------------------------------------
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+
+      # -------------------------------------------------
+      # Install dependencies
+      # -------------------------------------------------
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest flake8 black isort
+
+      # -------------------------------------------------
+      # Lint (code quality)
+      # -------------------------------------------------
+      - name: Lint with flake8
+        run: |
+          flake8 src --max-line-length=120
+
+      # -------------------------------------------------
+      # Format check
+      # -------------------------------------------------
+      - name: Check formatting (black)
+        run: |
+          black --check src
+
+      # -------------------------------------------------
+      # Import sorting check
+      # -------------------------------------------------
+      - name: Check imports (isort)
+        run: |
+          isort --check-only src
+
+      # -------------------------------------------------
+      # Run tests
+      # -------------------------------------------------
+      - name: Run tests
+        env:
+          PYTHONPATH: .
+        run: |
+          pytest -v
+
+  # -----------------------------------------------------
+  # Optional: Security scan
+  # -----------------------------------------------------
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install security tools
+        run: |
+          pip install bandit
+
+      - name: Run Bandit
+        run: |
+          bandit -r src

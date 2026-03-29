@@ -1,0 +1,21 @@
+[project]
+
+name = "datasetdoctor"
+version = "0.1.0"
+
+description = "Dataset quality inspection tool for ML pipelines"
+
+authors = [
+    {name = "Asibeh Tenager"}
+]
+
+dependencies = [
+    "pandas",
+    "fastapi",
+    "uvicorn",
+    "typer"
+]
+
+[project.scripts]
+
+datasetdoctor = "datasetdoctor.cli:app"
