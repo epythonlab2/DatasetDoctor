@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from datasetdoctor.analysis.inspector import analyze_dataset
+from datasetdoctor.analysis.inspect import analyze_dataset
 from datasetdoctor.core import config
 from datasetdoctor.core.logger import logger
 

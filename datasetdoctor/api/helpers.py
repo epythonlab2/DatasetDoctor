@@ -1,5 +1,4 @@
 import json
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Dict
 
@@ -8,12 +7,20 @@ from fastapi import HTTPException, UploadFile
 from datasetdoctor.core import config
 from datasetdoctor.core.logger import logger
 
-# Reuse a thread pool for I/O bound tasks to avoid blocking the FastAPI event loop
-io_executor = ThreadPoolExecutor(max_workers=4)
+from filelock import FileLock
 
 
 # -------------------------
-# PATH HELPERS (Pre-calculate where possible)
+# Ensure directories exist (run once at startup)
+# -------------------------
+def ensure_directories() -> None:
+    config.META_DIR.mkdir(parents=True, exist_ok=True)
+    config.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    config.CLEAN_DIR.mkdir(parents=True, exist_ok=True)
+
+
+# -------------------------
+# PATH HELPERS
 # -------------------------
 def meta_file(dataset_id: str) -> Path:
     return config.META_DIR / f"{dataset_id}.json"
@@ -30,14 +37,9 @@ def get_clean_path(dataset_id: str) -> Path:
 # -------------------------
 # METADATA OPERATIONS
 # -------------------------
-
-
 def load_meta(dataset_id: str) -> Dict[str, Any]:
-    """
-    Synchronous load for internal calls.
-    Performance Note: Uses f.read() which is slightly faster than read_text() for large files.
-    """
     path = meta_file(dataset_id)
+
     if not path.exists():
         raise HTTPException(404, "Metadata not found.")
 
@@ -49,22 +51,23 @@ def load_meta(dataset_id: str) -> Dict[str, Any]:
         raise HTTPException(500, "Metadata is corrupted or inaccessible.")
 
 
-def save_meta(dataset_id: str, data: Dict[str, Any]) -> None:
-    """
-    Optimized Atomic Save.
-    Removes indent=2 in production to reduce file size and I/O time.
-    """
-    path = meta_file(dataset_id)
-    # Remove mkdir from here; move to a startup script for better performance
+def _validate_meta(data: Dict[str, Any]) -> None:
+    if not isinstance(data, dict):
+        raise ValueError("Meta must be a dictionary.")
 
+
+def save_meta(dataset_id: str, data: Dict[str, Any]) -> None:
+    _validate_meta(data)
+
+    path = meta_file(dataset_id)
     temp_path = path.with_suffix(".tmp")
+
     try:
         with open(temp_path, "w", encoding="utf-8") as f:
-            # indent=None is faster and produces smaller files
             json.dump(data, f, separators=(",", ":"))
 
-        # Atomic replace is fast and prevents data loss during crashes
-        temp_path.replace(path)
+        temp_path.replace(path)  # atomic replace
+
     except Exception as e:
         if temp_path.exists():
             temp_path.unlink()
@@ -72,30 +75,41 @@ def save_meta(dataset_id: str, data: Dict[str, Any]) -> None:
         raise HTTPException(500, "Failed to save metadata.")
 
 
+# -------------------------
+# SAFE UPDATE (with locking)
+# -------------------------
 def update_meta(dataset_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Optimized merge. Uses dict.update() which is implemented in C.
-    """
-    meta = load_meta(dataset_id)
-    meta.update(updates)  # Faster than manual loop
-    save_meta(dataset_id, meta)
+    path = meta_file(dataset_id)
+    lock = FileLock(str(path) + ".lock")
+
+    with lock:
+        meta = load_meta(dataset_id)
+
+        # shallow merge (fast and safe for now)
+        meta.update(updates)
+
+        save_meta(dataset_id, meta)
+
     return meta
 
 
+# -------------------------
+# TARGET MANAGEMENT
+# -------------------------
 def set_target(dataset_id: str, target: str) -> Dict[str, str]:
     target_clean = target.strip()
+
     if not target_clean:
         raise HTTPException(400, "Target cannot be empty.")
 
-    # Optimized: We use update_meta to handle the load/save logic in one optimized flow
     update_meta(dataset_id, {"target": target_clean})
+
     return {"message": "Target set successfully", "target": target_clean}
 
 
 # -------------------------
 # FILE VALIDATION
 # -------------------------
-# Validating MIME types via a set is O(1) vs O(N) for a tuple/list
 ALLOWED_MIME_TYPES = {"text/csv", "application/vnd.ms-excel", "text/plain"}
 
 
@@ -106,6 +120,17 @@ def validate_csv(file: UploadFile) -> None:
     if not file.filename.lower().endswith(".csv"):
         raise HTTPException(400, "Only CSV files are allowed.")
 
+    # Basic content sniffing (helps catch obvious non-CSV files)
+    try:
+        sample = file.file.read(1024)
+        file.file.seek(0)
+
+        if b"," not in sample:
+            raise HTTPException(400, "File does not appear to be a valid CSV.")
+    except Exception:
+        raise HTTPException(400, "Invalid file content.")
+
     if file.content_type not in ALLOWED_MIME_TYPES:
-        logger.warning(f"[SUSPICIOUS MIME] {file.filename}: {file.content_type}")
-        # Optional: throw error here if strictness is required
+        logger.warning(
+            f"[SUSPICIOUS MIME] {file.filename}: {file.content_type}"
+        )

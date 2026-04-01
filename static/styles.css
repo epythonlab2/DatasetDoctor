@@ -405,3 +405,84 @@ tr:hover td { background: #f8fafc; }
     .dashboard-container { padding: 0 1rem; margin: 1rem auto; }
     .btn span { display: none; }
 }
+
+/* --- Data Leakage Analysis Section --- */
+#leakage-section {
+    margin-bottom: 2rem;
+}
+
+.leakage-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease;
+}
+
+/* High Risk / Critical State */
+.leakage-card.border-danger {
+    border-left: 6px solid var(--danger) !important;
+    background: #fffafa; /* Ultra-light red to maintain readability */
+}
+
+/* Warning / Moderate State */
+.leakage-card.border-warning {
+    border-left: 6px solid var(--warning) !important;
+    background: #fffdf5; /* Ultra-light amber */
+}
+
+.leakage-card h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.leakage-details {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Severity Labels */
+.leakage-details span[class*="fw-bold"] {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+/* Adjusting the inner badges to match your .badge class */
+.leakage-details .badge {
+    margin: 0.25rem;
+    font-family: 'Inter', sans-serif;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.recommendation {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Success State (Clean Data) */
+.leakage-section .alert-success {
+    background: #f0fdf4;
+    border: 1px solid #dcfce7;
+    border-left: 6px solid var(--success) !important;
+    color: #166534;
+    padding: 1.25rem;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: var(--shadow);
+}

@@ -5,22 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🩺Dataset Health Analysis | DatasetDoctor</title>
 
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.plot.ly/plotly-2.30.0.min.js" charset="utf-8"></script>
-
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <link rel="stylesheet" href="/static/styles.css">
-    
 </head>
 <body>
 
-<!-- Navbar -->
 <nav class="navbar">
     <div class="logo" onclick="window.location.href='/'">
         <i data-lucide="activity"></i> DatasetDoctor
@@ -40,7 +31,6 @@
 
 <main class="dashboard-container">
 
-    <!-- Header -->
     <header class="dashboard-header">
         <div>
             <h1>Dataset Analysis <span class="badge">Live</span></h1>
@@ -51,7 +41,6 @@
         </div>
     </header>
 
-    <!-- Stats -->
     <section class="stats-grid">
         <div class="card stat-card">
             <div class="stat-icon"><i data-lucide="database"></i></div>
@@ -97,58 +86,51 @@
         </div>
     </section>
 
-   <section class="insights-grid">
-    <div class="card chart-card">
-        <div class="card-header-simple">
-            <div>
-                <h3>Statistical Summary</h3>
-                <p class="text-muted" style="font-size: 0.75rem;">Overview of numerical distribution</p>
+    <section class="insights-grid">
+        <div class="card chart-card">
+            <div class="card-header-simple">
+                <div>
+                    <h3>Statistical Summary</h3>
+                    <p class="text-muted" style="font-size: 0.75rem;">Global numerical distribution</p>
+                </div>
             </div>
-            <button class="icon-btn"><i data-lucide="download-cloud" style="width:18px"></i></button>
-        </div>
-        <div id="stats-container">
-            <table class="stats-table">
-                <thead>
-                    <tr>
-                        <th>Metric</th>
-                        <th>Value</th>
-                        <th>Deviation</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Mean Variance</td>
-                        <td><span class="badge-count">0.842</span></td>
-                        <td style="color: var(--success)">+2.1%</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="card chart-card">
-        <div class="card-header-simple">
-            <div>
-                <h3>Class Distribution</h3>
-                <p class="text-muted" style="font-size: 0.75rem;">Target: <span id="target-column-display" style="color: var(--primary); font-weight: 600;">None</span></p>
+            <div id="stats-container">
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                            <th>Deviation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="global-stats-body">
+                        </tbody>
+                </table>
             </div>
-            <button class="icon-btn"><i data-lucide="maximize-2" style="width:18px"></i></button>
-        </div>
-        
-        <div class="chart-container">
-            <canvas id="imbalanceChart"></canvas>
         </div>
 
-        <div id="imbalance-alert" class="badge" style="display:none;">
-            <span>⚠️ High Class Imbalance Detected</span>
+        <div class="card chart-card">
+            <div class="card-header-simple">
+                <div>
+                    <h3>Class Distribution</h3>
+                    <p class="text-muted" style="font-size: 0.75rem;">Target: <span id="target-column-display" style="color: var(--primary); font-weight: 600;">None</span></p>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="imbalanceChart"></canvas>
+            </div>
+            <div id="imbalance-alert" class="badge" style="display:none; width: 100%; margin-top: 1rem;">
+                <span>⚠️ High Class Imbalance Detected</span>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
-    <!-- Table -->
+    <section id="leakage-section">
+        </section>
+
     <section class="card table-card">
         <div class="card-header-flex">
-            <h3>Data Completeness Diagnostics</h3>
+            <h3>Diagnostic Breakdown</h3>
             <div class="glass-tabs">
                 <button id="tab-health" class="tab-btn active" onclick="switchTableTab('health')">Missing Data</button>
                 <button id="tab-outliers" class="tab-btn" onclick="switchTableTab('outliers')">Outliers</button>
@@ -158,22 +140,17 @@
         <div class="table-wrapper">
             <table id="analysis-table">
                 <thead id="table-head">
-                    <tr>
-                        <th>Column Name</th>
-                        <th>Type</th>
-                        <th>Missing Values</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
+                    </thead>
                 <tbody id="table-body">
-                    <tr><td colspan="4" style="text-align:center; padding: 2rem;">Loading table data...</td></tr>
+                    <tr><td colspan="4" style="text-align:center; padding: 4rem; color: var(--text-muted);">
+                        <i data-lucide="loader-2" class="spin"></i> Initializing diagnostics...
+                    </td></tr>
                 </tbody>
             </table>
         </div>
     </section>
 
-    <!-- Suggestions / Issues -->
-    <section class="insights-grid bottom-grid" style="margin-top:1.5rem;">
+    <section class="insights-grid bottom-grid" style="margin-top:2rem;">
         <div class="card suggestion-card">
             <div class="card-header-simple">
                 <h3>AI Smart Suggestions</h3>
@@ -183,7 +160,7 @@
         </div>
         <div class="card issue-card">
             <div class="card-header-simple">
-                <h3>Critical Issues</h3>
+                <h3>Detected Anomalies</h3>
                 <i data-lucide="alert-triangle" style="color:var(--danger); width:18px"></i>
             </div>
             <div id="outliers-list" class="issue-tags"></div>
