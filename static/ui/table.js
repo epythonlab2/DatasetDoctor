@@ -148,5 +148,43 @@ export const Table = {
                     </td>
                 </tr>`;
         });
+    },
+     /**
+     * Renders the Global Statistical Summary.
+     * Moved from UI to Table to ensure layout parity with diagnostic tabs.
+     */
+    renderGlobalStats(tbody, thead) {
+        // Set Headers to match your HTML request: Feature, Mean, Std Dev, Median
+        thead.innerHTML = `
+            <tr>
+                <th>Feature</th>
+                <th>Mean</th>
+                <th>Std Dev</th>
+                <th>Median</th>
+            </tr>`;
+
+        const statsData = state.statistics || {};
+        const entries = Object.entries(statsData);
+        
+        // Filter for columns that have numerical statistical moments
+        const numericCols = entries.filter(([_, s]) => s.mean !== null);
+
+        if (numericCols.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-muted">No numerical features detected.</td></tr>`;
+            return;
+        }
+
+        const fmt = (val) => (val !== null && val !== undefined) 
+            ? val.toLocaleString(undefined, { maximumFractionDigits: 2 }) 
+            : '--';
+
+        tbody.innerHTML = numericCols.map(([name, s]) => `
+            <tr>
+                <td><strong style="color: var(--primary);">${name.replace(/_/g, ' ')}</strong></td>
+                <td>${fmt(s.mean)}</td>
+                <td>${typeof s.std === 'number' ? s.std.toFixed(2) : '--'}</td>
+                <td>${fmt(s["50%"])}</td> 
+            </tr>
+        `).join('');
     }
 };

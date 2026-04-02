@@ -87,24 +87,32 @@
     </section>
 
     <section class="insights-grid">
-        <div class="card chart-card">
-            <div class="card-header-simple">
+        <div class="card table-card"> <div class="card-header-flex">
                 <div>
                     <h3>Statistical Summary</h3>
                     <p class="text-muted" style="font-size: 0.75rem;">Global numerical distribution</p>
                 </div>
+                <div class="glass-tabs">
+                    <button class="tab-btn" onclick="UI.exportStats()">
+                        <i data-lucide="download-cloud" style="width:14px"></i>
+                    </button>
+                </div>
             </div>
-            <div id="stats-container">
-                <table class="stats-table">
-                    <thead>
+            
+            <div id="stats-container" class="table-wrapper">
+                <table id="analysis-table"> <thead>
                         <tr>
-                            <th>Metric</th>
-                            <th>Value</th>
-                            <th>Deviation</th>
+                            <th>Feature</th>
+                            <th>Mean</th>
+                            <th>Std Dev</th>
+                            <th>Median</th>
                         </tr>
                     </thead>
                     <tbody id="global-stats-body">
-                        </tbody>
+                        <tr><td colspan="4" style="text-align:center; padding: 2rem; color: var(--text-muted);">
+                            <i data-lucide="loader-2" class="spin"></i> Calculating moments...
+                        </td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -126,7 +134,7 @@
     </section>
 
     <section id="leakage-section">
-        </section>
+    </section>
 
     <section class="card table-card">
         <div class="card-header-flex">
@@ -134,7 +142,7 @@
             <div class="glass-tabs">
                 <button id="tab-health" class="tab-btn active" onclick="switchTableTab('health')">Missing Data</button>
                 <button id="tab-outliers" class="tab-btn" onclick="switchTableTab('outliers')">Outliers</button>
-                <button id="tab-categorical" class="tab-btn" onclick="switchTableTab('categorical')">Column Types</button>
+                <button id="tab-categorical" class="tab-btn" onclick="switchTableTab('categorical')">Cardinality</button>
             </div>
         </div>
         <div class="table-wrapper">

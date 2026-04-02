@@ -125,54 +125,28 @@ export const UI = {
      * Renders a detailed statistical table for numerical features.
      */
     updateStats(incomingData) {
-        const container = document.getElementById("stats-container");
-        if (!container) return;
+        const tbody = document.getElementById("global-stats-body");
+        const thead = document.querySelector("#stats-container thead"); // Target thead inside stats
+        if (!tbody || !thead) return;
 
         if (incomingData.status === "processing") {
-            container.innerHTML = `
-                <div class="text-center p-5">
-                    <div class="spinner-border text-primary mb-3"></div>
-                    <p>Generating statistical summary...</p>
-                </div>`;
+            tbody.innerHTML = `
+                <tr><td colspan="4" class="text-center p-5">
+                    <div class="spinner-border text-primary mb-2"></div>
+                    <p class="small text-muted">Calculating moments...</p>
+                </td></tr>`;
             return;
         }
 
-        const statsData = incomingData.statistics ? incomingData.statistics : incomingData;
-        const entries = Object.entries(statsData || {});
-        
-        if (entries.length === 0) {
-            container.innerHTML = `<p class="text-muted">No statistical data available yet.</p>`;
-            return;
-        }
-
-        const numericCols = entries.filter(([_, s]) => s.mean !== null);
-        const fmt = (val) => (val !== null && val !== undefined) 
-            ? val.toLocaleString(undefined, { maximumFractionDigits: 2 }) 
-            : '--';
-
-        if (numericCols.length > 0) {
-            container.innerHTML = `
-                <table class="stats-table">
-                    <thead>
-                        <tr>
-                            <th>Feature</th><th>Mean</th><th>Std Dev</th>
-                            <th>Min</th><th>Median</th><th>Max</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${numericCols.map(([name, s]) => `
-                            <tr>
-                                <td><strong style="color: var(--primary);">${name.replace(/_/g, ' ')}</strong></td>
-                                <td>${fmt(s.mean)}</td>
-                                <td>${typeof s.std === 'number' ? s.std.toFixed(2) : '--'}</td>
-                                <td>${fmt(s.min)}</td>
-                                <td>${fmt(s["50%"])}</td> 
-                                <td>${fmt(s.max)}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>`;
-        }
+        // 1. Sync the global state first so Table.js can see it
+        import("./state.js").then(m => {
+            m.state.statistics = incomingData.statistics || incomingData;
+            
+            // 2. Delegate the actual table rendering to the Table module
+            import("./table.js").then(t => {
+                t.Table.renderGlobalStats(tbody, thead);
+            });
+        });
     },
     
     /**
