@@ -1,16 +1,20 @@
+# analysis/inspect.py
 from typing import Any, Dict, Optional
 import pandas as pd
+import numpy as np
 
 # Import the new architecture
-from datasetdoctor.analysis.plugins.executor import PluginExecutor
+from .plugins.executor import PluginExecutor
+from datasetdoctor.core.logger import logger
 
 def _infer_type(series: pd.Series) -> str:
     return str(series.dtype)
 
+
 def analyze_dataset(file_path: str, target: str | None = None) -> Dict[str, Any]:
     """
     Orchestrates dataset analysis using a streaming profile-driven approach.
-    Now leverages the PluginExecutor for modular, dependency-aware analysis.
+    Leverages PluginExecutor and adds v2 Interpretability metrics.
     """
     CHUNK_SIZE = 100_000
     reader = pd.read_csv(file_path, chunksize=CHUNK_SIZE)
@@ -41,8 +45,7 @@ def analyze_dataset(file_path: str, target: str | None = None) -> Dict[str, Any]
     if first_chunk is None:
         raise ValueError("Dataset is empty or could not be read.")
 
-    # --- Phase 2: Create JSON-safe Profile (The Engine) ---
-    # We convert Series to Dicts here so plugins don't have to deal with Pandas types
+    # --- Phase 2: Create JSON-safe Profile ---
     profile = {
         "rows": total_rows,
         "cols": len(first_chunk.columns),
@@ -53,7 +56,6 @@ def analyze_dataset(file_path: str, target: str | None = None) -> Dict[str, Any]
     }
 
     # --- Phase 3: Sampling Strategy ---
-    # Combine first two chunks for a better statistical sample if available
     df_sample = first_chunk
     if second_chunk is not None:
         df_sample = pd.concat([first_chunk, second_chunk], ignore_index=True)
@@ -61,7 +63,6 @@ def analyze_dataset(file_path: str, target: str | None = None) -> Dict[str, Any]
     # --- Phase 4: Plugin Execution ---
     executor = PluginExecutor(df_sample, profile=profile)
     
-    # Order is managed by the executor's topological sort
     plugin_results = executor.run([
         "data_quality", 
         "ml_readiness", 
@@ -69,12 +70,12 @@ def analyze_dataset(file_path: str, target: str | None = None) -> Dict[str, Any]
         "outliers", 
         "imbalance", 
         "suggestions", 
-        "stats"
+        "stats",
+        "predictive_power"
     ], target=target)
 
-    # --- Phase 5: Build Legacy Output Structure ---
-    
-    # 1. Map Data Quality & ML Readiness to Summary
+ 
+    # --- Phase 5: Final Assembly ---
     dq_res = plugin_results.get("data_quality", {})
     ml_res = plugin_results.get("ml_readiness", {})
     
@@ -89,9 +90,9 @@ def analyze_dataset(file_path: str, target: str | None = None) -> Dict[str, Any]
         "duplicatesPercent": round((df_sample.duplicated().sum() / len(df_sample)) * 100, 2) if any_duplicates else 0,
         "quality_score": dq_res.get("score", 0),
         "ml_readiness": ml_res.get("value", 0),
+        "target_column": target # Explicitly return the target for UI sync
     }
 
-    # 2. Reconstruct Column-level Stats
     column_stats = []
     for col in first_chunk.columns:
         col_missing = profile["missing_counts"].get(col, 0)
@@ -101,11 +102,13 @@ def analyze_dataset(file_path: str, target: str | None = None) -> Dict[str, Any]
             "missingPercent": round((col_missing / total_rows) * 100, 2) if total_rows > 0 else 0,
             "unique": int(profile["nunique"].get(col, 0)),
         })
-
-    # 3. Final Assembly
+        
+    
+    
     return {
         "summary": summary,
         "columns": column_stats,
+        "predictive_power": plugin_results.get("predictive_power"), # New v2 key
         "statistics": plugin_results.get("stats", {}),
         "outliers": plugin_results.get("outliers", {}),
         "imbalance": plugin_results.get("imbalance", {}),

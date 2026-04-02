@@ -109,9 +109,15 @@
                         </tr>
                     </thead>
                     <tbody id="global-stats-body">
-                        <tr><td colspan="4" style="text-align:center; padding: 2rem; color: var(--text-muted);">
-                            <i data-lucide="loader-2" class="spin"></i> Calculating moments...
-                        </td></tr>
+                        <tr>
+                            <td colspan="5" class="stats-loader-container">
+                                <div class="stats-loader-content">
+                                    <div class="spinner-custom"></div>
+                                    <span class="loader-text">Calculating statistical moments...</span>
+                                    <span class="loader-subtext">Performing high-precision distribution analysis</span>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -132,6 +138,7 @@
             </div>
         </div>
     </section>
+    
 
     <section id="leakage-section">
     </section>

@@ -124,23 +124,32 @@ export const UI = {
     /**
      * Renders a detailed statistical table for numerical features.
      */
-    updateStats(incomingData) {
+    updateStats(incomingData, powerData) {
         const tbody = document.getElementById("global-stats-body");
         const thead = document.querySelector("#stats-container thead"); // Target thead inside stats
         if (!tbody || !thead) return;
 
         if (incomingData.status === "processing") {
-            tbody.innerHTML = `
-                <tr><td colspan="4" class="text-center p-5">
-                    <div class="spinner-border text-primary mb-2"></div>
-                    <p class="small text-muted">Calculating moments...</p>
-                </td></tr>`;
-            return;
-        }
+	    tbody.innerHTML = `
+		<tr>
+		    <td colspan="5" class="stats-loader-container">
+		        <div class="stats-loader-content">
+		            <div class="spinner-custom"></div>
+		            <div class="loader-text">Calculating statistical moments...</div>
+		            <div class="loader-subtext">Mapping feature distributions</div>
+		        </div>
+		    </td>
+		</tr>`;
+	    return;
+	}
 
         // 1. Sync the global state first so Table.js can see it
         import("./state.js").then(m => {
-            m.state.statistics = incomingData.statistics || incomingData;
+            // ONLY pick the statistics part for state.statistics
+            m.state.statistics = incomingData.statistics || {};
+        
+           // ONLY pick the predictive_power part for state.predictivePower
+           m.state.predictivePower = incomingData.predictive_power || {};
             
             // 2. Delegate the actual table rendering to the Table module
             import("./table.js").then(t => {
@@ -148,6 +157,8 @@ export const UI = {
             });
         });
     },
+    
+    
     
     /**
      * Analyzes and displays potential Data Leakage risks using Lucide icons.
