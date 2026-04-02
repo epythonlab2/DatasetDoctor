@@ -149,42 +149,100 @@ export const Table = {
                 </tr>`;
         });
     },
-     /**
-     * Renders the Global Statistical Summary.
-     * Moved from UI to Table to ensure layout parity with diagnostic tabs.
+    
+    /**
+     * Renders the Global Statistical Summary with Interpretability Signal.
      */
     renderGlobalStats(tbody, thead) {
-        // Set Headers to match your HTML request: Feature, Mean, Std Dev, Median
-        thead.innerHTML = `
-            <tr>
-                <th>Feature</th>
-                <th>Mean</th>
-                <th>Std Dev</th>
-                <th>Median</th>
-            </tr>`;
+    thead.innerHTML = `
+        <tr>
+            <th>Feature</th>
+            <th>Mean</th>
+            <th>Std Dev</th>
+            <th>Median</th>
+            <th style="width: 200px;">Predictive Signal</th>
+        </tr>`;
 
-        const statsData = state.statistics || {};
-        const entries = Object.entries(statsData);
-        
-        // Filter for columns that have numerical statistical moments
-        const numericCols = entries.filter(([_, s]) => s.mean !== null);
+    const statsData = state.statistics || {};
+    const powerData = state.predictivePower || {};
+    const entries = Object.entries(statsData);
+    const numericCols = entries.filter(([_, s]) => s && s.mean !== null);
 
-        if (numericCols.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-muted">No numerical features detected.</td></tr>`;
-            return;
+    if (numericCols.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center p-5 text-muted">No numerical features detected.</td></tr>`;
+        return;
+    }
+
+    const fmt = (val) => (val !== null && val !== undefined) 
+        ? val.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '--';
+
+    tbody.innerHTML = numericCols.map(([name, s]) => {
+        const featureInfo = powerData[name] || {};
+        const safeScore = parseFloat(featureInfo.score) || 0;
+        const flags = featureInfo.flags || [];
+        const miValue = featureInfo.mi !== undefined ? featureInfo.mi.toFixed(4) : '0.0000';
+
+        let signalHTML = '', statusColor = '', explanation = '';
+
+        if (flags.includes('leakage_risk') || safeScore > 0.5) {
+            signalHTML = `<span class="badge bg-danger">🔥 Leakage</span>`;
+            statusColor = '#dc3545'; // Danger Red
+            explanation = `High information overlap. This feature effectively "contains the answer," leading to artificial accuracy.`;
+        } else if (safeScore > 0.1) {
+            signalHTML = `<span class="badge bg-success">💎 Strong</span>`;
+            statusColor = '#198754'; // Success Green
+            explanation = `High predictive power. This column is a reliable driver for the target variable.`;
+        } else if (safeScore > 0.01) {
+            signalHTML = `<span class="badge bg-primary">⚡ Moderate</span>`;
+            statusColor = '#0d6efd'; // Primary Blue
+            explanation = `Secondary signal. Useful for fine-tuning model performance when combined with other data.`;
+        } else {
+            signalHTML = `<span class="badge bg-secondary">☁️ Noise</span>`;
+            statusColor = '#6c757d'; // Muted Gray
+            explanation = `Weak relationship. This feature adds complexity without significant predictive benefit.`;
         }
 
-        const fmt = (val) => (val !== null && val !== undefined) 
-            ? val.toLocaleString(undefined, { maximumFractionDigits: 2 }) 
-            : '--';
-
-        tbody.innerHTML = numericCols.map(([name, s]) => `
+        return `
             <tr>
                 <td><strong style="color: var(--primary);">${name.replace(/_/g, ' ')}</strong></td>
                 <td>${fmt(s.mean)}</td>
                 <td>${typeof s.std === 'number' ? s.std.toFixed(2) : '--'}</td>
-                <td>${fmt(s["50%"])}</td> 
-            </tr>
-        `).join('');
-    }
+                <td>${fmt(s["50%"])}</td>
+                <td style="position: relative;"> <div class="d-flex align-items-center gap-2">
+                        ${signalHTML}
+                        
+                        <button class="info-icon-trigger" 
+                                onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('show')"
+                                style="color: ${statusColor};">
+                            <i data-lucide="info" style="width:16px; height:16px;"></i>
+                        </button>
+
+                        <div class="info-card-overlay shadow-lg border rounded bg-white">
+                            <div class="info-card-header" style="background: ${statusColor}15; border-bottom: 1px solid ${statusColor}25;">
+                                <span style="color: ${statusColor}; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    Statistical Insight
+                                </span>
+                            </div>
+                            <div class="info-card-body">
+                                <p class="mb-0 text-dark" style="font-size: 13px; line-height: 1.4;">${explanation}</p>
+                            </div>
+                            <div class="info-card-footer">
+                                <div class="d-flex justify-content-between">
+                                    <span class="stat-label">MI Score: <strong>${miValue}</strong></span>
+                                    <span class="stat-label">Power: <strong>${safeScore.toFixed(3)}</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>`;
+    }).join('');
+
+    // Close on outside click
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.info-card-overlay.show').forEach(p => p.classList.remove('show'));
+    }, { once: false });
+
+    if (window.lucide) lucide.createIcons();
+}
 };

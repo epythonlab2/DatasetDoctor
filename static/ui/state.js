@@ -15,6 +15,12 @@ export const state = {
 
     /** @type {number} The total number of rows in the processed dataset */
     totalRows: 0,
+    
+    /** @type {Object} Key-value store of column statistical moments (mean, std, 50%, etc.) */
+    statistics: {},
+    
+    /** @type {Object} Mutual Information scores between features and target */
+    predictivePower: {},
 
     /** * @property {Object} charts - Holds references to active Chart.js instances.
      * Storing these here allows us to call .destroy() before re-rendering,

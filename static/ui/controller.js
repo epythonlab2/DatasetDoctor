@@ -76,9 +76,10 @@ export const Controller = {
         // A 150ms delay ensures Tier 1 & 2 are visually stable before the CPU spikes.
         setTimeout(() => {
             console.log("Processing heavy statistical tables...");
-            
+           
             // Populate the detailed stats table
-            UI.updateStats(data.statistics || {});
+            UI.updateStats(data);
+            
             
             // Populate the outlier list derived from state
             UI.updateOutliers(state.outliers);

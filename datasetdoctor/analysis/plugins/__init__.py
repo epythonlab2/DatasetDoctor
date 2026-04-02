@@ -8,6 +8,8 @@ from . import outliers
 from . import imbalance
 from . import suggestions
 from . import stats
+from . import predictive_power
+from . import auto_feature_selection
 
 __all__ = [
     "REGISTRY",

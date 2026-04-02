@@ -486,3 +486,107 @@ tr:hover td { background: #f8fafc; }
     gap: 0.75rem;
     box-shadow: var(--shadow);
 }
+
+/* Container for the loader row */
+.stats-loader-container {
+    padding: 5rem 0 !important;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.stats-loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+/* Modern Ring Spinner */
+.spinner-custom {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color, #f0f0f0);
+    border-radius: 50%;
+    border-top-color: var(--primary, #007bff);
+    animation: spin 0.8s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
+}
+
+.loader-text {
+    font-weight: 600;
+    color: var(--text-main, #333);
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+}
+
+.loader-subtext {
+    font-size: 0.8rem;
+    color: var(--text-muted, #6c757d);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Overlay System */
+.info-icon-trigger {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.info-icon-trigger:hover {
+    transform: scale(1.2);
+}
+
+.info-card-overlay {
+    display: none;
+    position: absolute;
+    z-index: 1060; /* Higher than table headers and other rows */
+    width: 280px;
+    right: 0;
+    top: 110%; /* Sits just below the row */
+    pointer-events: none; /* Ignored until shown */
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1) !important;
+}
+
+.info-card-overlay.show {
+    display: block;
+    pointer-events: all;
+    animation: popupFadeIn 0.2s ease-out;
+}
+
+/* Internal Card Layout */
+.info-card-header { padding: 10px 14px; border-top-left-radius: 4px; border-top-right-radius: 4px; }
+.info-card-body { padding: 14px; }
+.info-card-footer { padding: 10px 14px; background: #f9fafb; border-top: 1px solid #f1f1f1; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
+
+.stat-label { font-size: 11px; color: #6b7280; }
+.stat-label strong { color: #111827; }
+
+/* Arrow / Tooltip Pointer */
+.info-card-overlay::after {
+    content: "";
+    position: absolute;
+    top: -6px;
+    right: 18px;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #fff;
+    filter: drop-shadow(0 -1px 1px rgba(0,0,0,0.05));
+}
+
+@keyframes popupFadeIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* CRITICAL: Fix for table containers */
+.table-responsive {
+    overflow: visible !important; /* Prevents the overlay from being cut off */
+}
