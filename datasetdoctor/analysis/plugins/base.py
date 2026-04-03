@@ -1,6 +1,7 @@
 # analysis/plugins/base.py
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional
+
 import pandas as pd
 
 

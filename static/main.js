@@ -40,6 +40,9 @@ async function startAnalysisPolling() {
             // 1. Update KPI counters (Rows, Cols, Quality Score)
             UI.updateMetrics(data);
             
+            // Set visual placeholders immediately to improve UX
+    	    UI.setCurrentFile(data.filename);
+            
             // 2. Render the Data Leakage diagnostic card
             UI.updateLeakage(data.leakage);
             
@@ -87,8 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial icon render for static HTML elements
     lucide.createIcons();
 
-    // Set visual placeholders immediately to improve UX
-    UI.setCurrentFile("current_dataset.csv");
+    
     UI.setLoadingState(); 
 
     // Kick off the data retrieval process

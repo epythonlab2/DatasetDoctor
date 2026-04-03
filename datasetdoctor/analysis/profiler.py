@@ -1,6 +1,8 @@
 # analysis/profiler.py
 from typing import Any, Dict
+
 import pandas as pd
+
 
 def profile_dataframe(df: pd.DataFrame) -> Dict[str, Any]:
     """Computes expensive metrics in a single pass to be reused."""

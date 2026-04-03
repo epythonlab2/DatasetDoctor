@@ -1,5 +1,6 @@
 # analysis/plugins/registry.py
 from typing import Dict, Type
+
 from .base import AnalysisPlugin
 
 REGISTRY: Dict[str, Type[AnalysisPlugin]] = {}
