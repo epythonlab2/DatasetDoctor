@@ -1,7 +1,6 @@
 # analysis/plugins/__init__.py
-"""
+
 from . import (
-    auto_feature_selection,
     data_leakage,
     data_quality,
     imbalance,
@@ -11,7 +10,6 @@ from . import (
     stats,
     suggestions,
 )
-"""
 
 from .registry import REGISTRY, register_plugin
 
