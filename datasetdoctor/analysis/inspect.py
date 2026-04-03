@@ -1,17 +1,21 @@
 # analysis/inspect.py
-from typing import Any, Dict, Optional
+from typing import Any, Dict
+
 import pandas as pd
-import numpy as np
 
 # Import the new architecture
 from .plugins.executor import PluginExecutor
-from datasetdoctor.core.logger import logger
+
+# from datasetdoctor.core.logger import logger
+
 
 def _infer_type(series: pd.Series) -> str:
     return str(series.dtype)
 
 
-def analyze_dataset(file_path: str, target: str | None = None) -> Dict[str, Any]:
+def analyze_dataset(
+    file_path: str, target: str | None = None, filename: str | None = None
+) -> Dict[str, Any]:
     """
     Orchestrates dataset analysis using a streaming profile-driven approach.
     Leverages PluginExecutor and adds v2 Interpretability metrics.
@@ -62,53 +66,64 @@ def analyze_dataset(file_path: str, target: str | None = None) -> Dict[str, Any]
 
     # --- Phase 4: Plugin Execution ---
     executor = PluginExecutor(df_sample, profile=profile)
-    
-    plugin_results = executor.run([
-        "data_quality", 
-        "ml_readiness", 
-        "data_leakage", 
-        "outliers", 
-        "imbalance", 
-        "suggestions", 
-        "stats",
-        "predictive_power"
-    ], target=target)
 
- 
+    plugin_results = executor.run(
+        [
+            "data_quality",
+            "ml_readiness",
+            "data_leakage",
+            "outliers",
+            "imbalance",
+            "suggestions",
+            "stats",
+            "predictive_power",
+        ],
+        target=target,
+    )
+
     # --- Phase 5: Final Assembly ---
     dq_res = plugin_results.get("data_quality", {})
     ml_res = plugin_results.get("ml_readiness", {})
-    
+
     total_cells = profile["rows"] * profile["cols"]
     global_missing_sum = sum(profile["missing_counts"].values())
-    missing_percent = round((global_missing_sum / total_cells * 100), 2) if total_cells else 0
+    missing_percent = (
+        round((global_missing_sum / total_cells * 100), 2) if total_cells else 0
+    )
 
     summary = {
         "rows": profile["rows"],
         "cols": profile["cols"],
         "missingPercent": missing_percent,
-        "duplicatesPercent": round((df_sample.duplicated().sum() / len(df_sample)) * 100, 2) if any_duplicates else 0,
+        "duplicatesPercent": (
+            round((df_sample.duplicated().sum() / len(df_sample)) * 100, 2)
+            if any_duplicates
+            else 0
+        ),
         "quality_score": dq_res.get("score", 0),
         "ml_readiness": ml_res.get("value", 0),
-        "target_column": target # Explicitly return the target for UI sync
+        "target_column": target,  # Explicitly return the target for UI sync
     }
 
     column_stats = []
     for col in first_chunk.columns:
         col_missing = profile["missing_counts"].get(col, 0)
-        column_stats.append({
-            "name": col,
-            "type": _infer_type(df_sample[col]),
-            "missingPercent": round((col_missing / total_rows) * 100, 2) if total_rows > 0 else 0,
-            "unique": int(profile["nunique"].get(col, 0)),
-        })
-        
-    
-    
+        column_stats.append(
+            {
+                "name": col,
+                "type": _infer_type(df_sample[col]),
+                "missingPercent": (
+                    round((col_missing / total_rows) * 100, 2) if total_rows > 0 else 0
+                ),
+                "unique": int(profile["nunique"].get(col, 0)),
+            }
+        )
+
     return {
+        "filename": filename,
         "summary": summary,
         "columns": column_stats,
-        "predictive_power": plugin_results.get("predictive_power"), # New v2 key
+        "predictive_power": plugin_results.get("predictive_power"),  # New v2 key
         "statistics": plugin_results.get("stats", {}),
         "outliers": plugin_results.get("outliers", {}),
         "imbalance": plugin_results.get("imbalance", {}),

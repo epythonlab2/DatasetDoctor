@@ -15,14 +15,8 @@ from datasetdoctor.core import config
 from datasetdoctor.core.logger import logger
 
 from .background import run_analysis
-from .helpers import (
-    get_clean_path,
-    get_upload_path,
-    load_meta,
-    save_meta,
-    set_target,
-    validate_csv,
-)
+from .helpers import (get_clean_path, get_upload_path, load_meta, save_meta,
+                      set_target, validate_csv)
 
 # -------------------------
 # LIFESPAN
@@ -116,9 +110,14 @@ async def upload(file: UploadFile, background_tasks: BackgroundTasks):
         raise HTTPException(400, "Invalid CSV file.")
 
     # Save meta off-loop
-    await run_in_threadpool(
-        save_meta, dataset_id, {"dataset_id": dataset_id, "status": "processing"}
-    )
+    # Persist metadata off-loop
+    meta_payload = {
+        "dataset_id": dataset_id,
+        "filename": file.filename,
+        "status": "processing",
+    }
+    await run_in_threadpool(save_meta, dataset_id, meta_payload)
+
     background_tasks.add_task(run_analysis, dataset_id, upload_path)
 
     return UploadResponse(dataset_id=dataset_id, status="processing")

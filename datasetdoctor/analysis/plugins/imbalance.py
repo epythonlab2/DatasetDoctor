@@ -2,12 +2,14 @@
 from .base import AnalysisPlugin
 from .registry import register_plugin
 
+
 @register_plugin
 class ImbalancePlugin(AnalysisPlugin):
     name = "imbalance"
 
     def run(self, df, target=None, profile=None, context=None):
-        if not target or target not in df.columns: return {}
+        if not target or target not in df.columns:
+            return {}
 
         series = df[target]
         dist = series.value_counts(normalize=True, dropna=False)

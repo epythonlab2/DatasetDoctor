@@ -13,15 +13,19 @@
 <body>
 
 <nav class="navbar">
-    <div class="logo" onclick="window.location.href='/'">
+    <div class="logo" onclick="window.location.href='#'">
         <i data-lucide="activity"></i> DatasetDoctor
     </div>
     <div class="nav-actions">
+    	<button class="btn btn-secondary shadow-sm" onclick="showAboutModal()">
+	    <i data-lucide="info" style="width:16px; margin-right: 4px;"></i>
+	    <span>About</span>
+	</button>
         <button class="btn btn-secondary" onclick="resetAnalysis()">
             <i data-lucide="refresh-ccw" style="width:16px"></i> <span>New Upload</span>
         </button>
         <button class="btn btn-primary" onclick="cleanDataset()">
-            <i data-lucide="sparkles" style="width:16px"></i> <span>Auto Clean</span>
+            <i data-lucide="sparkles" style="width:16px"></i> <span>Clean</span>
         </button>
         <button class="btn btn-secondary" onclick="exportDataset()">
             <i data-lucide="download" style="width:16px"></i> <span>Export</span>
@@ -33,11 +37,14 @@
 
     <header class="dashboard-header">
         <div>
-            <h1>Dataset Analysis <span class="badge">Live</span></h1>
+            <h1>Dataset Analysis <span class="badge-live">Live</span></h1>
             <p id="filename-display" class="text-muted">Analyzing: <span id="current-file" style="font-weight:600; color: var(--text-main);">loading...</span></p>
         </div>
         <div>
-            <span class="text-muted"><i data-lucide="clock" style="width:12px; display:inline-block; vertical-align:middle;"></i> Last scanned: Just now</span>
+            <span class="text-muted">
+		    <i data-lucide="clock" style="width:12px; display:inline-block; vertical-align:middle;"></i> 
+		    Last scanned: <span id="scan-time-label" data-timestamp="2026-04-03T10:30:00Z">Just now</span>
+	    </span>
         </div>
     </header>
 
@@ -185,6 +192,7 @@
 </main>
 
 <script type="module" src="/static/main.js"></script>
+<script type="module" src="/static/timeTicker.js"></script>
 
 </body>
 </html>

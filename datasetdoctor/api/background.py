@@ -1,63 +1,80 @@
+from datetime import datetime
 from pathlib import Path
 
 from datasetdoctor.analysis.inspect import analyze_dataset
 from datasetdoctor.core import config
 from datasetdoctor.core.logger import logger
 
-# Import update_meta to ensure atomic merging rather than full overwrites
 from .helpers import load_meta, update_meta
 
 
 def run_analysis(dataset_id: str, path: Path) -> None:
     """
-    Background task to analyze a dataset and update its metadata.
-    Optimized for memory safety and atomic state updates.
-    """
-    logger.info(f"Starting analysis for dataset_id: {dataset_id}")
+    Asynchronous background task to perform statistical analysis on a dataset.
 
-    # 1. Immediate State Update
-    # Set status to 'processing' immediately so the UI can show a spinner.
-    # We use update_meta to avoid loading the whole file just to change one key.
-    update_meta(dataset_id, {"status": "processing", "error": None})
+    This function manages the lifecycle of the analysis:
+    1. Sets initial 'processing' state.
+    2. Performs heavy-lifting analysis via analyze_dataset.
+    3. Atomically merges results into the dataset metadata.
+    4. Handles failures gracefully to avoid leaving the UI in a 'processing' hang.
+    """
+
+    # 1. Initial State Sync
+    # Mark as processing so polling clients (Frontend Controller) see the spinner.
+    update_meta(
+        dataset_id,
+        {
+            "status": "processing",
+            "error": None,
+            "analysis_start": datetime.now().isoformat(),
+        },
+    )
 
     try:
-        # 2. Get the latest target (Load once, just before analysis)
+        # 2. Context Loading
+        # Retrieve target column or filename if previously set during upload.
         meta = load_meta(dataset_id)
         target = meta.get("target")
+        filename = meta.get("filename", "Unknown File")
 
-        # 3. Heavy Lifting (The Performance Bottleneck)
-        # We pass the string path to ensure the inspector handles the chunked reading
-        results = analyze_dataset(str(path), target=target)
+        logger.info(f"Starting analysis | ID: {dataset_id} | File: {filename}")
+
+        # 3. Execution (The Bottleneck)
+        # We pass the path as a string. analyze_dataset is expected to handle
+        # memory-efficient chunked reading internally.
+        results = analyze_dataset(str(path), target=target, filename=filename)
 
         # 4. Atomic Final Merge
-        # We use a dictionary merge to ensure we don't drop fields like 'original_filename'
-        # or 'upload_time' that might exist in the meta file.
+        # We use a dictionary merge (**) to ensure we don't overwrite
+        # original upload metadata (like 'size' or 'user_id').
         final_payload = {
             **results,
             "dataset_id": dataset_id,
             "status": "ready",
-            "last_analyzed": (
-                pd.Timestamp.now().isoformat() if "pd" in globals() else None
-            ),
+            "last_analyzed": datetime.now().isoformat(),
         }
 
-        # update_meta is safer than save_meta here because it re-loads
-        # the meta one last time to merge results, preventing race conditions.
+        # update_meta performs a read-modify-write to prevent race conditions
         update_meta(dataset_id, final_payload)
 
-        logger.info(f"Analysis completed successfully for {dataset_id}")
+        logger.info(f"Analysis successful | ID: {dataset_id}")
 
     except Exception as e:
-        logger.error(f"Analysis failed for {dataset_id}. Error: {e}", exc_info=True)
+        # 5. Robust Error Handling
+        # Ensure the backend doesn't stay in 'processing' forever if a crash occurs.
+        logger.error(f"Analysis failed | ID: {dataset_id} | Error: {e}", exc_info=True)
 
-        # 5. Fail-Safe State
-        # We only update the status and error, preserving whatever data was already there.
-        error_payload = {
-            "status": "failed",
-            "error": (
-                str(e)
-                if config.DEBUG
-                else "An internal error occurred during analysis."
-            ),
-        }
-        update_meta(dataset_id, error_payload)
+        error_msg = (
+            str(e)
+            if config.DEBUG
+            else "A statistical error occurred during dataset processing."
+        )
+
+        update_meta(
+            dataset_id,
+            {
+                "status": "failed",
+                "error": error_msg,
+                "failed_at": datetime.now().isoformat(),
+            },
+        )

@@ -2,13 +2,15 @@
 from .base import AnalysisPlugin
 from .registry import register_plugin
 
+
 @register_plugin
 class OutliersPlugin(AnalysisPlugin):
     name = "outliers"
 
     def run(self, df, target=None, profile=None, context=None):
         numeric_df = df.select_dtypes(include="number")
-        if numeric_df.empty: return {}
+        if numeric_df.empty:
+            return {}
 
         q_df = numeric_df.quantile([0.25, 0.75])
         iqr = q_df.loc[0.75] - q_df.loc[0.25]

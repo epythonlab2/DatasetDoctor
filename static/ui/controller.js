@@ -1,7 +1,8 @@
 /**
  * Controller Module
- * Acts as the orchestrator between the API, State, and UI components.
- * Manages data fetching, polling, and prioritized rendering logic.
+ * Orchestrates the flow of data between the API, the global State, and the UI.
+ * Handles recursive polling for long-running analyses and implements tiered rendering
+ * to ensure a smooth 60FPS user experience.
  */
 import { state } from "./state.js";
 import { API } from "./api.js";
@@ -10,81 +11,78 @@ import { Charts } from "./charts.js";
 import { Table } from "./table.js";
 
 export const Controller = {
+    // Tracks if the previous poll was in a processing state
+    wasProcessing: false,
+
     /**
-     * Entry point for loading analysis data.
-     * Implements a polling mechanism: if the backend is still processing,
-     * it schedules a retry. Once ready, it triggers the dashboard initialization.
+     * Entry point for loading dataset analysis.
+     * Implements a polling mechanism for 'processing' states and manages
+     * persistent scan timestamps.
      * @async
      */
     async loadData() {
         try {
-            // Request dataset analysis from the API layer
             const data = await API.fetchAnalysis(state.datasetId);
 
-            // Handle incomplete analysis via recursive polling
+            // 1. Handle Polling Logic
             if (data.status === "processing") {
+                this.wasProcessing = true;
                 UI.setLoadingState();
                 
-                // Retry every 3 seconds until status is 'ready'
+                // Retry every 3 seconds
                 setTimeout(() => this.loadData(), 3000);
                 return;
             }
+            // Set the filename IMMEDIATELY
+	     if (data.filename) {
+		   UI.setCurrentFile(data.filename);
+	     }
 
-            // Analysis is complete; transition to dashboard rendering
+            // 2. Data is Ready - Initialize Dashboard
             this.initDashboard(data);
-            
+
         } catch (err) {
             console.error("Dashboard Load Error:", err);
-            // Error handling could be extended here to show a UI error toast
+            // Optional: UI.showErrorToast("Failed to load analysis data.");
         }
     },
 
+  
     /**
-     * Orchestrates the population of all UI components with analyzed data.
-     * Utilizes a "Tiered Rendering" strategy to maintain 60FPS UI performance:
-     * 1. Fast Metrics (Immediate)
-     * 2. Visual Charts (Priority Queue)
-     * 3. Heavy Data Tables (Deferred)
-     * @param {Object} data - The complete analysis payload from the backend.
+     * Orchestrates UI population using a "Tiered Rendering" strategy.
+     * This prevents the main thread from locking up during heavy data processing.
+     * @param {Object} data - The complete analysis payload.
      */
     initDashboard(data) {
-        // --- TIER 1: STATE SYNC & FAST UI ---
-        // Synchronize core data to the global state object
+        // --- TIER 1: IMMEDIATE (State & Fast UI) ---
+        // Sync critical data to global state
         state.columns = data.columns || [];
         state.outliers = data.outliers || {};
 
-        // Update text-based elements immediately (Zero heavy computation)
+        // Render fast, text-based elements
         UI.updateMetrics(data || {});
         UI.updateImbalance(data.imbalance || {});
         UI.updateSuggestions(data.suggestions || []);
-        
-        // Render data leakage warnings early as they are critical for the user
         UI.updateLeakage(data.leakage || {});
 
-        // --- TIER 2: PRIORITY RENDERING ---
-        // Use a 0ms timeout to push Chart rendering to the next event loop tick.
-        // This allows the browser to perform an initial paint of the text metrics first.
+        // --- TIER 2: PRIORITY (Charts) ---
+        // Deferred to the next event loop tick to allow TIER 1 to paint first.
         setTimeout(() => {
             if (data.imbalance) {
                 Charts.renderImbalance(data.imbalance);
             }
         }, 0);
 
-        // --- TIER 3: DEFERRED RENDERING ---
-        // Large datasets (1M+ rows) generate massive statistical objects.
-        // Parsing these and injecting hundreds of DOM nodes into a table is expensive.
-        // A 150ms delay ensures Tier 1 & 2 are visually stable before the CPU spikes.
+        // --- TIER 3: DEFERRED (Heavy Tables) ---
+        // Parsing 1M+ row statistics can be expensive. 
+        // 150ms delay ensures the UI is interactive before the CPU spike.
         setTimeout(() => {
-            console.log("Processing heavy statistical tables...");
-           
-            // Populate the detailed stats table
+            console.log("Rendering heavy statistical components...");
+            
             UI.updateStats(data);
-            
-            
-            // Populate the outlier list derived from state
             UI.updateOutliers(state.outliers);
             
-            // Default the diagnostics table view to 'Missing Data'
+            // Set default view for diagnostics
             Table.switch("health");
         }, 150);
     }

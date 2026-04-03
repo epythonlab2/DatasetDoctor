@@ -3,11 +3,10 @@ from pathlib import Path
 from typing import Any, Dict
 
 from fastapi import HTTPException, UploadFile
+from filelock import FileLock
 
 from datasetdoctor.core import config
 from datasetdoctor.core.logger import logger
-
-from filelock import FileLock
 
 
 # -------------------------
@@ -131,6 +130,4 @@ def validate_csv(file: UploadFile) -> None:
         raise HTTPException(400, "Invalid file content.")
 
     if file.content_type not in ALLOWED_MIME_TYPES:
-        logger.warning(
-            f"[SUSPICIOUS MIME] {file.filename}: {file.content_type}"
-        )
+        logger.warning(f"[SUSPICIOUS MIME] {file.filename}: {file.content_type}")

@@ -1,6 +1,7 @@
 # analysis/engine.py
 # analysis/engine.py
 from typing import Any, Dict
+
 import pandas as pd
 
 from .inspect import DatasetInspector
@@ -21,14 +22,10 @@ def analyze_dataset(file_path: str, target: str | None = None) -> Dict[str, Any]
     total_cells = df.size
 
     missing_percent = (
-        round(df.isna().sum().sum() / total_cells * 100, 2)
-        if total_cells else 0
+        round(df.isna().sum().sum() / total_cells * 100, 2) if total_cells else 0
     )
 
-    duplicates_percent = (
-        round(df.duplicated().mean() * 100, 2)
-        if len(df) else 0
-    )
+    duplicates_percent = round(df.duplicated().mean() * 100, 2) if len(df) else 0
 
     summary = {
         "rows": len(df),
