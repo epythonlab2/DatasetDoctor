@@ -579,4 +579,98 @@ tr:last-child td { border-bottom: none; }
     100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
 }
 
+/* about page styles */
 
+/* Modal Overlay */
+.custom-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6); /* Slate-900 with transparency */
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    overflow-y: auto;
+    padding: 2rem 1rem;
+}
+
+.custom-modal-overlay.active {
+    display: block;
+}
+
+/* Modal Content Box */
+.custom-modal-content {
+    position: relative;
+    background: #fff;
+    margin: 0 auto;
+    border-radius: 20px;
+    max-width: 850px;
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #f1f5f9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    transition: background 0.2s;
+}
+
+.modal-close-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+@keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Container & Dialog */
+.about-container { display: flex; justify-content: center; padding: 3rem 1rem; background: #f9fafb; }
+.about-dialog { max-width: 800px; width: 100%; background: #fff; border-radius: 20px; padding: 3rem; }
+
+/* Feature Cards */
+.feature-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.feature-mini-card { padding: 1.5rem; border: 1px solid #f1f1f1; border-radius: 12px; }
+.mini-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 12px; }
+
+/* Highlight Box */
+.feature-highlight { border-radius: 14px; overflow: hidden; border: 1px solid #eee; }
+.highlight-header { padding: 12px 20px; background: #fff5f5; color: #dc3545; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.highlight-body { padding: 20px; }
+.status-labels { display: flex; gap: 8px; margin-top: 12px; }
+
+/* Architecture Styling */
+.border-dashed { border: 1px dashed #cbd5e0; background: #fafafa; }
+.architecture-flow { display: flex; flex-direction: column; padding-left: 10px; }
+.arch-step { display: flex; align-items: center; gap: 16px; }
+.arch-icon { width: 40px; height: 40px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.arch-connector { width: 2px; height: 20px; background: #edf2f7; margin-left: 19px; }
+.arch-subtext { font-size: 11px; color: #718096; }
+
+/* Colors */
+.text-purple { color: #805ad5; }
+.icon-purple { color: #805ad5; background: #faf5ff; border-color: #e9d8fd; }
+.icon-blue { color: #3182ce; background: #ebf8ff; border-color: #bee3f8; }
+.icon-green { color: #38a169; background: #f0fff4; border-color: #c6f6d5; }
+.icon-cyan { color: #00b5ad; background: #e0f7f6; border-color: #b2f2f1; }
+
+/* Inspector Highlight */
+.highlight-step .arch-icon { border-color: #feb2b2; color: #e53e3e; background: #fff5f5; box-shadow: 0 4px 10px rgba(229, 62, 62, 0.1); transform: scale(1.05); }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.about-dialog { animation: fadeIn 0.3s ease-out; }
