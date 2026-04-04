@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🩺Dataset Health Analysis | DatasetDoctor</title>
+    <title>Dataset Health Analysis | DatasetDoctor</title>
+    <link rel="icon" type="image/svg+xml" 
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' 
+      height='24' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='3' 
+      stroke-linecap='round' stroke-linejoin='round'><path d='M22 12h-4l-3 9L9 3l-3 9H2'></path></svg>">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/custom_dialog.css">
 </head>
 <body>
 
@@ -17,18 +22,18 @@
         <i data-lucide="activity"></i> DatasetDoctor
     </div>
     <div class="nav-actions">
-    	<button class="btn btn-secondary shadow-sm" onclick="showAboutModal()">
-	    <i data-lucide="info" style="width:16px; margin-right: 4px;"></i>
+    	<button class="btn btn-secondary shadow-sm" onclick="About.show()">
+	    <i data-lucide="info" style="width:16px; color:var(--primary);"></i>
 	    <span>About</span>
 	</button>
         <button class="btn btn-secondary" onclick="resetAnalysis()">
-            <i data-lucide="refresh-ccw" style="width:16px"></i> <span>New Upload</span>
+            <i data-lucide="refresh-ccw" style="width:16px; color:var(--primary);"></i> <span>New Upload</span>
         </button>
         <button class="btn btn-primary" onclick="cleanDataset()">
             <i data-lucide="sparkles" style="width:16px"></i> <span>Clean</span>
         </button>
         <button class="btn btn-secondary" onclick="exportDataset()">
-            <i data-lucide="download" style="width:16px"></i> <span>Export</span>
+            <i data-lucide="download" style="width:16px; color:var(--primary);"></i> <span>Export</span>
         </button>
     </div>
 </nav>
@@ -191,8 +196,17 @@
 
 </main>
 
-<script type="module" src="/static/main.js"></script>
-<script type="module" src="/static/timeTicker.js"></script>
+<!-- About Modal -->
+<div id="aboutModal" class="custom-modal-overlay">
+    <div class="custom-modal-content">
+        <button class="modal-close-btn" onclick="About.close()">&times;</button>
+        <div id="about-content-placeholder"></div>
+    </div>
+</div>
+<script type="module" src="/static/js/about.js"></script>
+<script type="module" src="/static/js/main.js"></script>
+<script type="module" src="/static/js/timeTicker.js"></script>
+
 
 </body>
 </html>

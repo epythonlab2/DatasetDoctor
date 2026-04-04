@@ -245,3 +245,15 @@ async def reset():
     except Exception as e:
         logger.exception(f"[RESET FAILED]: {e}")
         raise HTTPException(500, "Reset failed.")
+
+@app.get("/about-fragment", response_class=HTMLResponse)
+async def about_fragment():
+    logger.info("ABOUT FRAGMENT CALLED")
+    # Ensure this path actually points to the fragment, not the main page
+    path = config.TEMPLATES_DIR / "about.html" 
+    
+    if not path.exists():
+        logger.error(f"File not found at {path}")
+        return HTMLResponse(content="<p>Content missing</p>", status_code=404)
+        
+    return await run_in_threadpool(path.read_text, encoding="utf-8")

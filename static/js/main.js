@@ -97,6 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
     startAnalysisPolling();
 });
 
+
 /**
  * Global Exports
  * Maps internal module methods to the 'window' object to allow 
