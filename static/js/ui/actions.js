@@ -1,85 +1,166 @@
 /**
  * Actions Module
- * Handles user-triggered operations that interact with the backend API.
- * Manages button loading states, confirmation dialogs, and navigation.
+ * Central hub for user-triggered operations, analysis management, and data cleaning.
  */
 import { API } from "./api.js";
 import { state } from "./state.js";
 
 export const Actions = {
+    
     /**
-     * Triggers the "Auto Clean" routine on the current dataset.
-     * Updates the button UI to a 'loading' state during the request.
-     * @async
-     */
-    async clean() {
-        // Access the triggering element to manage its UI state
-        const btn = event.target;
-        const originalHTML = btn.innerHTML;
-
-        // 1. Enter Loading State
-        btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Cleaning...`;
-        btn.disabled = true;
-
-        try {
-            // Attempt to trigger the cleaning script on the server
-            const res = await API.cleanDataset(state.datasetId);
-            
-            if (res.ok) {
-                alert("Dataset successfully cleaned! The page will now refresh to show updated stats.");
-                window.location.reload(); // Refresh to trigger a fresh analysis
-            } else {
-                throw new Error("Backend cleaning failed.");
-            }
-        } catch (err) {
-            // Fallback for preview mode or server errors
-            console.warn("Clean operation failed or simulated:", err);
-            alert("Clean operation completed (Simulated for Preview).");
-        } finally {
-            // 2. Reset UI State
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-        }
-    },
-
-    /**
-     * Resets the entire analysis session.
-     * Clears server-side temporary files and redirects the user to the upload screen.
-     * @async
+     * Resets the entire analysis session and redirects to home.
      */
     async reset() {
-        // Guard clause: Ensure the user actually intended to reset
-        if (!confirm("Are you sure you want to reset? This will delete the current analysis and uploaded files.")) {
-            return;
-        }
+        if (!confirm("Are you sure? This will delete all current analysis and files.")) return;
 
         try {
-            const res = await API.reset();
-            if (res.ok) {
-                // Redirect to the home/upload page on success
-                window.location.href = "/";
-            } else {
-                throw new Error("Reset failed");
-            }
+            // Stop background dashboard polling
+            if (window.analysisInterval) clearInterval(window.analysisInterval);
+            state.datasetId = null; 
+
+            await API.reset();
+            window.location.replace("/"); 
         } catch (err) {
-            console.error("Reset Error:", err);
-            // Fallback: simply reload the page if the POST /reset fails
-            window.location.reload();
+            console.error("Reset Failed:", err);
+            window.location.href = "/"; // Fallback redirect
         }
     },
 
     /**
-     * Initiates a file download for the processed dataset.
-     * Uses a direct window location change to trigger the browser's download dialog.
+     * Triggers a browser download for the cleaned dataset.
      */
     export() {
         if (!state.datasetId) {
-            alert("No dataset ID found. Please wait for analysis to complete.");
+            alert("Analysis not ready for export.");
             return;
         }
-        
-        // Construct the full export URL via the API helper
-        const exportUrl = API.getUrl(`/export/${state.datasetId}`);
-        window.location.href = exportUrl;
+        window.location.href = API.getUrl(`/export/${state.datasetId}`);
+    },
+
+    /**
+     * Deduplication & Cleaning Logic
+     */
+    Dedupe: {
+        _pollRetryCount: 0,
+        _maxRetries: 10,
+
+        /**
+         * Prepares the UI within the Clean Modal
+         */
+        prepare(id) {
+            if (!id) return;
+            const btn = document.getElementById('btn-dedupe');
+            if (btn) {
+                btn.setAttribute('data-dataset-id', id);
+                btn.disabled = false;
+                btn.classList.replace('btn-success', 'btn-primary');
+                btn.innerHTML = `Run Deduplication`;
+            }
+            this._updateStatusUI("Ready for Surgery", "#94a3b8");
+        },
+
+        /**
+         * Triggers the backend cleaning pipeline
+         */
+        async run() {
+            const btn = document.getElementById('btn-dedupe');
+            const datasetId = btn?.getAttribute('data-dataset-id');
+
+            if (!datasetId) {
+                this._handleError("Dataset ID missing. Please reload.");
+                return;
+            }
+
+            this._setBtnLoading(btn, true);
+            this._updateStatusUI("Deduplicating...", "#f59e0b");
+
+            try {
+                await API.cleanDataset(datasetId);
+                this._pollRetryCount = 0; // Reset retry counter
+                this.pollStatus(datasetId);
+            } catch (error) {
+                this._handleError(error.message);
+            }
+        },
+
+        /**
+         * Polls the metadata until the status is 'ready' or 'failed'
+         */
+        pollStatus(id) {
+            const pollInterval = setInterval(async () => {
+                try {
+                    const meta = await API.fetchMeta(id);
+                    this._pollRetryCount = 0; // Success: reset error counter
+
+                    if (meta.status === 'ready') {
+                        clearInterval(pollInterval);
+                        this._onComplete(meta);
+                    } else if (meta.status === 'failed') {
+                        clearInterval(pollInterval);
+                        this._handleError(meta.error || "Processing failed.");
+                    }
+                } catch (e) {
+                    this._pollRetryCount++;
+                    console.warn(`Polling sync issues (${this._pollRetryCount}/${this._maxRetries})...`);
+
+                    if (this._pollRetryCount >= this._maxRetries) {
+                        clearInterval(pollInterval);
+                        this._handleError("Sync lost. The engine is still working, but the UI cannot see it. Please refresh.");
+                    }
+                }
+            }, 2000);
+        },
+
+        _onComplete(meta) {
+            const btn = document.getElementById('btn-dedupe');
+            this._setBtnLoading(btn, false);
+
+            if (btn) {
+                btn.classList.replace('btn-primary', 'btn-success');
+                btn.innerHTML = `<i data-lucide="check-circle" class="me-2" style="color:#10b981",></i> Optimized`;
+            }
+
+            this._updateStatusUI("Optimized", "#10b981");
+            this._updateDashboardStats(meta);
+            if (window.lucide) window.lucide.createIcons();
+        },
+
+        _updateStatusUI(text, color) {
+            const statusText = document.querySelector('.live-indicator .small');
+            const dot = document.querySelector('.live-indicator .dot');
+            const ping = document.querySelector('.live-indicator .ping');
+            
+            if (statusText) statusText.innerText = text;
+            if (dot) dot.style.backgroundColor = color;
+            if (ping) ping.style.borderColor = color; 
+        },
+
+        _setBtnLoading(btn, isLoading) {
+            if (!btn) return;
+            btn.disabled = isLoading;
+            btn.innerHTML = isLoading 
+                ? `<span class="spinner-border spinner-border-sm me-2"></span> Processing...` 
+                : `Run Deduplication`;
+        },
+
+        _updateDashboardStats(meta) {
+            // Update global dashboard items if they exist
+            const elements = {
+                'rows': document.getElementById('rows'),
+                'quality-score': document.getElementById('quality-score')
+            };
+
+            if (meta.summary) {
+                if (elements['rows']) elements['rows'].innerText = meta.summary.rows?.toLocaleString();
+                if (elements['quality-score']) elements['quality-score'].innerText = `${meta.summary.quality_score}%`;
+            }
+        },
+
+        _handleError(msg) {
+            const btn = document.getElementById('btn-dedupe');
+            this._setBtnLoading(btn, false);
+            this._updateStatusUI("Error", "#ef4444");
+            alert(`Deduplication Error: ${msg}`);
+        }
     }
 };

@@ -104,6 +104,16 @@ document.addEventListener("DOMContentLoaded", () => {
  * access from inline HTML 'onclick' attributes.
  */
 window.switchTableTab = Table.switch;
-window.cleanDataset = Actions.clean;
-window.resetAnalysis = Actions.reset;
+//window.cleanDataset = Actions.clean;
+// Instead of: window.resetAnalysis = Actions.reset;
+// Use a wrapper function:
+window.resetAnalysis = async () => {
+    try {
+        await Actions.reset();
+    } catch (err) {
+        console.error("Global Reset Handler Error:", err);
+        // Force a home redirect even if the API call fails
+        window.location.href = "/";
+    }
+};
 window.exportDataset = Actions.export;

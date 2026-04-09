@@ -29,7 +29,7 @@
         <button class="btn btn-secondary" onclick="resetAnalysis()">
             <i data-lucide="refresh-ccw" style="width:16px; color:var(--primary);"></i> <span>New Upload</span>
         </button>
-        <button class="btn btn-primary" onclick="cleanDataset()">
+        <button class="btn btn-primary" onclick="Clean.show()">
             <i data-lucide="sparkles" style="width:16px"></i> <span>Clean</span>
         </button>
         <button class="btn btn-secondary" onclick="exportDataset()">
@@ -203,8 +203,30 @@
         <div id="about-content-placeholder"></div>
     </div>
 </div>
-<script type="module" src="/static/js/about.js"></script>
+
+<!-- Clean Modal -->
+<div id="cleanModal" class="custom-modal-overlay">
+    <div class="custom-modal-content">
+        <button class="modal-close-btn" onclick="Clean.close()">&times;</button>
+        <div id="clean-content-placeholder"></div>
+    </div>
+</div>
+<!--
+<script>
+// Function that opens your custom modal
+function openMyCustomModal(datasetId) {
+    // 1. Hand off the ID to the Deduplicator
+    DataDeduplicator.prepare(datasetId);
+    
+    // 2. Show your modal
+    document.getElementById('aboutModal').style.display = 'block';
+}
+</script>
+--->
+
 <script type="module" src="/static/js/main.js"></script>
+<script type="module" src="/static/js/about.js"></script>
+<script type="module" src="/static/js/clean.js"></script>
 <script type="module" src="/static/js/timeTicker.js"></script>
 
 

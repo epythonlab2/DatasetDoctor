@@ -1,5 +1,6 @@
 import shutil
 import uuid
+from datetime import datetime
 from contextlib import asynccontextmanager
 
 import pandas as pd
@@ -10,13 +11,13 @@ from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
 # Internal
-from datasetdoctor.analysis.cleaning import auto_clean
 from datasetdoctor.core import config
 from datasetdoctor.core.logger import logger
 
-from .background import run_analysis
+
+from datasetdoctor.api.background import run_analysis, run_cleaning
 from .helpers import (get_clean_path, get_upload_path, load_meta, save_meta,
-                      set_target, validate_csv)
+                      set_target, validate_csv, update_meta)
 
 # -------------------------
 # LIFESPAN
@@ -154,33 +155,46 @@ async def preview(dataset_id: str):
         raise HTTPException(500, "Preview failed.")
 
 
-@app.get("/clean/{dataset_id}")
-async def clean(dataset_id: str):
+@app.post("/clean/{dataset_id}")
+async def clean_dataset_trigger(dataset_id: str, background_tasks: BackgroundTasks):
+    # 1. Validation
     upload_path = get_upload_path(dataset_id)
-    clean_path = get_clean_path(dataset_id)
+    if not upload_path.exists():
+        raise HTTPException(status_code=404, detail="Dataset not found")
 
-    if not await run_in_threadpool(upload_path.exists):
-        raise HTTPException(404, "Dataset not found.")
+    # 2. THE FIX: Create the file synchronously
+    # This happens BEFORE the 'return', so the frontend can't beat us to it.
+    update_meta(dataset_id, {
+        "status": "processing",
+        "stage": "initializing",
+        "error": None
+    })
 
-    if await run_in_threadpool(clean_path.exists):
-        return {"status": "already_cleaned", "download_url": f"/export/{dataset_id}"}
+    # 3. Offload the actual work
+    background_tasks.add_task(
+        run_cleaning, 
+        dataset_id, 
+        str(upload_path), 
+        str(get_clean_path(dataset_id))
+    )
 
+    return {"status": "accepted"}
+    
+    
+@app.get("/get_meta/{dataset_id}")
+async def get_meta(dataset_id: str):
+    """
+    Matches the frontend poll request: fetch(`/get_meta/${id}`)
+    """
     try:
-        # Wrap CPU-heavy pandas operations to prevent loop blocking
-        def run_cleaning_pipeline():
-            df = pd.read_csv(upload_path)
-            cleaned_df = auto_clean(df)
-            cleaned_df.to_csv(clean_path, index=False)
-
-        await run_in_threadpool(run_cleaning_pipeline)
-
+        meta = load_meta(dataset_id)
+        if not meta:
+            raise HTTPException(status_code=404, detail="Metadata not found")
+        return meta
     except Exception as e:
-        logger.exception(f"[CLEAN FAILED] {dataset_id}: {e}")
-        raise HTTPException(500, "Cleaning failed.")
-
-    return {"status": "cleaned", "download_url": f"/export/{dataset_id}"}
-
-
+        raise HTTPException(status_code=404, detail=str(e))
+    
+    
 @app.get("/export/{dataset_id}", response_class=FileResponse)
 async def export(dataset_id: str):
     path = get_clean_path(dataset_id)
@@ -251,6 +265,18 @@ async def about_fragment():
     logger.info("ABOUT FRAGMENT CALLED")
     # Ensure this path actually points to the fragment, not the main page
     path = config.TEMPLATES_DIR / "about.html" 
+    
+    if not path.exists():
+        logger.error(f"File not found at {path}")
+        return HTMLResponse(content="<p>Content missing</p>", status_code=404)
+        
+    return await run_in_threadpool(path.read_text, encoding="utf-8")
+
+@app.get("/clean-fragment", response_class=HTMLResponse)
+async def clean_fragment():
+    logger.info("Clean FRAGMENT CALLED")
+    # Ensure this path actually points to the fragment, not the main page
+    path = config.TEMPLATES_DIR / "clean.html" 
     
     if not path.exists():
         logger.error(f"File not found at {path}")
