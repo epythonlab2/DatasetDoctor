@@ -10,18 +10,13 @@ from .registry import register_cleaning
 class RemoveDuplicatesPlugin(CleaningPlugin):
     name = "remove_duplicates"
 
-    def run(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    def run(self, df: pd.DataFrame, **kwargs):
         before = len(df)
-
         cleaned_df = df.drop_duplicates()
+        removed = before - len(cleaned_df)
 
-        after = len(cleaned_df)
-
-        removed = before - after
-
+        # This dictionary is what 'meta.cleaning.remove_duplicates' sees in JS
         return cleaned_df, {
-            "rows_before": before,
-            "rows_after": after,
             "duplicates_removed": removed,
-            "reduction_ratio": round(removed / before, 4) if before else 0,
+            "status": "optimized" if removed > 0 else "already_clean"
         }

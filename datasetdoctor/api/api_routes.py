@@ -2,7 +2,7 @@ import shutil
 import uuid
 from datetime import datetime
 from contextlib import asynccontextmanager
-
+from typing import List, Optional
 import pandas as pd
 from fastapi import BackgroundTasks, FastAPI, HTTPException, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
@@ -51,7 +51,10 @@ class TargetRequest(BaseModel):
 class UploadResponse(BaseModel):
     dataset_id: str
     status: str
-
+# 1. Define the Schema for the cleaning request
+class CleanRequest(BaseModel):
+    action: str = "remove_duplicates" # Must match plugin.name exactly
+    columns: Optional[list] = None
 
 # -------------------------
 # ROUTES
@@ -156,29 +159,36 @@ async def preview(dataset_id: str):
 
 
 @app.post("/clean/{dataset_id}")
-async def clean_dataset_trigger(dataset_id: str, background_tasks: BackgroundTasks):
+async def clean_dataset_trigger(
+    dataset_id: str, 
+    request: CleanRequest,  # Capture the payload from the frontend
+    background_tasks: BackgroundTasks
+):
     # 1. Validation
     upload_path = get_upload_path(dataset_id)
     if not upload_path.exists():
         raise HTTPException(status_code=404, detail="Dataset not found")
 
-    # 2. THE FIX: Create the file synchronously
-    # This happens BEFORE the 'return', so the frontend can't beat us to it.
+    # 2. Update status synchronously
+    # We clear previous errors and set the stage to show we are receiving the instruction
     update_meta(dataset_id, {
         "status": "processing",
         "stage": "initializing",
         "error": None
     })
 
-    # 3. Offload the actual work
+    # 3. Offload the work with the new arguments
+    # We pass request.action and request.columns to the background runner
     background_tasks.add_task(
         run_cleaning, 
         dataset_id, 
         str(upload_path), 
-        str(get_clean_path(dataset_id))
+        str(get_clean_path(dataset_id)),
+        action=request.action,
+        target_columns=request.columns
     )
 
-    return {"status": "accepted"}
+    return {"status": "accepted", "action_received": request.action}
     
     
 @app.get("/get_meta/{dataset_id}")

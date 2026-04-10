@@ -4,6 +4,7 @@
  * Handles fragment preloading, ID extraction from URL, and modal state.
  */
 import { Actions } from './ui/actions.js';
+import { API } from './ui/api.js';
 
 export const Clean = {
     /** @type {string|null} Stores the HTML fragment to prevent redundant network requests */
@@ -31,7 +32,6 @@ export const Clean = {
 
     /**
      * Extracts the Dataset UUID from the current URL path.
-     * Safely handles trailing slashes.
      * @returns {string|null}
      */
     _getDatasetIdFromUrl() {
@@ -41,7 +41,7 @@ export const Clean = {
 
     /**
      * Opens the cleaning modal and injects the content fragment.
-     * Automatically initializes the DataDeduplicator logic.
+     * Automatically initializes logic with backend column names.
      */
     async show() {
         const modal = document.getElementById('cleanModal');
@@ -49,7 +49,7 @@ export const Clean = {
 
         if (!modal || !placeholder) return;
 
-        // 1. Identify Dataset
+        // 1. Identify Dataset ID from URL
         const datasetId = this._getDatasetIdFromUrl();
         if (!datasetId) {
             console.error("Navigation Error: No Dataset ID found in URL.");
@@ -57,45 +57,49 @@ export const Clean = {
             return;
         }
 
-        // 2. Prevent Layout Shift & Lock Scroll
+        // 2. UI Setup: Lock Scroll
         const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
         document.body.style.paddingRight = `${scrollBarWidth}px`;
         document.body.style.overflow = 'hidden';
         modal.classList.add('active');
 
-        // 3. Set Initial Loading State
+        // 3. Set Loading State
         placeholder.innerHTML = `
             <div class="text-center p-5">
                 <div class="spinner-border text-primary mb-3" role="status"></div>
-                <p class="text-muted small fw-medium">Sterilizing tools and preparing surgery...</p>
+                <p class="text-muted small fw-medium">Preparing surgery suite...</p>
             </div>
         `;
 
         try {
-            // 4. Fetch Fragment (use cache if available)
-            if (!this._cache) {
-                const response = await fetch('/clean-fragment');
-                if (!response.ok) throw new Error('Failed to fetch the clean-fragment route.');
-                this._cache = await response.text();
-            }
+            // 4. Parallel Fetch: Metadata (for columns) and Fragment (HTML)
+            // Using Promise.all for faster loading
+            const [meta, fragmentResponse] = await Promise.all([
+                API.fetchMeta(datasetId),
+                this._cache ? Promise.resolve(this._cache) : fetch('/clean-fragment').then(r => r.text())
+            ]);
 
+            // Cache the fragment for subsequent opens
+            if (!this._cache) this._cache = fragmentResponse;
+
+            // 5. Inject Content
             placeholder.innerHTML = this._cache;
 
-            // 5. Link UI to Logic
-            // We use the Dedupe sub-module from our unified Actions module
-            Actions.Dedupe.prepare(datasetId);
+            // 6. Initialize logic with the dynamic column list from backend
+            // This ensures the "Drop Columns" select is populated immediately
+            Actions.Dedupe.prepare(datasetId, meta.columns || []);
 
-            // Re-render icons for the newly injected HTML
+            // 7. Render Icons
             if (window.lucide) window.lucide.createIcons();
 
         } catch (error) {
-            console.error("Clean Modal Error:", error);
+            console.error("Clean Modal Load Error:", error);
             placeholder.innerHTML = `
                 <div class="text-center p-5">
                     <i data-lucide="alert-triangle" class="text-danger mb-3" style="width:40px; height:40px;"></i>
-                    <h5 class="fw-bold">Module Offline</h5>
-                    <p class="text-muted small">The cleaning engine could not be initialized.</p>
-                    <button class="btn btn-sm btn-outline-secondary mt-2" onclick="Clean.close()">Dismiss</button>
+                    <h5 class="fw-bold">Module Unavailable</h5>
+                    <p class="text-muted small">Could not sync with the cleaning engine.</p>
+                    <button class="btn btn-sm btn-outline-secondary mt-3" onclick="Clean.close()">Dismiss</button>
                 </div>
             `;
             if (window.lucide) window.lucide.createIcons();
@@ -116,14 +120,10 @@ export const Clean = {
 };
 
 // --- GLOBAL EXPOSURE ---
-// These ensure onclick="Clean.show()" and onclick="Actions.reset()" work in raw HTML
 window.Clean = Clean;
 window.Actions = Actions;
-window.DataDeduplicator = Actions.Dedupe; 
+window.DataDeduplicator = Actions.Dedupe;
 
-/**
- * Self-initialization based on document state
- */
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => Clean.init());
 } else {
