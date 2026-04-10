@@ -8,9 +8,19 @@ from .registry import REGISTRY
 
 
 class PluginExecutor:
-    def __init__(self, df: pd.DataFrame, profile: Optional[Dict[str, Any]] = None):
+    """
+    Executes dataset analysis plugins in dependency-aware order.
+
+    Responsibilities:
+    - Resolve plugin dependency DAG
+    - Execute plugins sequentially
+    - Share execution context across plugins
+    - Collect structured results
+    """
+
+    def __init__(self, df: pd.DataFrame, profile: Optional[Dict[str, Any]] = None, registry=None):
         self.df = df
-        # If no profile is provided, we compute it once here
+        self.registry = registry or REGISTRY
         self.profile = profile or self._internal_profile(df)
         self.results: Dict[str, Any] = {}
 

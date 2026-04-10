@@ -48,9 +48,48 @@
 		    style="font-size: 0.85rem;">
 		    Run Deduplication
 		</button>
+		
             </div>
         </div>
     </section>
+    
+    <section class="mb-4">
+	    <div class="feature-mini-card border-custom shadow-sm p-4" style="border-radius: 16px; background: #fff;">
+		<div class="d-flex-custom align-items-center justify-content-between flex-wrap gap-3">
+		    <div class="d-flex-custom align-items-center gap-3">
+		        <div class="mini-icon d-flex-custom align-items-center justify-content-center" 
+		             style="width: 42px; height: 42px; border-radius: 12px; background: #fef2f2; color: #ef4444;">
+		            <i data-lucide="trash-2" style="width: 20px;"></i>
+		        </div>
+		        <div>
+		            <strong class="d-block mb-1">Drop Specific Columns</strong>
+		            <p class="small text-muted mb-0">Select unnecessary columns to remove from the engine.</p>
+		        </div>
+		    </div>
+		    
+		    <button id="btn-drop-cols"
+		            class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" 
+		            onclick="DataDeduplicator.runDropColumns()" 
+		            style="font-size: 0.85rem;">
+		        Run Drop Action
+		    </button>
+		</div>
+
+		<div class="control-group mt-4">
+		    <div id="drop-tags-container" class="d-flex-custom flex-wrap gap-2 p-3 border-custom mb-3 mt-3" 
+		         style="min-height: 50px; border-radius: 12px; background: #fafafa;">
+		        <span class="text-muted small">No columns selected for removal...</span>
+		    </div>
+
+		    <label class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2">
+		        <i data-lucide="search" style="width: 14px; height: 14px; color: #10b981;"></i> Select Column to Add
+		    </label>
+		    <select id="col-drop-selector" class="form-select custom-select" 
+		            onchange="DataDeduplicator.addColumnTag(this.value)">
+		        </select>
+		</div>
+	    </div>
+	</section>
 
     <div class="row g-4">
         <div class="col-md-6">

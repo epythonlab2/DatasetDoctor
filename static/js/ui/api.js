@@ -28,25 +28,42 @@ export const API = {
 
     /**
      * Triggers the Background Cleaning Pipeline.
-     * Returns a 202 Accepted status immediately.
+     * This is a multi-purpose endpoint that sends cleaning instructions to the worker.
+     * * @param {string} id - The unique Dataset UUID.
+     * @param {Object} [payload={ action: 'deduplicate' }] - The cleaning operation details.
+     * @returns {Promise<Object>} The server response or a default processing state.
+     * @throws {Error} If the server rejects the request or the pipeline fails to start.
      */
-    async cleanDataset(id) {
-	    // ADD the method: "POST" here!
-	    const res = await fetch(getUrl(`/clean/${id}`), { 
-		method: "POST",
-		headers: {
-		    'Content-Type': 'application/json'
-		}
-	    });
-	    
-	    if (!res.ok) {
-		const errorData = await res.json().catch(() => ({ detail: "Unknown Server Error" }));
-		throw new Error(errorData.detail);
-	    }
+    async cleanDataset(id, payload = { action: 'deduplicate' }) {
+        try {
+            const res = await fetch(getUrl(`/clean/${id}`), { 
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                // Crucial: Converts the JS object into a JSON string for the FastAPI backend
+                body: JSON.stringify(payload)
+            });
+            
+            // Handle non-2xx status codes
+            if (!res.ok) {
+                // Try to parse the specific error message from the backend (e.g., FastAPI's 'detail')
+                const errorData = await res.json().catch(() => ({ 
+                    detail: "The cleaning engine encountered a startup error." 
+                }));
+                throw new Error(errorData.detail);
+            }
 
-	    const text = await res.text();
-	    return text ? JSON.parse(text) : { status: "processing" };
-	},
+            // Parse response body if it exists, otherwise provide a fallback status
+            const text = await res.text();
+            return text ? JSON.parse(text) : { status: "processing", stage: "initializing" };
+
+        } catch (error) {
+            console.error(`[API ERROR] cleanDataset(${id}):`, error);
+            // Re-throw so the UI (Actions.Dedupe) can catch it and show an alert
+            throw error;
+        }
+    },
     /**
      * Resets the environment (System-wide).
      */

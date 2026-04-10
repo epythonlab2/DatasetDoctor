@@ -616,4 +616,38 @@
     }
 }
 
+#drop-tags-container .badge i:hover {
+    transform: scale(1.2);
+    transition: transform 0.2s;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Match your #10b981 theme for icons inside the drop section */
+#drop-tags-container .badge i {
+    color: #ef4444; /* Keep X as red for "Delete" */
+}
+
+.animation-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.d-flex-custom {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* This forces Lucide icons to behave like flex items rather than text */
+[data-lucide] {
+    display: inline-block;
+    flex-shrink: 0;
+}
+
 
