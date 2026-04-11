@@ -1,217 +1,298 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dataset Health Analysis | DatasetDoctor</title>
-    <link rel="icon" type="image/svg+xml" 
+    <link
+      rel="icon"
+      type="image/svg+xml"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' 
       height='24' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='3' 
-      stroke-linecap='round' stroke-linejoin='round'><path d='M22 12h-4l-3 9L9 3l-3 9H2'></path></svg>">
+      stroke-linecap='round' stroke-linejoin='round'><path d='M22 12h-4l-3 9L9 3l-3 9H2'></path></svg>"
+    />
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="/static/css/styles.css">
-  
-</head>
-<body>
-
-<nav class="navbar">
-    <div class="logo" onclick="window.location.href='#'">
+    <link rel="stylesheet" href="/static/css/styles.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="logo" onclick="window.location.href = '#'">
         <i data-lucide="activity"></i> DatasetDoctor
-    </div>
-    <div class="nav-actions">
-    	<button class="btn btn-secondary shadow-sm" onclick="About.show()">
-	    <i data-lucide="info" style="width:16px; color:var(--primary);"></i>
-	    <span>About</span>
-	</button>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-secondary shadow-sm" onclick="About.show()">
+          <i data-lucide="info" style="width: 16px; color: var(--primary)"></i>
+          <span>About</span>
+        </button>
         <button class="btn btn-secondary" onclick="resetAnalysis()">
-            <i data-lucide="refresh-ccw" style="width:16px; color:var(--primary);"></i> <span>New Upload</span>
+          <i
+            data-lucide="refresh-ccw"
+            style="width: 16px; color: var(--primary)"
+          ></i>
+          <span>New Upload</span>
         </button>
         <button class="btn btn-primary" onclick="Clean.show()">
-            <i data-lucide="sparkles" style="width:16px"></i> <span>Clean</span>
+          <i data-lucide="sparkles" style="width: 16px"></i> <span>Clean</span>
         </button>
         <button class="btn btn-secondary" onclick="exportDataset()">
-            <i data-lucide="download" style="width:16px; color:var(--primary);"></i> <span>Export</span>
+          <i
+            data-lucide="download"
+            style="width: 16px; color: var(--primary)"
+          ></i>
+          <span>Export</span>
         </button>
-    </div>
-</nav>
+      </div>
+    </nav>
 
-<main class="dashboard-container">
-
-    <header class="dashboard-header">
+    <main class="dashboard-container">
+      <header class="dashboard-header">
         <div>
-            <h1>Dataset Analysis <span class="badge-live">Live</span></h1>
-            <p id="filename-display" class="text-muted">Analyzing: <span id="current-file" style="font-weight:600; color: var(--text-main);">loading...</span></p>
+          <h1>Dataset Analysis <span class="badge-live">Live</span></h1>
+          <p id="filename-display" class="text-muted">
+            Analyzing:
+            <span
+              id="current-file"
+              style="font-weight: 600; color: var(--text-main)"
+              >loading...</span
+            >
+          </p>
         </div>
         <div>
-            <span class="text-muted">
-		    <i data-lucide="clock" style="width:12px; display:inline-block; vertical-align:middle;"></i> 
-		    Last scanned: <span id="scan-time-label" data-timestamp="2026-04-03T10:30:00Z">Just now</span>
-	    </span>
+          <span class="text-muted">
+            <i
+              data-lucide="clock"
+              style="width: 12px; display: inline-block; vertical-align: middle"
+            ></i>
+            Last scanned:
+            <span id="scan-time-label" data-timestamp="2026-04-03T10:30:00Z"
+              >Just now</span
+            >
+          </span>
         </div>
-    </header>
+      </header>
 
-    <section class="stats-grid">
+      <section class="stats-grid">
         <div class="card stat-card">
-            <div class="stat-icon"><i data-lucide="database"></i></div>
-            <div class="stat-content">
-                <span class="card-label">Total Rows</span>
-                <h2 id="rows">--</h2>
-            </div>
+          <div class="stat-icon"><i data-lucide="database"></i></div>
+          <div class="stat-content">
+            <span class="card-label">Total Rows</span>
+            <h2 id="rows">--</h2>
+          </div>
         </div>
         <div class="card stat-card">
-            <div class="stat-icon"><i data-lucide="columns"></i></div>
-            <div class="stat-content">
-                <span class="card-label">Total Columns</span>
-                <h2 id="cols">--</h2>
-            </div>
+          <div class="stat-icon"><i data-lucide="columns"></i></div>
+          <div class="stat-content">
+            <span class="card-label">Total Columns</span>
+            <h2 id="cols">--</h2>
+          </div>
         </div>
         <div class="card stat-card">
-            <div class="stat-icon"><i data-lucide="droplets"></i></div>
-            <div class="stat-content">
-                <span class="card-label">Missing Data</span>
-                <h2 id="missing-stat">--</h2>
-            </div>
+          <div class="stat-icon"><i data-lucide="droplets"></i></div>
+          <div class="stat-content">
+            <span class="card-label">Missing Data</span>
+            <h2 id="missing-stat">--</h2>
+          </div>
         </div>
         <div class="card stat-card">
-            <div class="stat-icon"><i data-lucide="copy"></i></div>
-            <div class="stat-content">
-                <span class="card-label">Redundancy</span>
-                <h2 id="duplicates">--</h2>
-            </div>
+          <div class="stat-icon"><i data-lucide="copy"></i></div>
+          <div class="stat-content">
+            <span class="card-label">Redundancy</span>
+            <h2 id="duplicates">--</h2>
+          </div>
         </div>
         <div class="card stat-card">
-            <div class="stat-icon"><i data-lucide="star"></i></div>
-            <div class="stat-content">
-                <span class="card-label">Quality Score</span>
-                <h2 id="quality-score">--</h2>
-            </div>
+          <div class="stat-icon"><i data-lucide="star"></i></div>
+          <div class="stat-content">
+            <span class="card-label">Quality Score</span>
+            <h2 id="quality-score">--</h2>
+          </div>
         </div>
         <div class="card stat-card">
-            <div class="stat-icon"><i data-lucide="cpu"></i></div>
-            <div class="stat-content">
-                <span class="card-label">ML Readiness</span>
-                <h2 id="ml-readiness">--</h2>
-            </div>
+          <div class="stat-icon"><i data-lucide="cpu"></i></div>
+          <div class="stat-content">
+            <span class="card-label">ML Readiness</span>
+            <h2 id="ml-readiness">--</h2>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <section class="insights-grid">
-        <div class="card table-card"> <div class="card-header-flex">
-                <div>
-                    <h3>Statistical Summary</h3>
-                    <p class="text-muted" style="font-size: 0.75rem;">Global numerical distribution</p>
-                </div>
-                <div class="glass-tabs">
-                    <button class="tab-btn" onclick="UI.exportStats()">
-                        <i data-lucide="download-cloud" style="width:14px"></i>
-                    </button>
-                </div>
+      <section class="insights-grid">
+        <div class="card table-card">
+          <div class="card-header-flex">
+            <div>
+              <h3>Statistical Summary</h3>
+              <p class="text-muted" style="font-size: 0.75rem">
+                Global numerical distribution
+              </p>
             </div>
-            
-            <div id="stats-container" class="table-wrapper">
-                <table id="analysis-table"> <thead>
-                        <tr>
-                            <th>Feature</th>
-                            <th>Mean</th>
-                            <th>Std Dev</th>
-                            <th>Median</th>
-                        </tr>
-                    </thead>
-                    <tbody id="global-stats-body">
-                        <tr>
-                            <td colspan="5" class="stats-loader-container">
-                                <div class="stats-loader-content">
-                                    <div class="spinner-custom"></div>
-                                    <span class="loader-text">Calculating statistical moments...</span>
-                                    <span class="loader-subtext">Performing high-precision distribution analysis</span>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="glass-tabs">
+              <button class="tab-btn" onclick="UI.exportStats()">
+                <i data-lucide="download-cloud" style="width: 14px"></i>
+              </button>
             </div>
+          </div>
+
+          <div id="stats-container" class="table-wrapper">
+            <table id="analysis-table">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th>Mean</th>
+                  <th>Std Dev</th>
+                  <th>Median</th>
+                </tr>
+              </thead>
+              <tbody id="global-stats-body">
+                <tr>
+                  <td colspan="5" class="stats-loader-container">
+                    <div class="stats-loader-content">
+                      <div class="spinner-custom"></div>
+                      <span class="loader-text"
+                        >Calculating statistical moments...</span
+                      >
+                      <span class="loader-subtext"
+                        >Performing high-precision distribution analysis</span
+                      >
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div class="card chart-card">
-            <div class="card-header-simple">
-                <div>
-                    <h3>Class Distribution</h3>
-                    <p class="text-muted" style="font-size: 0.75rem;">Target: <span id="target-column-display" style="color: var(--primary); font-weight: 600;">None</span></p>
-                </div>
+          <div class="card-header-simple">
+            <div>
+              <h3>Class Distribution</h3>
+              <p class="text-muted" style="font-size: 0.75rem">
+                Target:
+                <span
+                  id="target-column-display"
+                  style="color: var(--primary); font-weight: 600"
+                  >None</span
+                >
+              </p>
             </div>
-            <div class="chart-container">
-                <canvas id="imbalanceChart"></canvas>
-            </div>
-            <div id="imbalance-alert" class="badge" style="display:none; width: 100%; margin-top: 1rem;">
-                <span>⚠️ High Class Imbalance Detected</span>
-            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="imbalanceChart"></canvas>
+          </div>
+          <div
+            id="imbalance-alert"
+            class="badge"
+            style="display: none; width: 100%; margin-top: 1rem"
+          >
+            <span>⚠️ High Class Imbalance Detected</span>
+          </div>
         </div>
-    </section>
-    
+      </section>
 
-    <section id="leakage-section">
-    </section>
+      <section id="leakage-section"></section>
 
-    <section class="card table-card">
+      <section class="card table-card">
         <div class="card-header-flex">
-            <h3>Diagnostic Breakdown</h3>
-            <div class="glass-tabs">
-                <button id="tab-health" class="tab-btn active" onclick="switchTableTab('health')">Missing Data</button>
-                <button id="tab-outliers" class="tab-btn" onclick="switchTableTab('outliers')">Outliers</button>
-                <button id="tab-categorical" class="tab-btn" onclick="switchTableTab('categorical')">Cardinality</button>
-            </div>
+          <h3>Diagnostic Breakdown</h3>
+          <div class="glass-tabs">
+            <button
+              id="tab-health"
+              class="tab-btn active"
+              onclick="switchTableTab('health')"
+            >
+              Missing Data
+            </button>
+            <button
+              id="tab-outliers"
+              class="tab-btn"
+              onclick="switchTableTab('outliers')"
+            >
+              Outliers
+            </button>
+            <button
+              id="tab-categorical"
+              class="tab-btn"
+              onclick="switchTableTab('categorical')"
+            >
+              Cardinality
+            </button>
+          </div>
         </div>
         <div class="table-wrapper">
-            <table id="analysis-table">
-                <thead id="table-head">
-                    </thead>
-                <tbody id="table-body">
-                    <tr><td colspan="4" style="text-align:center; padding: 4rem; color: var(--text-muted);">
-                        <i data-lucide="loader-2" class="spin"></i> Initializing diagnostics...
-                    </td></tr>
-                </tbody>
-            </table>
+          <table id="analysis-table">
+            <thead id="table-head"></thead>
+            <tbody id="table-body">
+              <tr>
+                <td
+                  colspan="4"
+                  style="
+                    text-align: center;
+                    padding: 4rem;
+                    color: var(--text-muted);
+                  "
+                >
+                  <i data-lucide="loader-2" class="spin"></i> Initializing
+                  diagnostics...
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-    </section>
+      </section>
 
-    <section class="insights-grid bottom-grid" style="margin-top:2rem;">
+      <section class="insights-grid bottom-grid" style="margin-top: 2rem">
         <div class="card suggestion-card">
-            <div class="card-header-simple">
-                <h3>AI Smart Suggestions</h3>
-                <i data-lucide="zap" style="color:var(--warning); width:18px"></i>
-            </div>
-            <div id="suggestions" class="suggestion-list"></div>
+          <div class="card-header-simple">
+            <h3>AI Smart Suggestions</h3>
+            <i data-lucide="zap" style="color: var(--warning); width: 18px"></i>
+          </div>
+          <div id="suggestions" class="suggestion-list"></div>
         </div>
         <div class="card issue-card">
-            <div class="card-header-simple">
-                <h3>Detected Anomalies</h3>
-                <i data-lucide="alert-triangle" style="color:var(--danger); width:18px"></i>
-            </div>
-            <div id="outliers-list" class="issue-tags"></div>
+          <div class="card-header-simple">
+            <h3>Detected Anomalies</h3>
+            <i
+              data-lucide="alert-triangle"
+              style="color: var(--danger); width: 18px"
+            ></i>
+          </div>
+          <div id="outliers-list" class="issue-tags"></div>
         </div>
-    </section>
+      </section>
+    </main>
+    <!-- FOOTER -->
+    <footer class="custom-footer">
+      <div class="footer-status-wrap">
+        <p class="text-muted mb-0" style="font-size: 0.7rem">
+          © 2026 <strong>DatasetDoctor</strong> Intelligence System
+        </p>
+      </div>
+      <span class="text-muted" style="font-size: 0.65rem; opacity: 0.7"
+        >Engine v3.0.0</span
+      >
+    </footer>
 
-</main>
-
-<!-- About Modal -->
-<div id="aboutModal" class="custom-modal-overlay">
-    <div class="custom-modal-content">
+    <!-- About Modal -->
+    <div id="aboutModal" class="custom-modal-overlay">
+      <div class="custom-modal-content">
         <button class="modal-close-btn" onclick="About.close()">&times;</button>
         <div id="about-content-placeholder"></div>
+      </div>
     </div>
-</div>
 
-<!-- Clean Modal -->
-<div id="cleanModal" class="custom-modal-overlay">
-    <div class="custom-modal-content">
+    <!-- Clean Modal -->
+    <div id="cleanModal" class="custom-modal-overlay">
+      <div class="custom-modal-content">
         <button class="modal-close-btn" onclick="Clean.close()">&times;</button>
         <div id="clean-content-placeholder"></div>
+      </div>
     </div>
-</div>
-<!--
+    <!--
 <script>
 // Function that opens your custom modal
 function openMyCustomModal(datasetId) {
@@ -224,11 +305,9 @@ function openMyCustomModal(datasetId) {
 </script>
 --->
 
-<script type="module" src="/static/js/main.js"></script>
-<script type="module" src="/static/js/about.js"></script>
-<script type="module" src="/static/js/clean.js"></script>
-<script type="module" src="/static/js/timeTicker.js"></script>
-
-
-</body>
+    <script type="module" src="/static/js/main.js"></script>
+    <script type="module" src="/static/js/about.js"></script>
+    <script type="module" src="/static/js/clean.js"></script>
+    <script type="module" src="/static/js/timeTicker.js"></script>
+  </body>
 </html>
