@@ -139,47 +139,82 @@
       </section>
 
       <div class="row g-4 mb-4">
+      
         <div class="col-md-6">
-          <div class="feature-mini-card h-100 border-custom shadow-sm p-4">
-            <div class="d-flex-custom align-items-center gap-3 mb-4">
-              <div class="mini-icon icon-green" style="border-radius: 10px">
-                <i data-lucide="database-zap"></i>
-              </div>
-              <h3 class="h6 mb-0 fw-bold">Smart Imputation</h3>
-            </div>
-            <div class="control-group mb-3">
-              <label
-                class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2"
-              >
-                <i data-lucide="columns" style="width: 14px"></i> Target Column
-              </label>
-              <select class="form-select custom-select">
-                <option selected disabled>Select a column...</option>
-                <option>Age (Numeric)</option>
-                <option>Status (Categorical)</option>
-              </select>
-            </div>
-            <div class="control-group mb-4">
-              <label
-                class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2"
-              >
-                <i data-lucide="settings-2" style="width: 14px"></i> Method
-              </label>
-              <select class="form-select custom-select">
-                <option value="mean">Mean (Average)</option>
-                <option value="median">Median (Middle Point)</option>
-                <option value="mode">Mode (Most Frequent)</option>
-                <option value="constant">Constant Value</option>
-              </select>
-            </div>
-            <button
-              class="btn btn-outline-primary w-100 rounded-pill fw-bold mt-auto py-2"
-              style="font-size: 0.85rem; border-width: 2px"
-            >
-              Apply Imputation
-            </button>
-          </div>
-        </div>
+	  <div class="feature-mini-card h-100 border-custom shadow-sm p-4">
+	    <div class="d-flex-custom align-items-center gap-3 mb-4">
+	      <div class="mini-icon icon-green" style="border-radius: 10px">
+		<i data-lucide="database-zap"></i>
+	      </div>
+	      <h3 class="h6 mb-0 fw-bold">Smart Imputation</h3>
+	    </div>
+	    
+
+	    <div class="control-group mb-3">
+	      <label class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2">
+		<i data-lucide="columns" style="width: 14px"></i> Target Column
+	      </label>
+	      <select id="impute-column" class="form-select custom-select">
+		<option selected disabled>Select a column...</option>
+		</select>
+	    </div>
+
+	    <div class="control-group mb-4">
+	      <label class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2">
+		<i data-lucide="settings-2" style="width: 14px"></i> Method
+		 <div class="help-trigger" onclick="Actions.toggleImputeTip(event)" style="cursor: pointer;">
+		  <i data-lucide="help-circle" class="text-primary" style="width: 16px; height: 16px;"></i>
+		</div>
+	      </label>
+	     
+		<div id="impute-tip-popup" class="popover-tip shadow-lg border-0 p-0" style="display: none; position: absolute; z-index: 100; background: white; border-radius: 16px; width: 280px; right: 0; top: 35px; overflow: hidden;">
+		    <div class="p-3 mb-0" style="background: #f8fafc; border-bottom: 1px solid #f1f5f9;">
+			<div class="d-flex align-items-center gap-2">
+			    <i data-lucide="lightbulb" class="text-warning" style="width: 18px; height: 18px;"></i>
+			    <strong class="small fw-bold text-dark">Imputation Tip</strong>
+			</div>
+		    </div>
+
+		    <div class="p-3">
+			<p class="text-muted mb-3" style="font-size: 0.75rem; line-height: 1.5;">
+			    Check your <b>Summary Statistics</b> first. Choose a method based on the data type:
+			</p>
+
+			<div class="d-flex flex-column gap-2">
+			    <div class="p-2 rounded-3" style="background: #f0f9ff; border-left: 3px solid #0ea5e9;">
+				<span class="d-block fw-bold text-info" style="font-size: 0.7rem; text-transform: uppercase;">Mean</span>
+				<span class="text-muted d-block" style="font-size: 0.75rem;">Best for standard numbers (Age, Temp).</span>
+			    </div>
+
+			    <div class="p-2 rounded-3" style="background: #fdf4ff; border-left: 3px solid #d946ef;">
+				<span class="d-block fw-bold text-primary" style="font-size: 0.7rem; text-transform: uppercase;">Median</span>
+				<span class="text-muted d-block" style="font-size: 0.75rem;">Best if you have extreme outliers.</span>
+			    </div>
+
+			    <div class="p-2 rounded-3" style="background: #f0fdf4; border-left: 3px solid #22c55e;">
+				<span class="d-block fw-bold text-success" style="font-size: 0.7rem; text-transform: uppercase;">Mode</span>
+				<span class="text-muted d-block" style="font-size: 0.75rem;">Required for <b>Text/Categories</b>.</span>
+			    </div>
+			</div>
+		    </div>
+		</div>
+	      <select id="impute-method" class="form-select custom-select">
+		<option value="mean">Mean (Numerical - Average)</option>
+		<option value="median">Median (Numerical - Middle Point)</option>
+		<option value="mode">Mode (Categorical - Most Frequent)</option>
+	      </select>
+	    </div>
+
+	    <button
+	      id="btn-apply-impute"
+	      onclick="Actions.runImpute()"
+	      class="btn btn-outline-primary w-100 rounded-pill fw-bold mt-auto py-2"
+	      style="font-size: 0.85rem; border-width: 2px"
+	    >
+	      Apply Imputation
+	    </button>
+	  </div>
+	</div>
 
         <div class="col-md-6">
           <div class="feature-mini-card h-100 border-custom shadow-sm p-4">

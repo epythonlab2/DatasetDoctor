@@ -4,12 +4,6 @@ from typing import List, Tuple, Dict, Any
 from .registry import REGISTRY
 from datasetdoctor.core.logger import logger
 
-# analysis/cleaning_plugins/executor.py
-import pandas as pd
-from typing import List, Tuple, Dict, Any
-from .registry import REGISTRY
-from datasetdoctor.core.logger import logger
-
 class CleaningExecutor:
     def __init__(self, df: pd.DataFrame):
         self.df = df.copy()
@@ -37,5 +31,6 @@ class CleaningExecutor:
             except Exception as e:
                 logger.error(f"Plugin {name} failed: {e}")
                 # ... error handling ...
+                self.clean_report[name] = {"status": "failed", "error": str(e)}
                 
         return self.df, self.clean_report
