@@ -2,7 +2,8 @@
 
 from . import (
    remove_duplicates,
-   drop_columns
+   drop_columns,
+   smart_imputation
 )
 
 from .registry import REGISTRY, register_cleaning

@@ -67,26 +67,31 @@ def run_cleaning(
     raw_path: str, 
     clean_path: str, 
     action: str, 
-    target_columns: list = None
+    target_columns: list = None,
+    **kwargs
 ) -> None:
+    """
+    Executes cleaning and immediately re-analyzes the file to 
+    ensure the UI dropdowns reflect the fixed data.
+    """
     try:
-        # 1. Update status to inform the UI
+        # 1. Update status to inform the UI that cleaning is in progress
         update_meta(dataset_id, {"status": "processing", "stage": "cleaning"})
 
-        # --- PERSISTENCE LOGIC ---
-        # If clean_path exists, it means the user has already performed an action.
-        # We load the 'cleaned' file as our source to make the changes additive.
+        # 2. Additive Logic: Use existing clean file as source if it exists
         current_source = clean_path if os.path.exists(clean_path) else raw_path
         logger.info(f"Refine Engine: Starting {action}. Source: {current_source}")
-        # -------------------------
 
-        # 2. Package parameters for the specific action
+        # 3. Package parameters for the specific plugin
         plugin_params = {}
         if action == "drop_columns":
             plugin_params["drop_columns"] = {"columns_to_drop": target_columns}
-        
-        # 3. Execute the cleaning engine
-        # We pass 'current_source' instead of always passing 'raw_path'
+        elif action == "smart_impute":
+            method = kwargs.get("method", "mean")
+            col = target_columns[0] if target_columns else None
+            plugin_params["smart_impute"] = {"target_column": col, "method": method}
+                
+        # 4. Execute the cleaning engine
         df_cleaned, cleaning_logs = clean_dataset(
             raw_path=str(current_source), 
             clean_path=str(clean_path),
@@ -94,31 +99,31 @@ def run_cleaning(
             plugin_params=plugin_params
         )
         
+        # 5. Safety check for logs
         if callable(cleaning_logs):
             cleaning_logs = cleaning_logs() 
 
-        # 4. Analyze the newly updated file
-        update_meta(dataset_id, {"stage": "analyzing"})
-
+        # 6. RE-ANALYZE: This is the key to updating the "Missing" dropdown
+        update_meta(dataset_id, {"stage": "analyzing_results"})
+        
         meta_data = load_meta(dataset_id) or {}
-        target_col = meta_data.get("target")
-        file_name = meta_data.get("filename", "unknown_file")
-
-        # Re-run analysis on the clean_path to get updated column lists/stats
         results = analyze_dataset(
             str(clean_path), 
-            target=target_col, 
-            filename=file_name
+            target=meta_data.get("target"), 
+            filename=meta_data.get("filename", "dataset.csv")
         )
 
-        # 5. Final Sync
-        # Merging results updates the 'columns' list in meta, 
-        # which refreshes your UI dropdown.
+        # 7. Safety check: Ensure analysis results are a dictionary
+        if callable(results): results = results()
+        if not isinstance(results, dict): results = {}
+
+        # 8. Push final state to UI
         update_meta(dataset_id, {
             **results,
             "cleaning": cleaning_logs,
             "status": "ready",
             "stage": "complete",
+            "last_action": action,
             "cleaned_file_path": str(clean_path) 
         })
         

@@ -6,7 +6,7 @@ from .cleaning_plugins.executor import CleaningExecutor
 def clean_dataset(
     raw_path: str, 
     clean_path: str, 
-    plugins: list = ["remove_duplicates"], 
+    plugins: list = ["remove_duplicates", "smart_impute"], 
     plugin_params: dict = None  # <--- ADD THIS PARAMETER
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """
@@ -14,6 +14,16 @@ def clean_dataset(
     """
     # 1. Load the data
     df = pd.read_csv(raw_path)
+    # CRITICAL: Convert empty strings/whitespace to NaN so isnull() works
+    df = df.replace(r'^\s*$', pd.NA, regex=True)
+    
+    column_stats = []
+    for col in df.columns:
+        column_stats.append({
+            "name": col,
+            "missing_count": int(df[col].isna().sum()), # Now detects "" as missing
+            "type": str(df[col].dtype)
+        })
     
     # 2. Initialize the Executor
     cleaner = CleaningExecutor(df)

@@ -53,8 +53,9 @@ class UploadResponse(BaseModel):
     status: str
 # 1. Define the Schema for the cleaning request
 class CleanRequest(BaseModel):
-    action: str = "remove_duplicates" # Must match plugin.name exactly
+    action: str = "remove_duplicates"
     columns: Optional[list] = None
+    method: Optional[str] = "auto"  # <--- Add this for Smart Imputation
 
 # -------------------------
 # ROUTES
@@ -185,7 +186,8 @@ async def clean_dataset_trigger(
         str(upload_path), 
         str(get_clean_path(dataset_id)),
         action=request.action,
-        target_columns=request.columns
+        target_columns=request.columns,
+        method=request.method  # <--- Pass the method here
     )
 
     return {"status": "accepted", "action_received": request.action}
