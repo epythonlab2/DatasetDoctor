@@ -34,7 +34,7 @@ export const API = {
      * @returns {Promise<Object>} The server response or a default processing state.
      * @throws {Error} If the server rejects the request or the pipeline fails to start.
      */
-    async cleanDataset(id, payload = { action: 'deduplicate' }) {
+    async cleanDataset(id, payload = { action: 'remove_duplicates' }) {
         try {
             const res = await fetch(getUrl(`/clean/${id}`), { 
                 method: "POST",
