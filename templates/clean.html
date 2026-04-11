@@ -1,185 +1,243 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DatasetDoctor - Intelligence at the Source</title>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/static/css/custom_dialog.css">
- 
-<body>
-<div class="custom-dialog">
-
-    <header class="custom-header mb-5">
-        <div class="d-flex-custom align-items-center justify-content-between">
-            <div class="d-flex-custom align-items-center gap-3">
-                
-                <div>
-                <i data-lucide="sparkles" class="text-primary" style="width: 24px; height: 24px;"></i>
-                    <h2 class="h4 fw-bold mb-0" style="letter-spacing: -0.02em;">DatasetDoctor .Data Cleaning</h2>
-                    <p class="small text-muted mb-0">Engine V3.0 • Advanced Cleaning Suite</p>
-                </div>
-            </div>
-            <div class="live-indicator position-relative">
+    <link rel="stylesheet" href="/static/css/custom_dialog.css" />
+  </head>
+  <body>
+    <div class="custom-dialog">
+      <header class="custom-header">
+        <div class="justify-content-between">
+          <div class="gap-3">
+            <i
+              data-lucide="sparkles"
+              class="text-primary"
+              style="width: 32px; height: 32px"
+            ></i>
+            <div>
+              <h2 class="h4 fw-bold mb-0" style="letter-spacing: -0.02em">
+                DatasetDoctor .Data Cleaning
+              </h2>
+              <p class="small text-muted mb-0">
+                Engine V3.0 • Advanced Cleaning Suite
+              </p>
+              <div class="live-indicator mt-1">
                 <span class="ping"></span>
                 <span class="dot"></span>
                 <span class="small fw-bold text-muted ms-4">Ready</span>
+              </div>
             </div>
+          </div>
         </div>
-    </header>
+      </header>
 
-    <section class="mb-4">
-        <div class="quality-score-hero border-custom shadow-sm" style="background: linear-gradient(to right, #ffffff, #f8fafc);">
-            <div class="d-flex-custom align-items-center justify-content-between flex-wrap gap-3">
-                <div class="d-flex-custom align-items-center gap-3">
-                    <div class="mini-icon icon-purple" style="width: 42px; height: 42px; border-radius: 12px;">
-                        <i data-lucide="layers-2" style="width: 20px;"></i>
-                    </div>
-                    <div>
-                        <strong class="d-block mb-1">Remove Duplicate Entries</strong>
-                        <p class="small text-muted mb-0">Cleanse the dataset by removing exact row-level overlaps.</p>
-                    </div>
-                </div>
-                <button id="btn-dedupe"
-		    data-dataset-id="" 
-		    class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" 
-		    onclick="DataDeduplicator.run()" 
-		    style="font-size: 0.85rem;">
-		    Run Deduplication
-		</button>
-		
+      <section class="mb-4">
+        <div
+          class="feature-mini-card border-custom shadow-sm p-4"
+          style="
+            border-radius: 16px;
+            background: linear-gradient(to right, #ffffff, #f8fafc);
+          "
+        >
+          <div
+            class="d-flex-custom align-items-center justify-content-between flex-wrap gap-3"
+          >
+            <div class="d-flex-custom align-items-center gap-3">
+              <div
+                class="mini-icon icon-purple d-flex-custom align-items-center justify-content-center"
+                style="width: 42px; height: 42px; border-radius: 12px"
+              >
+                <i data-lucide="layers-2" style="width: 20px"></i>
+              </div>
+              <div>
+                <strong class="d-block mb-1">Remove Duplicate Entries</strong>
+                <p class="small text-muted mb-0">
+                  Cleanse the dataset by removing exact row-level overlaps.
+                </p>
+              </div>
             </div>
-        </div>
-    </section>
-    
-    <section class="mb-4">
-	    <div class="feature-mini-card border-custom shadow-sm p-4" style="border-radius: 16px; background: #fff;">
-		<div class="d-flex-custom align-items-center justify-content-between flex-wrap gap-3">
-		    <div class="d-flex-custom align-items-center gap-3">
-		        <div class="mini-icon d-flex-custom align-items-center justify-content-center" 
-		             style="width: 42px; height: 42px; border-radius: 12px; background: #fef2f2; color: #ef4444;">
-		            <i data-lucide="trash-2" style="width: 20px;"></i>
-		        </div>
-		        <div>
-		            <strong class="d-block mb-1">Drop Specific Columns</strong>
-		            <p class="small text-muted mb-0">Select unnecessary columns to remove from the engine.</p>
-		        </div>
-		    </div>
-		    
-		    <button id="btn-drop-cols"
-		            class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" 
-		            onclick="DataDeduplicator.runDropColumns()" 
-		            style="font-size: 0.85rem;">
-		        Run Drop Action
-		    </button>
-		</div>
-
-		<div class="control-group mt-4">
-		    <div id="drop-tags-container" class="d-flex-custom flex-wrap gap-2 p-3 border-custom mb-3 mt-3" 
-		         style="min-height: 50px; border-radius: 12px; background: #fafafa;">
-		        <span class="text-muted small">No columns selected for removal...</span>
-		    </div>
-
-		    <label class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2">
-		        <i data-lucide="search" style="width: 14px; height: 14px; color: #10b981;"></i> Select Column to Add
-		    </label>
-		    <select id="col-drop-selector" class="form-select custom-select" 
-		            onchange="DataDeduplicator.addColumnTag(this.value)">
-		        </select>
-		</div>
-	    </div>
-	</section>
-
-    <div class="row g-4">
-        <div class="col-md-6">
-            <div class="feature-mini-card h-100 border-custom shadow-sm p-4">
-                <div class="d-flex-custom align-items-center gap-3 mb-4">
-                    <div class="mini-icon icon-green" style="border-radius: 10px;"><i data-lucide="database-zap"></i></div>
-                    <h3 class="h6 mb-0 fw-bold">Smart Imputation</h3>
-                </div>
-
-                <div class="control-group mb-3">
-                    <label class="small fw-bold text-muted mb-2 d-flex align-items-center gap-2">
-                        <i data-lucide="columns" style="width:14px;"></i> Target Column
-                    </label>
-                    <select class="form-select custom-select">
-                        <option selected disabled>Select a column...</option>
-                        <option>Age (Numeric)</option>
-                        <option>Status (Categorical)</option>
-                    </select>
-                </div>
-
-                <div class="control-group mb-4">
-                    <label class="small fw-bold text-muted mb-2 d-flex align-items-center gap-2">
-                        <i data-lucide="settings-2" style="width:14px;"></i> Method
-                    </label>
-                    <select class="form-select custom-select">
-                        <option value="mean">Mean (Average)</option>
-                        <option value="median">Median (Middle Point)</option>
-                        <option value="mode">Mode (Most Frequent)</option>
-                        <option value="constant">Constant Value</option>
-                    </select>
-                </div>
-
-                <button class="btn btn-outline-primary w-100 rounded-pill fw-bold mt-auto py-2" style="font-size: 0.85rem; border-width: 2px;">
-                    Apply Imputation
-                </button>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="feature-mini-card h-100 border-custom shadow-sm p-4">
-                <div class="d-flex-custom align-items-center gap-3 mb-4">
-                    <div class="mini-icon icon-blue" style="border-radius: 10px;"><i data-lucide="binary"></i></div>
-                    <h3 class="h6 mb-0 fw-bold">Schema Casting</h3>
-                </div>
-
-                <div class="control-group mb-3">
-                    <label class="small fw-bold text-muted mb-2 d-flex align-items-center gap-2">
-                        <i data-lucide="type" style="width:14px;"></i> Select Column
-                    </label>
-                    <select class="form-select custom-select">
-                        <option selected disabled>Select a column...</option>
-                        <option>Created_At</option>
-                        <option>Order_Total</option>
-                    </select>
-                </div>
-
-                <div class="control-group mb-4">
-                    <label class="small fw-bold text-muted mb-2 d-flex align-items-center gap-2">
-                        <i data-lucide="refresh-cw" style="width:14px;"></i> Desired Type
-                    </label>
-                    <select class="form-select custom-select">
-                        <option value="int">Integer (Int64)</option>
-                        <option value="float">Float (Float64)</option>
-                        <option value="string">String (Object)</option>
-                        <option value="date">DateTime</option>
-                    </select>
-                </div>
-
-                <button class="btn btn-outline-primary w-100 rounded-pill fw-bold mt-auto py-2" style="font-size: 0.85rem; border-width: 2px;">
-                    Convert Schema
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <footer class="mt-5 pt-4 border-top d-flex-custom justify-content-between align-items-center">
-        <div class="d-flex-custom align-items-center gap-2">
-            <span class="badge-custom bg-primary-soft text-primary px-3">Auto-Save Active</span>
-        </div>
-        <div class="d-flex-custom gap-3">
-            <button class="btn btn-link text-muted text-decoration-none small fw-bold" onclick="About.close()">Discard</button>
-            <button class="btn btn-dark px-4 rounded-pill fw-bold shadow" onclick="About.close()">
-                Finalize Changes
+            <button
+              id="btn-dedupe"
+              class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
+              onclick="DataDeduplicator.run()"
+              style="font-size: 0.85rem"
+            >
+              Run Deduplication
             </button>
+          </div>
         </div>
-       <p class="text-muted" style="font-size: 0.7rem; padding:10px;">© 2026 DatasetDoctor Intelligence System</p>
-        </footer>
+      </section>
 
+      <section class="mb-4">
+        <div
+          class="feature-mini-card border-custom shadow-sm p-4"
+          style="border-radius: 16px; background: #fff"
+        >
+          <div
+            class="d-flex-custom align-items-center justify-content-between flex-wrap gap-3"
+          >
+            <div class="d-flex-custom align-items-center gap-3">
+              <div
+                class="mini-icon d-flex-custom align-items-center justify-content-center"
+                style="
+                  width: 42px;
+                  height: 42px;
+                  border-radius: 12px;
+                  background: #fef2f2;
+                  color: #ef4444;
+                "
+              >
+                <i data-lucide="trash-2" style="width: 20px"></i>
+              </div>
+              <div>
+                <strong class="d-block mb-1">Drop Specific Columns</strong>
+                <p class="small text-muted mb-0">
+                  Select unnecessary columns to remove from the engine.
+                </p>
+              </div>
+            </div>
+            <button
+              id="btn-drop-cols"
+              class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
+              onclick="DataDeduplicator.runDropColumns()"
+              style="font-size: 0.85rem"
+            >
+              Run Drop Action
+            </button>
+          </div>
+
+          <div class="control-group mt-4">
+            <div
+              id="drop-tags-container"
+              class="d-flex-custom flex-wrap gap-2 p-3 border-custom mb-3"
+              style="min-height: 50px; border-radius: 12px; background: #fafafa"
+            >
+              <span class="text-muted small"
+                >No columns selected for removal...</span
+              >
+            </div>
+
+            <label
+              class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2"
+            >
+              <i
+                data-lucide="search"
+                style="width: 14px; height: 14px; color: #10b981"
+              ></i>
+              <span>Select Column to Add</span>
+            </label>
+            <select
+              id="col-drop-selector"
+              class="form-select custom-select"
+              onchange="DataDeduplicator.addColumnTag(this.value)"
+            ></select>
+          </div>
+        </div>
+      </section>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-6">
+          <div class="feature-mini-card h-100 border-custom shadow-sm p-4">
+            <div class="d-flex-custom align-items-center gap-3 mb-4">
+              <div class="mini-icon icon-green" style="border-radius: 10px">
+                <i data-lucide="database-zap"></i>
+              </div>
+              <h3 class="h6 mb-0 fw-bold">Smart Imputation</h3>
+            </div>
+            <div class="control-group mb-3">
+              <label
+                class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2"
+              >
+                <i data-lucide="columns" style="width: 14px"></i> Target Column
+              </label>
+              <select class="form-select custom-select">
+                <option selected disabled>Select a column...</option>
+                <option>Age (Numeric)</option>
+                <option>Status (Categorical)</option>
+              </select>
+            </div>
+            <div class="control-group mb-4">
+              <label
+                class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2"
+              >
+                <i data-lucide="settings-2" style="width: 14px"></i> Method
+              </label>
+              <select class="form-select custom-select">
+                <option value="mean">Mean (Average)</option>
+                <option value="median">Median (Middle Point)</option>
+                <option value="mode">Mode (Most Frequent)</option>
+                <option value="constant">Constant Value</option>
+              </select>
+            </div>
+            <button
+              class="btn btn-outline-primary w-100 rounded-pill fw-bold mt-auto py-2"
+              style="font-size: 0.85rem; border-width: 2px"
+            >
+              Apply Imputation
+            </button>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="feature-mini-card h-100 border-custom shadow-sm p-4">
+            <div class="d-flex-custom align-items-center gap-3 mb-4">
+              <div class="mini-icon icon-blue" style="border-radius: 10px">
+                <i data-lucide="binary"></i>
+              </div>
+              <h3 class="h6 mb-0 fw-bold">Schema Casting</h3>
+            </div>
+            <div class="control-group mb-3">
+              <label
+                class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2"
+              >
+                <i data-lucide="type" style="width: 14px"></i> Select Column
+              </label>
+              <select class="form-select custom-select">
+                <option selected disabled>Select a column...</option>
+                <option>Created_At</option>
+                <option>Order_Total</option>
+              </select>
+            </div>
+            <div class="control-group mb-4">
+              <label
+                class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2"
+              >
+                <i data-lucide="refresh-cw" style="width: 14px"></i> Desired
+                Type
+              </label>
+              <select class="form-select custom-select">
+                <option value="int">Integer (Int64)</option>
+                <option value="float">Float (Float64)</option>
+                <option value="string">String (Object)</option>
+                <option value="date">DateTime</option>
+              </select>
+            </div>
+            <button
+              class="btn btn-outline-primary w-100 rounded-pill fw-bold mt-auto py-2"
+              style="font-size: 0.85rem; border-width: 2px"
+            >
+              Convert Schema
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <footer class="custom-footer">
+        <button class="btn-close" onclick="Clean.close()">
+          Back to Dashboard
+        </button>
+        <p class="text-muted" style="font-size: 0.7rem; padding: 10px">
+          © 2026 DatasetDoctor Intelligence System
+        </p>
+      </footer>
     </div>
-</div>
 
-
-</body>
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>

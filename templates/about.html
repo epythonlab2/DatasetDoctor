@@ -1,198 +1,268 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DatasetDoctor - Intelligence at the Source</title>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/static/css/custom_dialog.css">
- 
-<body>
+    <link rel="stylesheet" href="/static/css/custom_dialog.css" />
+  </head>
 
-<div class="modal-wrapper">
-    <div class="custom-dialog">
-        
+  <body>
+    <div class="">
+      <div class="custom-dialog">
         <!-- HEADER -->
         <header class="custom-header">
-            <div class="brand-badge">DatasetDoctor 🩺</div>
-            <h1 class="display-title">Intelligence at the Source.</h1>
-            <p class="lead-text">
-                A modular, plugin-driven engine designed to audit, clean, and validate data for AI-readiness.
-            </p>
+          <div class="brand-badge">DatasetDoctor 🩺</div>
+          <h1 class="display-title">Intelligence at the Source.</h1>
+          <p class="lead-text">
+            A modular, plugin-driven engine designed to audit, clean, and
+            validate data for AI-readiness.
+          </p>
         </header>
 
         <!-- DATA QUALITY SCORE -->
         <section class="mb-5">
-            <div class="quality-score-hero">
-                <div class="score-info">
-                    <div class="score-icon-container">
-                        <i data-lucide="award" style="width: 24px; height: 24px;"></i>
-                    </div>
-                    <div class="score-text">
-                        <h3>Data Quality Score (DQS)</h3>
-                        <p>A weighted heuristic measuring reliability, completeness, and statistical health.</p>
-                    </div>
-                </div>
-                <span class="badge-tag" style="color:var(--primary)";>Proprietary Metric</span>
+          <div class="quality-score-hero">
+            <div class="score-info">
+              <div class="score-icon-container">
+                <i data-lucide="award" style="width: 24px; height: 24px"></i>
+              </div>
+              <div class="score-text">
+                <h3>Data Quality Score (DQS)</h3>
+                <p>
+                  A weighted heuristic measuring reliability, completeness, and
+                  statistical health.
+                </p>
+              </div>
             </div>
+            <span class="badge-tag" style="color: var(--primary)" ;
+              >Proprietary Metric</span
+            >
+          </div>
         </section>
 
         <!-- CORE FEATURES -->
         <section class="mb-5">
-            <div class="section-title-wrap">
-                <i data-lucide="zap" class="text-warning"></i>
-                <h3>Core Intelligence & Audit Suite</h3>
-            </div>
+          <div class="section-title-wrap">
+            <i data-lucide="zap" class="text-warning"></i>
+            <h3>Core Intelligence & Audit Suite</h3>
+          </div>
 
-            <div class="feature-card-grid">
-                <div class="feature-mini-card">
-                    <div class="mini-icon icon-blue"><i data-lucide="bar-chart-3"></i></div>
-                    <strong>Statistical Moments</strong>
-                    <p>Mean, standard deviation, and median distribution analysis.</p>
-                </div>
-                <div class="feature-mini-card">
-                    <div class="mini-icon icon-green"><i data-lucide="shield-check"></i></div>
-                    <strong>ML Readiness</strong>
-                    <p>Structural validation for stable model training.</p>
-                </div>
-                <div class="feature-mini-card">
-                    <div class="mini-icon icon-purple"><i data-lucide="copy"></i></div>
-                    <strong>Duplication Check</strong>
-                    <p>Detects row-level duplication to prevent bias.</p>
-                </div>
-                <div class="feature-mini-card">
-                    <div class="mini-icon icon-orange"><i data-lucide="scale"></i></div>
-                    <strong>Class Imbalance</strong>
-                    <p>Identifies skewed target distributions.</p>
-                </div>
-                <div class="feature-mini-card">
-                    <div class="mini-icon icon-red"><i data-lucide="alert-octagon"></i></div>
-                    <strong>Anomalies</strong>
-                    <p>Flags inconsistent or corrupt data points.</p>
-                </div>
-                <div class="feature-mini-card">
-                    <div class="mini-icon icon-red"><i data-lucide="trending-up"></i></div>
-                    <strong>Outliers</strong>
-                    <p>Z-score and IQR-based outlier detection.</p>
-                </div>
-                <div class="feature-mini-card">
-                    <div class="mini-icon icon-cyan"><i data-lucide="help-circle"></i></div>
-                    <strong>Missing Data</strong>
-                    <p>Detects null patterns and feature sparsity.</p>
-                </div>
-                <div class="feature-mini-card">
-                    <div class="mini-icon icon-blue"><i data-lucide="layers"></i></div>
-                    <strong>Cardinality</strong>
-                    <p>Flags high-cardinality categorical features.</p>
-                </div>
+          <div class="feature-card-grid">
+            <div class="feature-mini-card">
+              <div class="mini-icon icon-blue">
+                <i data-lucide="bar-chart-3"></i>
+              </div>
+              <strong>Statistical Moments</strong>
+              <p>Mean, standard deviation, and median distribution analysis.</p>
             </div>
+            <div class="feature-mini-card">
+              <div class="mini-icon icon-green">
+                <i data-lucide="shield-check"></i>
+              </div>
+              <strong>ML Readiness</strong>
+              <p>Structural validation for stable model training.</p>
+            </div>
+            <div class="feature-mini-card">
+              <div class="mini-icon icon-purple">
+                <i data-lucide="copy"></i>
+              </div>
+              <strong>Duplication Check</strong>
+              <p>Detects row-level duplication to prevent bias.</p>
+            </div>
+            <div class="feature-mini-card">
+              <div class="mini-icon icon-orange">
+                <i data-lucide="scale"></i>
+              </div>
+              <strong>Class Imbalance</strong>
+              <p>Identifies skewed target distributions.</p>
+            </div>
+            <div class="feature-mini-card">
+              <div class="mini-icon icon-red">
+                <i data-lucide="alert-octagon"></i>
+              </div>
+              <strong>Anomalies</strong>
+              <p>Flags inconsistent or corrupt data points.</p>
+            </div>
+            <div class="feature-mini-card">
+              <div class="mini-icon icon-red">
+                <i data-lucide="trending-up"></i>
+              </div>
+              <strong>Outliers</strong>
+              <p>Z-score and IQR-based outlier detection.</p>
+            </div>
+            <div class="feature-mini-card">
+              <div class="mini-icon icon-cyan">
+                <i data-lucide="help-circle"></i>
+              </div>
+              <strong>Missing Data</strong>
+              <p>Detects null patterns and feature sparsity.</p>
+            </div>
+            <div class="feature-mini-card">
+              <div class="mini-icon icon-blue">
+                <i data-lucide="layers"></i>
+              </div>
+              <strong>Cardinality</strong>
+              <p>Flags high-cardinality categorical features.</p>
+            </div>
+          </div>
         </section>
 
         <!-- PREDICTIVE POWER -->
         <section class="feature-highlight">
-            <div class="highlight-header">
-                <i data-lucide="activity" style="width: 18px;"></i> Predictive Power Signal
+          <div class="highlight-header">
+            <i data-lucide="activity" style="width: 18px"></i> Predictive Power
+            Signal
+          </div>
+          <div class="highlight-body">
+            <p style="margin: 0; font-size: 0.9rem; opacity: 0.9">
+              Uses <strong>Mutual Information (MI)</strong> to detect
+              <strong>data leakage</strong> and separate signal from noise.
+            </p>
+            <div class="status-labels">
+              <span class="badge-status bg-leakage">🔥 Leakage</span>
+              <span class="badge-status bg-strong">💎 Strong</span>
+              <span class="badge-status bg-moderate">⚡ Moderate</span>
+              <span class="badge-status bg-noise">☁️ Noise</span>
             </div>
-            <div class="highlight-body">
-                <p style="margin:0; font-size: 0.9rem; opacity: 0.9;">
-                    Uses <strong>Mutual Information (MI)</strong> to detect <strong>data leakage</strong> and separate signal from noise.
-                </p>
-                <div class="status-labels">
-                    <span class="badge-status bg-leakage">🔥 Leakage</span>
-                    <span class="badge-status bg-strong">💎 Strong</span>
-                    <span class="badge-status bg-moderate">⚡ Moderate</span>
-                    <span class="badge-status bg-noise">☁️ Noise</span>
-                </div>
-            </div>
+          </div>
         </section>
 
         <!-- AI FEATURES -->
         <section class="ai-grid">
-            <div class="ai-card primary">
-                <h4><i data-lucide="brain-circuit" class="text-primary"></i> AI Smart Suggestions</h4>
-                <p>Context-aware recommendations for feature engineering, encoding strategies, and data enrichment.</p>
-            </div>
-            <div class="ai-card success">
-                <h4><i data-lucide="sparkles" class="text-success"></i> Basic Cleaning</h4>
-                <ul>
-                    <li><strong>Smart Imputation:</strong> Feature-aware null handling</li>
-                    <li><strong>Deduplication:</strong> Removes redundant records</li>
-                    <li><strong>Type Casting:</strong> Automatic type correction</li>
-                </ul>
-            </div>
+          <div class="ai-card primary">
+            <h4>
+              <i data-lucide="brain-circuit" class="text-primary"></i> AI Smart
+              Suggestions
+            </h4>
+            <p>
+              Context-aware recommendations for feature engineering, encoding
+              strategies, and data enrichment.
+            </p>
+          </div>
+          <div class="ai-card success">
+            <h4>
+              <i data-lucide="sparkles" class="text-success"></i> Basic Cleaning
+            </h4>
+            <ul>
+              <li>
+                <strong>Smart Imputation:</strong> Feature-aware null handling
+              </li>
+              <li><strong>Deduplication:</strong> Removes redundant records</li>
+              <li><strong>Type Casting:</strong> Automatic type correction</li>
+            </ul>
+          </div>
         </section>
 
         <!-- ARCHITECTURE -->
         <section class="architecture-section">
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-                <div style="background: var(--primary-light); color: var(--primary); padding: 8px; border-radius: 8px;">
-                    <i data-lucide="workflow" style="width: 20px;"></i>
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 0.5rem;
+            "
+          >
+            <div
+              style="
+                background: var(--primary-light);
+                color: var(--primary);
+                padding: 8px;
+                border-radius: 8px;
+              "
+            >
+              <i data-lucide="workflow" style="width: 20px"></i>
+            </div>
+            <h3 style="margin: 0; font-weight: 800">System Architecture</h3>
+            <span
+              class="badge-tag"
+              style="background: var(--primary); color: white; border: none"
+              >V3.0 CORE</span
+            >
+          </div>
+
+          <div class="arch-pipeline">
+            <!-- Layer 1 -->
+            <div class="arch-layer">
+              <span class="layer-tag">Data Ingest</span>
+              <div class="arch-node">
+                <div
+                  class="arch-icon"
+                  style="background: #eff6ff; color: #3b82f6"
+                >
+                  <i data-lucide="upload-cloud"></i>
                 </div>
-                <h3 style="margin: 0; font-weight: 800;">System Architecture</h3>
-                <span class="badge-tag" style="background: var(--primary); color: white; border: none;">V3.0 CORE</span>
+                <div class="node-content">
+                  <strong>Source Connectors</strong>
+                  <span>CSV / JSON / SQL</span>
+                </div>
+              </div>
             </div>
 
-            <div class="arch-pipeline">
-                <!-- Layer 1 -->
-                <div class="arch-layer">
-                    <span class="layer-tag">Data Ingest</span>
-                    <div class="arch-node">
-                        <div class="arch-icon" style="background:#eff6ff; color:#3b82f6;"><i data-lucide="upload-cloud"></i></div>
-                        <div class="node-content">
-                            <strong>Source Connectors</strong>
-                            <span>CSV / JSON / SQL</span>
-                        </div>
-                    </div>
+            <div class="connector"></div>
+
+            <!-- Layer 2 -->
+            <div class="arch-layer engine">
+              <span class="layer-tag">Intelligence Engine</span>
+              <div class="arch-node">
+                <div
+                  class="arch-icon"
+                  style="background: rgba(255, 255, 255, 0.2)"
+                >
+                  <i data-lucide="cpu"></i>
                 </div>
-
-                <div class="connector"></div>
-
-                <!-- Layer 2 -->
-                <div class="arch-layer engine">
-                    <span class="layer-tag">Intelligence Engine</span>
-                    <div class="arch-node">
-                        <div class="arch-icon" style="background:rgba(255,255,255,0.2);"><i data-lucide="cpu"></i></div>
-                        <div class="node-content">
-                            <strong>Core Inspector</strong>
-                            <span>Orchestration & Registry</span>
-                        </div>
-                    </div>
-                    <div class="satellite-pills">
-                        <div class="pill"><i data-lucide="package" style="width:12px;"></i> Plugins</div>
-                        <div class="pill"><i data-lucide="shield-check" style="width:12px;"></i> Audit</div>
-                        <div class="pill"><i data-lucide="sparkles" style="width:12px;"></i> Clean</div>
-                    </div>
+                <div class="node-content">
+                  <strong>Core Inspector</strong>
+                  <span>Orchestration & Registry</span>
                 </div>
-
-                <div class="connector"></div>
-
-                <!-- Layer 3 -->
-                <div class="arch-layer">
-                    <span class="layer-tag">Presentation</span>
-                    <div class="arch-node">
-                        <div class="arch-icon" style="background:#ecfeff; color:#0891b2;"><i data-lucide="layout-dashboard"></i></div>
-                        <div class="node-content">
-                            <strong>Intelligence UI</strong>
-                            <span>Reactive Overlays & Insights</span>
-                        </div>
-                    </div>
+              </div>
+              <div class="satellite-pills">
+                <div class="pill">
+                  <i data-lucide="package" style="width: 12px"></i> Plugins
                 </div>
+                <div class="pill">
+                  <i data-lucide="shield-check" style="width: 12px"></i> Audit
+                </div>
+                <div class="pill">
+                  <i data-lucide="sparkles" style="width: 12px"></i> Clean
+                </div>
+              </div>
             </div>
+
+            <div class="connector"></div>
+
+            <!-- Layer 3 -->
+            <div class="arch-layer">
+              <span class="layer-tag">Presentation</span>
+              <div class="arch-node">
+                <div
+                  class="arch-icon"
+                  style="background: #ecfeff; color: #0891b2"
+                >
+                  <i data-lucide="layout-dashboard"></i>
+                </div>
+                <div class="node-content">
+                  <strong>Intelligence UI</strong>
+                  <span>Reactive Overlays & Insights</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
         <!-- FOOTER -->
         <footer class="custom-footer">
-            <button class="btn-close" onclick="About.close()">
-                Back to Dashboard
-            </button>
-            <p class="text-muted" style="font-size: 0.7rem; padding:10px;">© 2026 DatasetDoctor Intelligence System</p>
+          <button class="btn-close" onclick="About.close()">
+            Back to Dashboard
+          </button>
+          <p class="text-muted" style="font-size: 0.7rem; padding: 10px">
+            © 2026 DatasetDoctor Intelligence System
+          </p>
         </footer>
-
+      </div>
     </div>
-</div>
-
-</body>
-
-
+  </body>
 </html>
