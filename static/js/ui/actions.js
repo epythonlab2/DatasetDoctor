@@ -6,7 +6,7 @@
 
 import { API } from "./api.js";
 import { state } from "./state.js";
-import {isValidId, sanitizeColumn, withTimeout} from "./utils.js";
+import {isValidId, formatColumnForDisplay, withTimeout} from "./utils.js";
 
 
 /* ------------------ Actions ------------------ */
@@ -73,7 +73,7 @@ export const Actions = {
 
     async runDropColumns() {
       const datasetId = state.datasetId;
-      const cols = Array.from(this._selectedDropCols).map(sanitizeColumn);
+      const cols = Array.from(this._selectedDropCols).map(formatColumnForDisplay);
 
       if (!cols.length) return alert("Select at least one column.");
       if (!confirm(`Permanently drop columns: ${cols.join(", ")}?`)) return;
@@ -96,7 +96,7 @@ export const Actions = {
     /* ---------- Column Tag Management ---------- */
 
     addColumnTag(col) {
-      const clean = sanitizeColumn(col);
+      const clean = formatColumnForDisplay(col);
       if (!clean || this._selectedDropCols.has(clean)) return;
 
       this._selectedDropCols.add(clean);
@@ -286,32 +286,46 @@ export const Actions = {
 
   /* ---------- Polling Engine ---------- */
 
-  _startPolling(datasetId, onComplete) {
-    this._clearPolling();
-    let retries = 0;
+_startPolling(datasetId, onComplete) {
+  this._clearPolling();
+  let retries = 0;
 
-    this._pollInterval = setInterval(async () => {
-      try {
-        const meta = await withTimeout(API.fetchMeta(datasetId), 5000);
-        if (meta?.status === "ready") {
-          this._clearPolling();
-          onComplete(meta);
-        } else if (meta?.status === "failed") {
-          throw new Error(meta?.error || "Processing failed");
-        }
-      } catch (err) {
-        if (++retries >= 10) {
-          this._clearPolling();
-          this.Dedupe._handleError(new Error("Connection lost. Try refreshing."));
-        }
+  this._pollInterval = setInterval(async () => {
+    try {
+      const meta = await withTimeout(API.fetchMeta(datasetId), 5000);
+
+      // 1. Success State
+      if (meta?.status === "ready") {
+        this._clearPolling();
+        onComplete(meta);
+        return;
+      } 
+
+      // 2. Explicit Backend Failure State (Short-circuit)
+      if (meta?.status === "failed") {
+        this._clearPolling(); // Stop immediately
+        const errorMsg = meta?.error || "Processing failed";
+        this.Dedupe._handleError(new Error(errorMsg));
+        return;
       }
-    }, 2000);
-  },
 
-  _clearPolling() {
-    if (this._pollInterval) {
-      clearInterval(this._pollInterval);
-      this._pollInterval = null;
+      // If status is "processing" or "pending", we just wait for the next interval.
+
+    } catch (err) {
+      // 3. Network / Timeout Errors (Retry path)
+      if (++retries >= 10) {
+        this._clearPolling();
+        this.Dedupe._handleError(new Error("Connection lost. Try refreshing."));
+      }
+      console.warn(`Polling retry ${retries}/10...`);
     }
-  },
+  }, 2000);
+},
+
+_clearPolling() {
+  if (this._pollInterval) {
+    clearInterval(this._pollInterval);
+    this._pollInterval = null;
+  }
+},
 };
