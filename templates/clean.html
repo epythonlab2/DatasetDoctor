@@ -217,48 +217,70 @@
 	</div>
 
         <div class="col-md-6">
-          <div class="feature-mini-card h-100 border-custom shadow-sm p-4">
-            <div class="d-flex-custom align-items-center gap-3 mb-4">
-              <div class="mini-icon icon-blue" style="border-radius: 10px">
-                <i data-lucide="binary"></i>
-              </div>
-              <h3 class="h6 mb-0 fw-bold">Schema Casting</h3>
-            </div>
-            <div class="control-group mb-3">
-              <label
-                class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2"
-              >
-                <i data-lucide="type" style="width: 14px"></i> Select Column
-              </label>
-              <select class="form-select custom-select">
-                <option selected disabled>Select a column...</option>
-                <option>Created_At</option>
-                <option>Order_Total</option>
-              </select>
-            </div>
-            <div class="control-group mb-4">
-              <label
-                class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2"
-              >
-                <i data-lucide="refresh-cw" style="width: 14px"></i> Desired
-                Type
-              </label>
-              <select class="form-select custom-select">
-                <option value="int">Integer (Int64)</option>
-                <option value="float">Float (Float64)</option>
-                <option value="string">String (Object)</option>
-                <option value="date">DateTime</option>
-              </select>
-            </div>
-            <button
-              class="btn btn-outline-primary w-100 rounded-pill fw-bold mt-auto py-2"
-              style="font-size: 0.85rem; border-width: 2px"
-            >
-              Convert Schema
-            </button>
-          </div>
-        </div>
-      </div>
+	  <div class="feature-mini-card h-100 border-custom shadow-sm p-4">
+	    <div class="d-flex-custom align-items-center gap-3 mb-4">
+	      <div class="mini-icon icon-blue" style="border-radius: 10px">
+		<i data-lucide="binary"></i>
+	      </div>
+	      <h3 class="h6 mb-0 fw-bold">Schema Casting</h3>
+	    </div>
+
+	    <div class="control-group mb-3">
+	      <label class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2">
+		<i data-lucide="type" style="width: 14px"></i> Select Column
+	      </label>
+	      <select id="cast-column" class="form-select custom-select">
+		<option selected disabled>Select a column...</option>
+	      </select>
+	    </div>
+
+	    <div class="control-group mb-4 position-relative">
+	      <div class="d-flex justify-content-between align-items-center mb-2">
+		<label class="small fw-bold text-muted d-flex-custom align-items-center gap-2 mb-0">
+		  <i data-lucide="refresh-cw" style="width: 14px"></i> Desired Type
+		</label>
+		
+		<div class="help-trigger" onclick="Actions.toggleCastTip(event)" style="cursor: pointer;">
+		  <i data-lucide="help-circle" class="text-primary" style="width: 16px; height: 16px;"></i>
+		</div>
+	      </div>
+
+	      <div id="cast-tip-popup" class="popover-tip shadow-lg border-0 p-0" style="display: none; position: absolute; z-index: 100; background: white; border-radius: 16px; width: 280px; right: 0; top: 35px; overflow: hidden;">
+		<div class="p-3" style="background: #f8fafc; border-bottom: 1px solid #f1f5f9;">
+		    <div class="d-flex align-items-center gap-2">
+		        <i data-lucide="zap" class="text-warning" style="width: 18px;"></i>
+		        <strong class="small fw-bold text-dark">Doctor's Note</strong>
+		    </div>
+		</div>
+		<div class="p-3">
+		    <p class="text-muted mb-0" style="font-size: 0.75rem; line-height: 1.5;">
+		        If your numbers are saved as <b>Text</b>, you can't do math!
+		        <br>• <b>Integer</b>: Whole numbers only.
+		        <br>• <b>Float</b>: Numbers with decimals.
+		        <br>• <b>DateTime</b>: For dates and timestamps.
+		    </p>
+		</div>
+	      </div>
+
+	      <select id="cast-type" class="form-select custom-select">
+		<option value="int">Integer (Whole Numbers)</option>
+		<option value="float">Float (Decimals)</option>
+		<option value="string">String (Text)</option>
+		<option value="date">DateTime (Calendar Dates)</option>
+		<option value="bool">Boolean (0/1)</option>
+	      </select>
+	    </div>
+
+	    <button
+	      id="btn-apply-cast"
+	      onclick="Actions.runCast()"
+	      class="btn btn-outline-primary w-100 rounded-pill fw-bold mt-auto py-2"
+	      style="font-size: 0.85rem; border-width: 2px"
+	    >
+	      Convert Schema
+	    </button>
+	  </div>
+	</div>
 
       <!-- FOOTER -->
       <footer class="custom-footer">

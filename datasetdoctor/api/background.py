@@ -70,19 +70,20 @@ def run_cleaning(
     target_columns: list = None,
     **kwargs
 ) -> None:
-    """
-    Executes cleaning and immediately re-analyzes the file to 
-    ensure the UI dropdowns reflect the fixed data.
-    """
     try:
-        # 1. Update status to inform the UI that cleaning is in progress
+        # 1. LOAD OLD STATE FIRST
+        old_meta = load_meta(dataset_id) or {}
+        # This is our "Memory". If it doesn't exist, initialize it from current columns.
+        schema_memory = old_meta.get("schema_memory", {})
+        if not schema_memory:
+            schema_memory = {col["name"]: col["type"] for col in old_meta.get("columns", [])}
+
         update_meta(dataset_id, {"status": "processing", "stage": "cleaning"})
 
-        # 2. Additive Logic: Use existing clean file as source if it exists
+        # 2. SOURCE SELECTION
         current_source = clean_path if os.path.exists(clean_path) else raw_path
-        logger.info(f"Refine Engine: Starting {action}. Source: {current_source}")
-
-        # 3. Package parameters for the specific plugin
+        
+        # 3. PLUGIN PARAMS
         plugin_params = {}
         if action == "drop_columns":
             plugin_params["drop_columns"] = {"columns_to_drop": target_columns}
@@ -90,8 +91,12 @@ def run_cleaning(
             method = kwargs.get("method", "mean")
             col = target_columns[0] if target_columns else None
             plugin_params["smart_impute"] = {"target_column": col, "method": method}
-                
-        # 4. Execute the cleaning engine
+        elif action == "cast_schema":
+            target_type = kwargs.get("method", "auto")
+            target_col = target_columns[0] if target_columns else None
+            plugin_params["cast_schema"] = {"target_column": target_col, "method": target_type}
+        
+        # 4. EXECUTE ENGINE
         df_cleaned, cleaning_logs = clean_dataset(
             raw_path=str(current_source), 
             clean_path=str(clean_path),
@@ -99,35 +104,50 @@ def run_cleaning(
             plugin_params=plugin_params
         )
         
-        # 5. Safety check for logs
-        if callable(cleaning_logs):
-            cleaning_logs = cleaning_logs() 
+        if callable(cleaning_logs): cleaning_logs = cleaning_logs() 
 
-        # 6. RE-ANALYZE: This is the key to updating the "Missing" dropdown
+        # 5. RE-ANALYZE (The "Forgetful" Step)
         update_meta(dataset_id, {"stage": "analyzing_results"})
-        
-        meta_data = load_meta(dataset_id) or {}
         results = analyze_dataset(
             str(clean_path), 
-            target=meta_data.get("target"), 
-            filename=meta_data.get("filename", "dataset.csv")
+            target=old_meta.get("target"), 
+            filename=old_meta.get("filename", "dataset.csv")
         )
 
-        # 7. Safety check: Ensure analysis results are a dictionary
-        if callable(results): results = results()
-        if not isinstance(results, dict): results = {}
+        # 6. ENFORCE MEMORY
+        if "columns" in results:
+            ui_type_map = {
+                "date": "datetime64[ns]", "datetime": "datetime64[ns]",
+                "float": "float64", "int": "Int64", "bool": "boolean"
+            }
 
-        # 8. Push final state to UI
-        update_meta(dataset_id, {
+            # Update memory if we just performed a cast
+            if action == "cast_schema" and target_columns:
+                target_col = target_columns[0]
+                requested_type = kwargs.get("method", "auto")
+                schema_memory[target_col] = ui_type_map.get(requested_type, requested_type)
+
+            # Apply memory to analyzer results
+            for col_info in results["columns"]:
+                name = col_info["name"]
+                if name in schema_memory:
+                    # OVERRIDE: If we have a stored type, use it. 
+                    # Ignore what the analyzer found in the CSV text.
+                    col_info["type"] = schema_memory[name]
+
+        # 7. UPDATE METADATA WITH SCHEMA_MEMORY
+        final_payload = {
             **results,
+            "schema_memory": schema_memory, # Save the memory back!
             "cleaning": cleaning_logs,
             "status": "ready",
             "stage": "complete",
             "last_action": action,
             "cleaned_file_path": str(clean_path) 
-        })
+        }
         
-        logger.info(f"Refine Engine: {action} complete. Metadata synced.")
+        update_meta(dataset_id, final_payload)
+        logger.info(f"Refine Engine: {action} complete. Schema memory updated.")
 
     except Exception as e:
         logger.exception(f"Pipeline crashed during {action}")

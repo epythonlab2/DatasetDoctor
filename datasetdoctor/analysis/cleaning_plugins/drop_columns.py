@@ -1,12 +1,11 @@
 # analysis/cleaning_plugins/drop_columns.py
-import logging
+from datasetdoctor.core.logger import logger
 from typing import Tuple, Dict, Any, List
 import pandas as pd
 
 from .base import CleaningPlugin
 from .registry import register_cleaning
 
-logger = logging.getLogger(__name__)
 
 @register_cleaning
 class DropColumnsPlugin(CleaningPlugin):
