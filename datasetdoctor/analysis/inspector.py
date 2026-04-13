@@ -21,7 +21,7 @@ def analyze_dataset(
     Leverages PluginExecutor and adds v2 Interpretability metrics.
     """
     CHUNK_SIZE = 100_000
-    reader = pd.read_csv(file_path, chunksize=CHUNK_SIZE)
+    reader = pd.read_csv(file_path, chunksize=CHUNK_SIZE, parse_dates=True)
 
     total_rows = 0
     missing_counts = None

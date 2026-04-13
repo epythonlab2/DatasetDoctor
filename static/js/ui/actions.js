@@ -35,9 +35,6 @@ export const Actions = {
 
   /* ---------- Smart Imputation Core ---------- */
 
-  /**
-   * Toggles the Help Tip Popup with proper event handling
-   */
   toggleImputeTip(event) {
     event.stopPropagation(); 
     const popup = document.getElementById('impute-tip-popup');
@@ -47,7 +44,6 @@ export const Actions = {
     popup.style.display = isShowing ? 'none' : 'block';
 
     if (!isShowing) {
-      // One-time listener to close when clicking outside
       const closeHandler = () => {
         popup.style.display = 'none';
         document.removeEventListener('click', closeHandler);
@@ -80,6 +76,43 @@ export const Actions = {
       });
     } catch (err) { 
       this.Dedupe._handleError(err); 
+    }
+  },
+  
+  /* ---------- Schema Casting Core ---------- */
+
+  toggleCastTip(event) {
+    if (event) event.stopPropagation();
+    const popup = document.getElementById('cast-tip-popup');
+    if (!popup) return;
+    const isHidden = popup.style.display === 'none' || popup.style.display === '';
+    popup.style.display = isHidden ? 'block' : 'none';
+  },
+
+  async runCast() {
+    const col = document.getElementById("cast-column")?.value;
+    const type = document.getElementById("cast-type")?.value;
+
+    if (!col || col.includes("Select")) return alert("Please select a column to convert.");
+
+    this.Dedupe._setAction("cast");
+    this.Dedupe._setLoading("btn-apply-cast", true, "Converting...");
+    this.Dedupe._updateStatus("Casting schema...", "#3b82f6");
+
+    try {
+      await API.cleanDataset(state.datasetId, { 
+          action: "cast_schema", 
+          columns: [col], 
+          method: type 
+      });
+
+      this._startPolling(state.datasetId, (meta) => {
+          this.Dedupe._onComplete(meta);
+          const tip = document.getElementById('cast-tip-popup');
+          if (tip) tip.style.display = 'none';
+      });
+    } catch (err) {
+      this.Dedupe._handleError(err);
     }
   },
 
@@ -131,6 +164,7 @@ export const Actions = {
       if (Actions._currentAction === "dedupe") this._handleDedupeSuccess(meta);
       if (Actions._currentAction === "drop") this._handleDropSuccess();
       if (Actions._currentAction === "impute") this._handleImputeSuccess();
+      if (Actions._currentAction === "cast") this._handleCastSuccess();
 
       this._updateStatus("Process Complete", "#10b981");
       this._updateDashboard(meta);
@@ -140,12 +174,25 @@ export const Actions = {
     _handleImputeSuccess() {
       const btn = document.getElementById("btn-apply-impute");
       if (!btn) return;
-      btn.innerHTML = `<i data-lucide="check" class="me-2"></i> Imputed`;
+      btn.innerHTML = `<i data-lucide="check" class="me-2"></i> Fixed!`;
       btn.style.color = "#10b981";
       btn.style.borderColor = "#10b981";
       if (window.lucide) window.lucide.createIcons();
       setTimeout(() => {
         btn.innerHTML = "Apply Imputation";
+        btn.style.color = ""; btn.style.borderColor = "";
+      }, 3000);
+    },
+
+    _handleCastSuccess() {
+      const btn = document.getElementById("btn-apply-cast");
+      if (!btn) return;
+      btn.innerHTML = `<i data-lucide="check" class="me-2"></i> Type Updated`;
+      btn.style.color = "#10b981";
+      btn.style.borderColor = "#10b981";
+      if (window.lucide) window.lucide.createIcons();
+      setTimeout(() => {
+        btn.innerHTML = "Convert Schema";
         btn.style.color = ""; btn.style.borderColor = "";
       }, 3000);
     },
@@ -179,6 +226,7 @@ export const Actions = {
     _populateColumnSelector(columns) {
       const dropSelector = document.getElementById("col-drop-selector");
       const imputeSelector = document.getElementById("impute-column");
+      const castSelector = document.getElementById("cast-column");
 
       if (dropSelector) {
         dropSelector.innerHTML = '<option selected disabled>Choose columns...</option>';
@@ -203,6 +251,18 @@ export const Actions = {
             imputeSelector.appendChild(opt);
           });
         }
+      }
+
+      if (castSelector) {
+        castSelector.innerHTML = '<option selected disabled>Select column...</option>';
+        // Show all columns, but beginners usually need to fix 'Object' (String) types
+        columns.forEach(col => {
+            const opt = document.createElement("option");
+            opt.value = col.name;
+            const typeLabel = col.type === 'object' ? 'Text' : col.type;
+            opt.textContent = `${col.name} (${typeLabel})`;
+            castSelector.appendChild(opt);
+        });
       }
     },
 
@@ -250,7 +310,7 @@ export const Actions = {
       }
     },
     _resetLoading() {
-      ["btn-dedupe", "btn-drop-cols", "btn-apply-impute"].forEach(id => this._setLoading(id, false));
+      ["btn-dedupe", "btn-drop-cols", "btn-apply-impute", "btn-apply-cast"].forEach(id => this._setLoading(id, false));
     },
     _updateStatus(text, color) {
       const el = document.querySelector(".live-indicator .small");
