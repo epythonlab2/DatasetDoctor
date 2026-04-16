@@ -8,8 +8,7 @@ from datasetdoctor.analysis.cleaning import clean_dataset
 from datasetdoctor.core import config
 from datasetdoctor.core.logger import logger
 
-# 🔥 STORAGE LAYER (ONLY SOURCE OF TRUTH)
-from datasetdoctor.storage.factory import storage
+from .helpers import load_meta, update_meta
 
 def _handle_failure(dataset_id: str, error: Exception, stage: str):
     """Crucial: This must be defined for the catch block to work"""
@@ -22,30 +21,30 @@ def _handle_failure(dataset_id: str, error: Exception, stage: str):
 
 
 def run_analysis(dataset_id: str, path: Path) -> None:
-
-    meta = storage.load_meta(dataset_id) or {}
-
-    meta.update({
+    # 1. Update IMMEDIATELY to stop 404s in the UI
+    update_meta(dataset_id, {
         "status": "processing",
         "stage": "analyzing",
         "error": None,
         "analysis_start": datetime.now().isoformat(),
     })
 
-    storage.save_meta(dataset_id, meta)
-
     try:
+        meta = load_meta(dataset_id) or {}
         target = meta.get("target")
         filename = meta.get("filename", "Unknown File")
 
+        # 2. Get results
         results = analyze_dataset(str(path), target=target, filename=filename)
 
+        # 3. CRITICAL CHECK: Ensure results is a dictionary
+        # This prevents the "method is not iterable" crash
         if callable(results):
             results = results()
-
+        
         if not isinstance(results, dict):
-            logger.error("Invalid analysis format")
-            results = {"error": "Invalid analysis format"}
+            logger.error(f"Analysis returned {type(results)}, expected dict. Attempting cast.")
+            results = dict(results) if hasattr(results, '__iter__') else {"error": "Invalid analysis format"}
 
         final_payload = {
             **results,
@@ -55,7 +54,7 @@ def run_analysis(dataset_id: str, path: Path) -> None:
             "last_analyzed": datetime.now().isoformat(),
         }
 
-        storage.save_meta(dataset_id, final_payload)
+        update_meta(dataset_id, final_payload)
 
     except Exception as e:
         logger.exception(f"Analysis Pipeline Failed for {dataset_id}")
@@ -64,135 +63,91 @@ def run_analysis(dataset_id: str, path: Path) -> None:
 
 
 def run_cleaning(
-    dataset_id: str,
-    raw_path: str,
-    clean_path: str,
-    action: str,
+    dataset_id: str, 
+    raw_path: str, 
+    clean_path: str, 
+    action: str, 
     target_columns: list = None,
     **kwargs
 ) -> None:
-
     try:
-        old_meta = storage.load_meta(dataset_id) or {}
-
+        # 1. LOAD OLD STATE FIRST
+        old_meta = load_meta(dataset_id) or {}
+        # This is our "Memory". If it doesn't exist, initialize it from current columns.
         schema_memory = old_meta.get("schema_memory", {})
         if not schema_memory:
-            schema_memory = {
-                col["name"]: col["type"]
-                for col in old_meta.get("columns", [])
-            }
+            schema_memory = {col["name"]: col["type"] for col in old_meta.get("columns", [])}
 
-        storage.save_meta(dataset_id, {
-            **old_meta,
-            "status": "processing",
-            "stage": "cleaning"
-        })
+        update_meta(dataset_id, {"status": "processing", "stage": "cleaning"})
 
-        # -------------------------
-        # SOURCE SELECTION (STORAGE-CONTROLLED)
-        # -------------------------
-        current_source = clean_path
-
-        # If clean file doesn't exist → fallback to raw
-        try:
-            storage.load_file(dataset_id, Path(clean_path))
-        except Exception:
-            current_source = raw_path
-
-        # -------------------------
-        # PLUGIN PARAMS
-        # -------------------------
+        # 2. SOURCE SELECTION
+        current_source = clean_path if os.path.exists(clean_path) else raw_path
+        
+        # 3. PLUGIN PARAMS
         plugin_params = {}
-
         if action == "drop_columns":
-            plugin_params["drop_columns"] = {
-                "columns_to_drop": target_columns
-            }
-
+            plugin_params["drop_columns"] = {"columns_to_drop": target_columns}
         elif action == "smart_impute":
-            plugin_params["smart_impute"] = {
-                "target_column": target_columns[0] if target_columns else None,
-                "method": kwargs.get("method", "mean")
-            }
-
+            method = kwargs.get("method", "mean")
+            col = target_columns[0] if target_columns else None
+            plugin_params["smart_impute"] = {"target_column": col, "method": method}
         elif action == "cast_schema":
-            plugin_params["cast_schema"] = {
-                "target_column": target_columns[0] if target_columns else None,
-                "method": kwargs.get("method", "auto")
-            }
-
-        # -------------------------
-        # EXECUTION
-        # -------------------------
+            target_type = kwargs.get("method", "auto")
+            target_col = target_columns[0] if target_columns else None
+            plugin_params["cast_schema"] = {"target_column": target_col, "method": target_type}
+        
+        # 4. EXECUTE ENGINE
         df_cleaned, cleaning_logs = clean_dataset(
-            raw_path=str(current_source),
+            raw_path=str(current_source), 
             clean_path=str(clean_path),
             plugins=[action],
             plugin_params=plugin_params
         )
+        
+        if callable(cleaning_logs): cleaning_logs = cleaning_logs() 
 
-        if callable(cleaning_logs):
-            cleaning_logs = cleaning_logs()
-
-        # -------------------------
-        # RE-ANALYSIS
-        # -------------------------
-        storage.save_meta(dataset_id, {
-            **old_meta,
-            "status": "processing",
-            "stage": "analyzing_results"
-        })
-
+        # 5. RE-ANALYZE (The "Forgetful" Step)
+        update_meta(dataset_id, {"stage": "analyzing_results"})
         results = analyze_dataset(
-            str(clean_path),
-            target=old_meta.get("target"),
+            str(clean_path), 
+            target=old_meta.get("target"), 
             filename=old_meta.get("filename", "dataset.csv")
         )
 
-        if callable(results):
-            results = results()
-
-        # -------------------------
-        # SCHEMA MEMORY UPDATE
-        # -------------------------
+        # 6. ENFORCE MEMORY
         if "columns" in results:
-
             ui_type_map = {
-                "date": "datetime64[ns]",
-                "datetime": "datetime64[ns]",
-                "float": "float64",
-                "int": "Int64",
-                "bool": "boolean"
+                "date": "datetime64[ns]", "datetime": "datetime64[ns]",
+                "float": "float64", "int": "Int64", "bool": "boolean"
             }
 
+            # Update memory if we just performed a cast
             if action == "cast_schema" and target_columns:
-                col = target_columns[0]
-                schema_memory[col] = ui_type_map.get(
-                    kwargs.get("method", "auto"),
-                    kwargs.get("method", "auto")
-                )
+                target_col = target_columns[0]
+                requested_type = kwargs.get("method", "auto")
+                schema_memory[target_col] = ui_type_map.get(requested_type, requested_type)
 
+            # Apply memory to analyzer results
             for col_info in results["columns"]:
                 name = col_info["name"]
                 if name in schema_memory:
+                    # OVERRIDE: If we have a stored type, use it. 
+                    # Ignore what the analyzer found in the CSV text.
                     col_info["type"] = schema_memory[name]
 
-        # -------------------------
-        # FINAL METADATA WRITE
-        # -------------------------
+        # 7. UPDATE METADATA WITH SCHEMA_MEMORY
         final_payload = {
             **results,
-            "schema_memory": schema_memory,
+            "schema_memory": schema_memory, # Save the memory back!
             "cleaning": cleaning_logs,
             "status": "ready",
             "stage": "complete",
             "last_action": action,
-            "cleaned_file_path": str(clean_path)
+            "cleaned_file_path": str(clean_path) 
         }
-
-        storage.save_meta(dataset_id, final_payload)
-
-        logger.info(f"Refine Engine: {action} complete")
+        
+        update_meta(dataset_id, final_payload)
+        logger.info(f"Refine Engine: {action} complete. Schema memory updated.")
 
     except Exception as e:
         logger.exception(f"Pipeline crashed during {action}")
