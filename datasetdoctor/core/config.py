@@ -30,3 +30,12 @@ TEMPLATES_DIR = ROOT_DIR / "templates"
 ALL_DATA_DIRS = [UPLOAD_DIR, CLEAN_DIR, META_DIR]
 
 DEBUG = os.getenv("DEBUG", "False") == "True"
+
+# -------------------------
+# STORAGE CONFIG
+# -------------------------
+STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", "local")  # "local" or "s3"
+
+# S3 CONFIG (only used if STORAGE_BACKEND = "s3")
+#S3_BUCKET = os.getenv("S3_BUCKET", "")
+#S3_REGION = os.getenv("S3_REGION", "us-east-1")
