@@ -1,21 +1,35 @@
-[project]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
+[project]
 name = "datasetdoctor"
 version = "0.1.0"
-
 description = "Dataset quality inspection tool for ML pipelines"
-
+readme = "README.md"
+requires-python = ">=3.10"
 authors = [
     {name = "Asibeh Tenager"}
 ]
-
 dependencies = [
+    "fastapi[standard]",
     "pandas",
-    "fastapi",
-    "uvicorn",
-    "typer"
+    "typer",
+    "scikit-learn",
+    "pydantic",
+    "filelock",
+    "boto3"
+
 ]
 
-[project.scripts]
 
-datasetdoctor = "datasetdoctor.cli:app"
+[tool.fastapi]
+# This replaces your "uvicorn app:app" command for the cloud
+entrypoint = "datasetdoctor.api.api_routes:app"
+
+# Note: As of early 2026, check if your CLI version supports 
+# these experimental scaling flags:
+[tool.fastapi.cloud]
+min_instances = 1
+max_instances = 1
+replicas=1

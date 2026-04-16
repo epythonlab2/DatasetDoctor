@@ -3,70 +3,68 @@ const getUrl = (path) => {
     return origin + (path.startsWith('/') ? '' : '/') + path;
 };
 
+// Helper for waiting between retries
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const API = {
     getUrl,
 
     /**
-     * Fetches the full analysis results.
-     * Used primarily when status is 'ready'.
+     * Enhanced Fetch with Instance Recovery
+     * Specifically designed to handle 404s caused by multi-instance cloud deployments.
      */
+    async fetchWithRetry(url, options = {}, retries = 5) {
+        for (let i = 0; i < retries; i++) {
+            const res = await fetch(url, options);
+            
+            // If it's a 404, we might be hitting the 'wrong' cloud instance.
+            // We retry to 'roll the dice' again with the load balancer.
+            if (res.status === 404 && i < retries - 1) {
+                console.warn(`[RETRYING] Instance mismatch (404) at ${url}. Attempt ${i + 1}`);
+                await sleep(300); // Small delay to let the load balancer switch
+                continue;
+            }
+            
+            if (!res.ok) throw new Error(`API Error: ${res.status}`);
+            return res.json();
+        }
+    },
+
     async fetchAnalysis(id) {
-        const res = await fetch(getUrl(`/analysis/${id}`));
-        if (!res.ok) throw new Error("Failed to fetch analysis");
-        return res.json();
+        return this.fetchWithRetry(getUrl(`/analysis/${id}`));
     },
 
-    /**
-     * Polling Endpoint: Fetches the current metadata/status of the dataset.
-     * Essential for tracking background cleaning progress.
-     */
     async fetchMeta(id) {
-        const res = await fetch(getUrl(`/get_meta/${id}`));
-        if (!res.ok) throw new Error("Failed to fetch metadata");
-        return res.json();
+        // Using get_meta which you defined in your FastAPI routes
+        return this.fetchWithRetry(getUrl(`/get_meta/${id}`));
     },
 
-    /**
-     * Triggers the Background Cleaning Pipeline.
-     * This is a multi-purpose endpoint that sends cleaning instructions to the worker.
-     * * @param {string} id - The unique Dataset UUID.
-     * @param {Object} [payload={ action: 'deduplicate' }] - The cleaning operation details.
-     * @returns {Promise<Object>} The server response or a default processing state.
-     * @throws {Error} If the server rejects the request or the pipeline fails to start.
-     */
     async cleanDataset(id, payload = { action: 'remove_duplicates' }) {
+        // POSTs are less likely to need retries because they 'create' state, 
+        // but we'll use a standard try/catch for safety.
         try {
             const res = await fetch(getUrl(`/clean/${id}`), { 
                 method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                // Crucial: Converts the JS object into a JSON string for the FastAPI backend
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
             
-            // Handle non-2xx status codes
             if (!res.ok) {
-                // Try to parse the specific error message from the backend (e.g., FastAPI's 'detail')
                 const errorData = await res.json().catch(() => ({ 
                     detail: "The cleaning engine encountered a startup error." 
                 }));
                 throw new Error(errorData.detail);
             }
 
-            // Parse response body if it exists, otherwise provide a fallback status
             const text = await res.text();
             return text ? JSON.parse(text) : { status: "processing", stage: "initializing" };
 
         } catch (error) {
             console.error(`[API ERROR] cleanDataset(${id}):`, error);
-            // Re-throw so the UI (Actions.Dedupe) can catch it and show an alert
             throw error;
         }
     },
-    /**
-     * Resets the environment (System-wide).
-     */
+
     async reset() {
         const res = await fetch(getUrl("/reset"), { method: "POST" });
         if (!res.ok) throw new Error("Reset failed");
