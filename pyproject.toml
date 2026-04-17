@@ -17,15 +17,14 @@ dependencies = [
     "typer",
     "scikit-learn",
     "pydantic",
-    "filelock",
-    "boto3"
+    "filelock"
 
 ]
 
 
 [tool.fastapi]
 # This replaces your "uvicorn app:app" command for the cloud
-entrypoint = "datasetdoctor.api.api_routes:app"
+entrypoint = "datasetdoctor.api.main:app"
 
 # Note: As of early 2026, check if your CLI version supports 
 # these experimental scaling flags:
