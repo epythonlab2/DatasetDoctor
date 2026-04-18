@@ -3,7 +3,7 @@
  * Handles the initialization and lifecycle of Chart.js instances.
  * Requires the Chart.js library to be loaded globally.
  */
-import { state } from "./state.js";
+import { state } from "../utils/state.js";
 
 export const Charts = {
     /**

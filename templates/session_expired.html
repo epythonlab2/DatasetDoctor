@@ -1,0 +1,61 @@
+<html>
+    <head>
+        <title>Session Not Found</title>
+        <style>
+            body { font-family: sans-serif; text-align: center; padding-top: 100px; background: #f8fafc; }
+            .card { max-width: 400px; margin: auto; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+            button { cursor: pointer; border: none; padding: 12px 24px; background: #3b82f6; color: white; font-weight: 600; border-radius: 8px; transition: background 0.2s; }
+            button:hover { background: #2563eb; }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <h2>Session Expired</h2>
+            <p style="color: #64748b; margin-bottom: 24px;">You couldn't find your analysis data. Let's start over with a fresh session.</p>
+            <button onclick="performRecoveryReset()">Reset & Start New Analysis</button>
+        </div>
+
+       <script>
+    // 1. Force the history to be "this page" only
+    // We do this multiple times to fill the history buffer
+    function blockBack() {
+        window.history.pushState(null, null, window.location.href);
+    }
+
+    window.onload = function() {
+        blockBack();
+        // Standard trap
+        window.onpopstate = function() {
+            blockBack();
+            // Optional: visual cue
+            console.warn("Session expired. Navigation restricted.");
+        };
+    };
+
+    async function performRecoveryReset() {
+        const btn = document.querySelector('button');
+        btn.disabled = true;
+        btn.innerText = "Reseting...";
+
+        try {
+            // Tell backend to wipe everything
+            await fetch('/reset', { method: 'POST' });
+        } catch (e) {
+            console.error("Reset failed", e);
+        } finally {
+            // 2. USE replace() - This is the most important part.
+            // It replaces the "Expired" page in history with "/"
+            // so clicking 'back' from the home page won't return here.
+            window.location.replace("/");
+        }
+    }
+
+    // 3. Last Resort: If they try to refresh or close, warn them
+    window.onbeforeunload = function() {
+        // Most modern browsers only show a generic message, 
+        // but this prevents accidental navigation.
+        return "Your session has expired. Please reset to continue.";
+    };
+</script>
+    </body>
+</html>

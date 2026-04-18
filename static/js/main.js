@@ -3,7 +3,7 @@
  * Coordinates the polling logic, state initialization, and UI distribution.
  */
 
-import { state } from "./ui/state.js";
+import { state } from "./utils/state.js";
 import { Controller } from "./ui/controller.js";
 import { UI } from "./ui/ui.js";
 import { Table } from "./ui/table.js";
@@ -117,3 +117,24 @@ window.resetAnalysis = async () => {
     }
 };
 window.exportDataset = Actions.export;
+
+window.onload = () => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get('error') === 'session_expired') {
+        // 1. Notify the user
+        alert("Your session has expired or the dataset was not found. Redirecting to reset...");
+
+        // 2. Execute the full reset flow
+        if (typeof window.resetAnalysis === 'function') {
+            window.resetAnalysis().catch(err => {
+                console.error("Reset failed, forcing home:", err);
+                window.location.href = "/";
+            });
+        } else {
+            // Fallback if the Actions module isn't loaded/mapped yet
+            localStorage.clear();
+            window.location.replace("/");
+        }
+    }
+};

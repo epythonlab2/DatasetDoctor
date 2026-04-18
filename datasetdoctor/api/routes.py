@@ -3,7 +3,7 @@ import shutil
 import pandas as pd
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, RedirectResponse, HTMLResponse
 from starlette.concurrency import run_in_threadpool
 
 from datasetdoctor.core import config
@@ -27,6 +27,12 @@ router = APIRouter()
 # -------------------------
 # UI
 # -------------------------
+
+@router.get("/dashboard/", response_class=HTMLResponse)
+async def dashboard_missing_id():
+    path = config.TEMPLATES_DIR / "session_expired.html"
+    return await safe_read_file(path)
+
 @router.get("/", response_class=HTMLResponse)
 async def home():
     path = config.TEMPLATES_DIR / "index.html"
@@ -172,7 +178,7 @@ async def export(dataset_id: str):
     path = get_clean_path(dataset_id)
 
     if not await path_exists(path):
-        raise HTTPException(404, "Dataset not found.")
+        raise HTTPException(404, "No cleaned data available. Please run a cleaning action first.")
 
     return FileResponse(
         path=path,

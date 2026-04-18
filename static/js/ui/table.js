@@ -3,7 +3,7 @@
  * Manages the dynamic generation of diagnostic tables.
  * Handles tab switching and conditional UI rendering based on column health.
  */
-import { state } from "./state.js";
+import { state } from "../utils/state.js";
 
 export const Table = {
     /**

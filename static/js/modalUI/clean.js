@@ -3,8 +3,8 @@
  * Manages the UI lifecycle of the Cleaning/Refinement Modal.
  * Handles fragment preloading, ID extraction from URL, and modal state.
  */
-import { Actions } from './ui/actions.js';
-import { API } from './ui/api.js';
+import { Actions } from '../ui/actions.js';
+import { API } from '../api.js';
 
 export const Clean = {
     /** @type {string|null} Stores the HTML fragment to prevent redundant network requests */
