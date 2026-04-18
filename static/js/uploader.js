@@ -1,219 +1,254 @@
+/**
+ * DataFlow Dashboard Core
+ * -----------------------
+ * A modular approach to dataset uploading and target selection.
+ */
+
 (() => {
     "use strict";
 
-    const $ = (id) => document.getElementById(id);
-
-    // --- NEW: Cloud-Resiliency Helper ---
-    // This function will retry 404s to help hit the "Lucky" instance
-    async function fetchWithRetry(url, options = {}, retries = 5) {
-        for (let i = 0; i < retries; i++) {
-            const res = await fetch(url, options);
-            if (res.status === 404 && i < retries - 1) {
-                console.warn(`[RETRY] Path 404, rolling dice for new instance... (${i + 1}/${retries})`);
-                await new Promise(r => setTimeout(r, 400)); // 400ms delay
-                continue;
-            }
-            return res; // Return the response (even if it's an error after all retries)
-        }
-    }
-
-    const safeText = (value) => value === null || value === undefined ? "" : String(value);
-
-    const showError = (message) => {
-        console.error(message);
-        alert(message);
+    /* --- Constants & State --- */
+    const CONFIG = {
+        RETRY_ATTEMPTS: 5,
+        RETRY_DELAY_MS: 400,
+        DASHBOARD_REDIRECT_DELAY: 600
     };
 
-    window.addEventListener("load", () => {
-        document.body.style.opacity = "1";
-    });
+    const state = {
+        currentStep: 0,
+        datasetId: null,
+        _historyLocked: true
+    };
 
-    let currentStep = 0;
-    const steps = document.querySelectorAll(".step");
+    /* --- UI Engine --- */
+    const UI = {
+        elements: {
+            uploadCard: document.querySelector(".upload-card"),
+            previewSection: document.getElementById("preview-section"),
+            previewTable: document.getElementById("preview-table"),
+            targetSelect: document.getElementById("target-select"),
+            steps: document.querySelectorAll(".step"),
+            overlay: document.getElementById("overlay-loader"),
+            overlayText: document.getElementById("overlay-text"),
+            progressFill: document.getElementById("progress-fill"),
+            progressPercent: document.getElementById("progress-percent"),
+            statusText: document.getElementById("status-text"),
+            continueBtn: document.getElementById("continue-btn"),
+            loadingState: document.getElementById("loading-state")
+        },
 
-    function updateStepperUI() {
-        steps.forEach((step, i) => {
-            step.classList.toggle("active", i === currentStep);
-        });
-    }
+        showStep(index, pushHistory = true) {
+            state.currentStep = index;
+            const isUpload = index === 0;
 
-    function showStep(index) {
-        const uploadCard = document.querySelector(".upload-card");
-        const previewSection = $("preview-section");
-        if (!uploadCard || !previewSection) return;
+            this.elements.uploadCard?.classList.toggle("hidden", !isUpload);
+            this.elements.previewSection?.classList.toggle("hidden", isUpload);
 
-        uploadCard.classList.add("hidden");
-        previewSection.classList.add("hidden");
+            this.elements.steps.forEach((step, i) => {
+                step.classList.toggle("active", i === index);
+            });
 
-        if (index === 0) uploadCard.classList.remove("hidden");
-        if (index === 1) previewSection.classList.remove("hidden");
-
-        currentStep = index;
-        updateStepperUI();
-    }
-
-    const overlay = $("overlay-loader");
-    const overlayText = $("overlay-text");
-
-    function showOverlay(message = "Processing...") {
-        if (!overlay || !overlayText) return;
-        overlayText.textContent = message;
-        overlay.classList.remove("hidden");
-    }
-
-    function hideOverlay() {
-        overlay?.classList.add("hidden");
-    }
-
-    const progressFill = $("progress-fill");
-    const progressPercent = $("progress-percent");
-    const statusText = $("status-text");
-
-    function updateProgress(percent, text) {
-        if (progressFill) progressFill.style.width = `${percent}%`;
-        if (progressPercent) progressPercent.textContent = `${percent}%`;
-        if (text && statusText) statusText.textContent = text;
-    }
-
-    const uploadInput = $("upload");
-    const loading = $("loading-state");
-
-    if (uploadInput) {
-        uploadInput.addEventListener("change", handleUpload);
-    }
-
-    function handleUpload() {
-        const file = uploadInput?.files?.[0];
-        if (!file) return;
-
-        loading?.classList.remove("hidden");
-        updateProgress(0, "Starting upload...");
-
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/upload", true);
-
-        xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-                const percent = Math.round((event.loaded / event.total) * 100);
-                updateProgress(percent, "Uploading...");
+            // Lock history state to current step
+            if (pushHistory) {
+                history.pushState({ step: index }, "", window.location.href);
             }
-        };
+        },
 
-        xhr.onload = async () => {
-            try {
-                if (xhr.status !== 200) throw new Error("Upload failed");
+        updateProgress(percent, text) {
+            if (this.elements.progressFill) this.elements.progressFill.style.width = `${percent}%`;
+            if (this.elements.progressPercent) this.elements.progressPercent.textContent = `${percent}%`;
+            if (text && this.elements.statusText) this.elements.statusText.textContent = text;
+        },
 
-                const data = JSON.parse(xhr.responseText);
-                updateProgress(100, "Syncing across nodes...");
+        toggleOverlay(show, message = "Processing...") {
+            if (!this.elements.overlay) return;
+            if (this.elements.overlayText) this.elements.overlayText.textContent = message;
+            this.elements.overlay.classList.toggle("hidden", !show);
+        },
 
-                // --- FIX 1: Retry the Preview call ---
-                const res = await fetchWithRetry(`/preview/${encodeURIComponent(data.dataset_id)}`);
-                if (!res.ok) throw new Error("Preview fetch failed after retries.");
+        renderPreview(previewData) {
+            const { columns = [], rows = [] } = previewData;
+            const table = this.elements.previewTable;
+            const select = this.elements.targetSelect;
+            if (!table || !select) return;
 
-                const previewData = await res.json();
-                showPreview({
-                    dataset_id: data.dataset_id,
-                    preview: previewData
+            table.innerHTML = "";
+
+            const thead = document.createElement("thead");
+            const headerRow = document.createElement("tr");
+
+            columns.forEach(col => {
+                const th = document.createElement("th");
+                th.textContent = col ?? "";
+                headerRow.appendChild(th);
+            });
+
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            const tbody = document.createElement("tbody");
+
+            rows.forEach(row => {
+                const tr = document.createElement("tr");
+
+                columns.forEach(col => {
+                    const td = document.createElement("td");
+                    td.textContent = row[col] ?? "";
+                    tr.appendChild(td);
                 });
 
-                showStep(1);
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(tbody);
+
+            select.innerHTML = '<option value="" disabled selected>Select target column...</option>';
+            columns.forEach(col => select.add(new Option(col, col)));
+        },
+
+        notifyError(msg) {
+            console.error(`[Error]: ${msg}`);
+            alert(msg);
+        }
+    };
+
+    /* --- Data Engine --- */
+    const Engine = {
+        async request(url, options = {}, retries = CONFIG.RETRY_ATTEMPTS) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const res = await fetch(url, options);
+
+                    if (res.status === 404 && i < retries - 1) {
+                        await new Promise(r => setTimeout(r, CONFIG.RETRY_DELAY_MS));
+                        continue;
+                    }
+
+                    if (!res.ok) throw new Error(`Server returned ${res.status}`);
+                    return await res.json();
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                }
+            }
+        },
+
+        uploadFile(file, onProgress, onSuccess, onError) {
+            const xhr = new XMLHttpRequest();
+            const formData = new FormData();
+            formData.append("file", file);
+
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    onProgress(percent);
+                }
+            };
+
+            xhr.onload = () =>
+                xhr.status === 200
+                    ? onSuccess(JSON.parse(xhr.responseText))
+                    : onError("Upload failed.");
+
+            xhr.onerror = () => onError("Network error during upload.");
+
+            xhr.open("POST", "/upload");
+            xhr.send(formData);
+        }
+    };
+
+    /* --- Application Logic (Controller) --- */
+    const App = {
+        init() {
+            this.bindEvents();
+
+            // Initialize history lock
+            history.replaceState({ step: 0 }, "", window.location.href);
+            window.addEventListener("popstate", this.handleBackForward.bind(this));
+
+            document.body.style.opacity = "1";
+        },
+
+        handleBackForward(event) {
+            if (!state._historyLocked) return;
+
+            // Force user back to current step (neutralize back/forward)
+            const step = event.state?.step ?? state.currentStep;
+            UI.showStep(step, false);
+            history.pushState({ step }, "", window.location.href);
+        },
+
+        bindEvents() {
+            document.getElementById("upload")?.addEventListener("change", (e) => this.handleFileUpload(e));
+            document.getElementById("back-btn")?.addEventListener("click", () => UI.showStep(0));
+            document.getElementById("continue-btn")?.addEventListener("click", () => this.handleSetTarget());
+        },
+
+        handleFileUpload(e) {
+            const file = e.target.files?.[0];
+            if (!file) return;
+
+            UI.elements.loadingState?.classList.remove("hidden");
+            UI.updateProgress(0, "Starting upload...");
+
+            Engine.uploadFile(
+                file,
+                (percent) => UI.updateProgress(percent, percent < 100 ? "Uploading..." : "Syncing..."),
+                async (data) => {
+                    try {
+                        state.datasetId = data.dataset_id;
+
+                        const preview = await Engine.request(
+                            `/preview/${encodeURIComponent(state.datasetId)}`
+                        );
+
+                        UI.renderPreview(preview);
+                        UI.showStep(1);
+
+                    } catch {
+                        UI.notifyError("Failed to load preview.");
+                    } finally {
+                        UI.elements.loadingState?.classList.add("hidden");
+                    }
+                },
+                (err) => {
+                    UI.notifyError(err);
+                    UI.elements.loadingState?.classList.add("hidden");
+                }
+            );
+        },
+
+        async handleSetTarget() {
+            const target = UI.elements.targetSelect?.value;
+
+            if (!state.datasetId || !target) {
+                return UI.notifyError("Please select a target column.");
+            }
+
+            UI.toggleOverlay(true, "Updating target...");
+            UI.elements.continueBtn.disabled = true;
+
+            try {
+                await Engine.request(`/set-target/${encodeURIComponent(state.datasetId)}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ target })
+                });
+
+                UI.toggleOverlay(true, "Launching dashboard...");
+
+                setTimeout(() => {
+                    state._historyLocked = false; // unlock before navigation
+                    window.location.href = `/dashboard/${encodeURIComponent(state.datasetId)}`;
+                }, CONFIG.DASHBOARD_REDIRECT_DELAY);
 
             } catch (err) {
-                showError(err.message);
-            } finally {
-                loading?.classList.add("hidden");
+                UI.notifyError(err.message);
+                UI.toggleOverlay(false);
+                UI.elements.continueBtn.disabled = false;
             }
-        };
-
-        xhr.send(formData);
-    }
-
-    function showPreview(data) {
-        const table = $("preview-table");
-        const select = $("target-select");
-        const previewSection = $("preview-section");
-
-        if (!table || !select || !previewSection) return;
-
-        const { columns = [], rows = [] } = data.preview || {};
-        table.innerHTML = "";
-        select.innerHTML = "";
-
-        const thead = document.createElement("thead");
-        const headerRow = document.createElement("tr");
-        columns.forEach(col => {
-            const th = document.createElement("th");
-            th.textContent = safeText(col);
-            headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-
-        const tbody = document.createElement("tbody");
-        rows.forEach(row => {
-            const tr = document.createElement("tr");
-            columns.forEach(col => {
-                const td = document.createElement("td");
-                td.textContent = safeText(row[col]);
-                tr.appendChild(td);
-            });
-            tbody.appendChild(tr);
-        });
-
-        table.appendChild(thead);
-        table.appendChild(tbody);
-
-        columns.forEach(col => {
-            const option = document.createElement("option");
-            option.value = col;
-            option.textContent = col;
-            select.appendChild(option);
-        });
-
-        previewSection.dataset.datasetId = data.dataset_id;
-    }
-
-    $("back-btn")?.addEventListener("click", () => showStep(0));
-
-    $("continue-btn")?.addEventListener("click", async () => {
-        const previewSection = $("preview-section");
-        const datasetId = previewSection?.dataset?.datasetId;
-        const target = $("target-select")?.value;
-
-        if (!datasetId || !target) {
-            showError("Please select a target column.");
-            return;
         }
+    };
 
-        showOverlay("Updating target...");
-        $("continue-btn").disabled = true;
-
-        try {
-            // --- FIX 2: Retry the Set-Target call ---
-            const res = await fetchWithRetry(`/set-target/${encodeURIComponent(datasetId)}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ target })
-            });
-
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.detail || "Failed to set target");
-            }
-
-            overlayText.textContent = "Launching dashboard...";
-            setTimeout(() => {
-                window.location.href = `/dashboard/${encodeURIComponent(datasetId)}`;
-            }, 600);
-
-        } catch (err) {
-            showError(err.message);
-            hideOverlay();
-        } finally {
-            $("continue-btn").disabled = false;
-        }
-    });
+    App.init();
 
 })();
