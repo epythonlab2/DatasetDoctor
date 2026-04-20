@@ -7,6 +7,10 @@ import { UIRenderer } from "./ui.renderer.js";
 
 export const UI = {
 
+  /* =========================================================
+     1. BASIC UI SETTERS (NO LOGIC)
+  ========================================================= */
+
   setCurrentFile(name) {
     UIEngine.setText("current-file", name);
   },
@@ -27,6 +31,10 @@ export const UI = {
       Analyzing dataset patterns...
     `);
   },
+
+  /* =========================================================
+     2. STATE → UI RENDERERS (PURE VISUAL UPDATE)
+  ========================================================= */
 
   updateMetrics(data) {
     const { summary = {} } = data;
@@ -59,10 +67,12 @@ export const UI = {
   updateImbalance(imb) {
     UIEngine.setDisplay("imbalance-alert", imb?.is_imbalanced ? "inline-block" : "none");
 
-    if (!imb || Object.keys(imb).length === 0) {
-      UIEngine.setText("target-column-display", "Detecting...");
-    } else {
-      UIEngine.setText("target-column-display", imb.target_column || "Not Set");
+    UIEngine.setText(
+      "target-column-display",
+      imb?.target_column || (imb ? "Not Set" : "Detecting...")
+    );
+
+    if (imb?.target_column) {
       UIEngine.setStyle("target-column-display", { color: "var(--primary)" });
     }
   },
@@ -94,7 +104,7 @@ export const UI = {
       return;
     }
 
-    // 🔴 IMPORTANT: KEEP THIS (behavior preserved)
+    // ✅ STATE UPDATE (kept, but now clearly isolated)
     state.statistics = data.statistics || {};
     state.predictivePower = data.predictive_power || {};
 
@@ -111,45 +121,50 @@ export const UI = {
       duplicate_columns: duplicates = []
     } = leakage || {};
 
-    const hasIssues = perfect.length > 0 || highCorr.length > 0 || duplicates.length > 0;
+    const hasIssues = perfect.length || highCorr.length || duplicates.length;
 
     if (!hasIssues) {
-      el.innerHTML = this._generateCleanLeakageHTML();
+      el.innerHTML = this._cleanLeakageHTML();
       if (window.lucide) lucide.createIcons();
       return;
     }
 
     const isHighRisk = leakage.leakage_risk === "HIGH" || perfect.length > 0;
-    const config = this._getLeakageConfig(isHighRisk);
+    const cfg = this._leakageConfig(isHighRisk);
 
     el.innerHTML = `
-      <div class="card leakage-card ${config.class} p-4 mb-4" 
-           style="border-left: 6px solid ${config.accent}; background: ${config.bg}; box-shadow: var(--shadow);">
+      <div class="card leakage-card ${cfg.class} p-4 mb-4"
+           style="border-left: 6px solid ${cfg.accent}; background: ${cfg.bg}; box-shadow: var(--shadow);">
         
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h3 class="h5 mb-0 d-flex align-items-center">
-            <i data-lucide="${config.headerIcon}" class="me-2"></i>
+            <i data-lucide="${cfg.headerIcon}" class="me-2"></i>
             Data Leakage Analysis
           </h3>
-          <span class="badge ${config.badgeClass}">
+          <span class="badge ${cfg.badgeClass}">
             ${leakage.leakage_risk} RISK
           </span>
+          <p>Detected features that might "cheat" by having access to target info during training</p>
         </div>
 
         <div class="leakage-details">
-          ${this._renderLeakageGroup("PERFECT PREDICTORS", perfect, "zap-off", "bg-danger", "text-danger")}
-          ${this._renderLeakageGroup("HIGH CORRELATION (>0.90)", highCorr, config.itemIcon, "bg-warning text-dark", config.textClass)}
-          ${this._renderLeakageGroup("DUPLICATE COLUMNS", duplicates, "copy", "bg-secondary", "text-secondary")}
+          ${this._group("PERFECT PREDICTORS", perfect, "zap-off", "bg-danger", "text-danger")}
+          ${this._group("HIGH CORRELATION (>0.90)", highCorr, cfg.itemIcon, "bg-warning text-dark", cfg.textClass)}
+          ${this._group("DUPLICATE COLUMNS", duplicates, "copy", "bg-secondary", "text-secondary")}
         </div>
 
-        <div class="small mt-3">${config.msg}</div>
+        <div class="small mt-3">${cfg.msg}</div>
       </div>`;
 
     if (window.lucide) lucide.createIcons();
   },
 
-  _getLeakageConfig(isHighRisk) {
-    return isHighRisk
+  /* =========================================================
+     3. INTERNAL HELPERS (PURE)
+  ========================================================= */
+
+  _leakageConfig(high) {
+    return high
       ? {
           class: "border-danger",
           bg: "#fff5f5",
@@ -158,7 +173,7 @@ export const UI = {
           itemIcon: "shield-alert",
           textClass: "text-danger",
           badgeClass: "bg-danger",
-          msg: "<strong>Critical:</strong> Perfect predictors found."
+          msg: "<strong>Critical:</strong> Perfect predictors found. Remove these immediately to prevent data leakage."
         }
       : {
           class: "border-warning",
@@ -168,11 +183,11 @@ export const UI = {
           itemIcon: "eye",
           textClass: "text-warning-dark",
           badgeClass: "bg-warning text-dark",
-          msg: "<strong>Warning:</strong> High correlation detected."
+          msg: "<strong>Warning:</strong> High correlation detected. Verify these features aren't 'cheating' by looking ahead."
         };
   },
 
-  _renderLeakageGroup(title, items, icon, badgeCls, textCls) {
+  _group(title, items, icon, badgeCls, textCls) {
     if (!items.length) return '';
     return `
       <div class="mb-3">
@@ -180,15 +195,29 @@ export const UI = {
           <i data-lucide="${icon}"></i> ${title}:
         </span>
         <div class="mt-2">
-          ${items.map(item => `<span class="badge ${badgeCls} m-1">${item}</span>`).join("")}
+          ${items.map(i => `<span class="badge ${badgeCls} m-1">${i}</span>`).join("")}
         </div>
       </div>`;
   },
 
-  _generateCleanLeakageHTML() {
-    return `
-      <div class="alert alert-success">
-        ✅ Data Integrity Verified
-      </div>`;
+  /** Private Helper: Clean Leakage UI */
+
+    _cleanLeakageHTML() {
+
+        return `
+
+            <div class="alert alert-success d-flex align-items-center mb-4" 
+
+                 style="border-left: 6px solid var(--success); background: #f0fdf4; padding: 1.25rem; border-radius: var(--radius-lg);">
+
+                <i data-lucide="shield-check" class="" style="width:24px; color: var(--success);"></i> 
+
+                <div style="color: #166534;">
+
+                    <strong>Data Integrity Verified:</strong> No leakage or redundant predictors detected.
+
+                </div>
+
+            </div>`;
   }
 };

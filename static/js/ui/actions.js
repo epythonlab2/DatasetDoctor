@@ -20,10 +20,10 @@ export const Actions = {
       this._clearPolling();
       state.datasetId = null;
       await withTimeout(API.reset());
-      window.location.replace("/");
+      window.location.replace("/uploader");
     } catch (err) {
       console.error("Reset failed:", err);
-      window.location.href = "/";
+      window.location.href = "/uploader";
     }
   },
 
