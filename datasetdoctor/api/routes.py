@@ -38,6 +38,11 @@ async def home():
     path = config.TEMPLATES_DIR / "index.html"
     return await safe_read_file(path)
 
+@router.get("/uploader", response_class=HTMLResponse)
+async def uploader():
+    path = config.TEMPLATES_DIR / "upload.html"
+    return await safe_read_file(path)
+
 
 @router.get("/dashboard/{dataset_id}", response_class=HTMLResponse)
 async def dashboard(dataset_id: str):
