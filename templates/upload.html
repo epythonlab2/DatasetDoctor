@@ -108,5 +108,20 @@
     </div>
 
     <script type="module" src="/static/js/uploader.js"></script>
+    
+    <script>
+       // Force reload when coming back via browser cache (back/forward)
+	window.addEventListener("pageshow", (event) => {
+	    const nav = performance.getEntriesByType("navigation")[0];
+
+	    const isBackForward =
+		event.persisted || (nav && nav.type === "back_forward");
+
+	    if (isBackForward) {
+		// 🔥 Hard reload so app re-validates state
+		window.location.reload();
+	    }
+	});
+</script>
   </body>
 </html>
