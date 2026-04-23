@@ -14,18 +14,27 @@ export const Actions = {
 
   /* ---------- Session & Export ---------- */
 
-  async reset() {
+async reset() {
     if (!confirm("This will delete all analysis. Continue?")) return;
+
     try {
-      this._clearPolling();
-      state.datasetId = null;
-      await withTimeout(API.reset());
-      window.location.replace("/uploader");
+        this._clearPolling();
+
+        // 🔥 Invalidate session BEFORE redirect
+        state.datasetId = null;
+
+        await withTimeout(API.reset());
+
+        // 🔥 Replace history so back button won't return here
+        window.location.replace("/uploader");
+
     } catch (err) {
-      console.error("Reset failed:", err);
-      window.location.href = "/uploader";
+        console.error("Reset failed:", err);
+
+        // fallback redirect
+        window.location.replace("/uploader");
     }
-  },
+},
 
   async export() {
     const id = state.datasetId;
