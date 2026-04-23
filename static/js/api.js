@@ -33,6 +33,42 @@ export const API = {
         }
     },
 
+    /* ---------- File Upload Logic ---------- */
+
+    /**
+     * Specialized XHR upload to support progress events.
+     */
+    uploadFile(file, onProgress) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            const formData = new FormData();
+            formData.append("file", file);
+
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    onProgress(percent);
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    try {
+                        resolve(JSON.parse(xhr.responseText));
+                    } catch (e) {
+                        reject(new Error("Malformed server response."));
+                    }
+                } else {
+                    reject(new Error(`Upload failed: ${xhr.status}`));
+                }
+            };
+
+            xhr.onerror = () => reject(new Error("Network error during upload."));
+            xhr.open("POST", getUrl("/upload"));
+            xhr.send(formData);
+        });
+    },
+
     /* ---------- Data Retrieval ---------- */
 
     async fetchAnalysis(id) {
@@ -82,9 +118,6 @@ export const API = {
 
     /* ---------- Export Logic ---------- */
 
-    /**
-     * Checks if a clean file exists before allowing the download.
-     */
     async verifyExport(id) {
         const res = await fetch(getUrl(`/export/${encodeURIComponent(id)}`), { method: 'GET' });
         if (!res.ok) {

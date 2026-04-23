@@ -1,27 +1,39 @@
 /**
  * DataFlow Dashboard Core
- * -----------------------
- * A modular approach to dataset uploading and target selection.
+ * @module Uploader
+ * @description Manages the multi-step dataset upload process, including file 
+ * ingestion, progress tracking, preview rendering, and target selection.
  */
+
+import { API } from './api.js';
 
 (() => {
     "use strict";
 
-    /* --- Constants & State --- */
+    /**
+     * Application Constants
+     * @type {Object}
+     */
     const CONFIG = {
-        RETRY_ATTEMPTS: 5,
-        RETRY_DELAY_MS: 400,
         DASHBOARD_REDIRECT_DELAY: 600
     };
 
+    /**
+     * Application State
+     * @type {Object}
+     */
     const state = {
         currentStep: 0,
         datasetId: null,
-        _historyLocked: true
+        _historyLocked: true // Prevents browser navigation until explicit actions occur
     };
 
-    /* --- UI Engine --- */
+    /**
+     * UI Engine
+     * Handles all DOM manipulations and visual updates.
+     */
     const UI = {
+        /** @type {Object<string, HTMLElement|NodeList>} */
         elements: {
             uploadCard: document.querySelector(".upload-card"),
             previewSection: document.getElementById("preview-section"),
@@ -31,195 +43,192 @@
             overlay: document.getElementById("overlay-loader"),
             overlayText: document.getElementById("overlay-text"),
             progressFill: document.getElementById("progress-fill"),
+            fileNameDisplay: document.getElementById("file-name-display"),
             progressPercent: document.getElementById("progress-percent"),
             statusText: document.getElementById("status-text"),
             continueBtn: document.getElementById("continue-btn"),
             loadingState: document.getElementById("loading-state")
         },
 
+        /**
+         * Updates the UI to display the selected filename.
+         * @param {string} name 
+         */
+        setFileName(name) {
+            if (this.elements.fileNameDisplay) {
+                this.elements.fileNameDisplay.textContent = name || "";
+            }
+        },
+
+        /**
+         * Orchestrates visibility between upload and preview steps.
+         * @param {number} index - The step index to show.
+         * @param {boolean} [pushHistory=true] - Whether to update browser history.
+         */
         showStep(index, pushHistory = true) {
             state.currentStep = index;
             const isUpload = index === 0;
 
+            // Toggle visibility classes
             this.elements.uploadCard?.classList.toggle("hidden", !isUpload);
             this.elements.previewSection?.classList.toggle("hidden", isUpload);
 
-            this.elements.steps.forEach((step, i) => {
-                step.classList.toggle("active", i === index);
-            });
+            // Update stepper visual indicators
+            this.elements.steps.forEach((step, i) => step.classList.toggle("active", i === index));
 
-            // Lock history state to current step
             if (pushHistory) {
                 history.pushState({ step: index }, "", window.location.href);
             }
         },
 
+        /**
+         * Updates progress bar and status text.
+         * @param {number} percent - Completion percentage.
+         * @param {string} text - Status message.
+         */
         updateProgress(percent, text) {
             if (this.elements.progressFill) this.elements.progressFill.style.width = `${percent}%`;
             if (this.elements.progressPercent) this.elements.progressPercent.textContent = `${percent}%`;
             if (text && this.elements.statusText) this.elements.statusText.textContent = text;
         },
 
+        /**
+         * Toggles global processing overlay.
+         * @param {boolean} show 
+         * @param {string} [message="Processing..."] 
+         */
         toggleOverlay(show, message = "Processing...") {
             if (!this.elements.overlay) return;
             if (this.elements.overlayText) this.elements.overlayText.textContent = message;
             this.elements.overlay.classList.toggle("hidden", !show);
         },
 
+        /**
+         * Generates and injects the preview table and populates the target dropdown.
+         * @param {Object} previewData 
+         */
         renderPreview(previewData) {
             const { columns = [], rows = [] } = previewData;
-            const table = this.elements.previewTable;
-            const select = this.elements.targetSelect;
-            if (!table || !select) return;
+            const { previewTable, targetSelect } = this.elements;
+            if (!previewTable || !targetSelect) return;
 
-            table.innerHTML = "";
+            // Clear previous content
+            previewTable.innerHTML = "";
 
+            // Build Header
             const thead = document.createElement("thead");
             const headerRow = document.createElement("tr");
-
             columns.forEach(col => {
                 const th = document.createElement("th");
                 th.textContent = col ?? "";
                 headerRow.appendChild(th);
             });
-
             thead.appendChild(headerRow);
-            table.appendChild(thead);
+            previewTable.appendChild(thead);
 
+            // Build Body
             const tbody = document.createElement("tbody");
-
             rows.forEach(row => {
                 const tr = document.createElement("tr");
-
                 columns.forEach(col => {
                     const td = document.createElement("td");
                     td.textContent = row[col] ?? "";
                     tr.appendChild(td);
                 });
-
                 tbody.appendChild(tr);
             });
+            previewTable.appendChild(tbody);
 
-            table.appendChild(tbody);
-
-            select.innerHTML = '<option value="" disabled selected>Select target column...</option>';
-            columns.forEach(col => select.add(new Option(col, col)));
+            // Build Dropdown
+            targetSelect.innerHTML = '<option value="" disabled selected>Select target column...</option>';
+            columns.forEach(col => targetSelect.add(new Option(col, col)));
         },
 
+        /**
+         * Error communication interface.
+         * @param {string} msg 
+         */
         notifyError(msg) {
-            console.error(`[Error]: ${msg}`);
-            alert(msg);
+            console.error(`[DataFlow Error]: ${msg}`);
+            alert(msg); // Placeholder for production toast system
         }
     };
 
-    /* --- Data Engine --- */
-    const Engine = {
-        async request(url, options = {}, retries = CONFIG.RETRY_ATTEMPTS) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const res = await fetch(url, options);
-
-                    if (res.status === 404 && i < retries - 1) {
-                        await new Promise(r => setTimeout(r, CONFIG.RETRY_DELAY_MS));
-                        continue;
-                    }
-
-                    if (!res.ok) throw new Error(`Server returned ${res.status}`);
-                    return await res.json();
-                } catch (err) {
-                    if (i === retries - 1) throw err;
-                }
-            }
-        },
-
-        uploadFile(file, onProgress, onSuccess, onError) {
-            const xhr = new XMLHttpRequest();
-            const formData = new FormData();
-            formData.append("file", file);
-
-            xhr.upload.onprogress = (e) => {
-                if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    onProgress(percent);
-                }
-            };
-
-            xhr.onload = () =>
-                xhr.status === 200
-                    ? onSuccess(JSON.parse(xhr.responseText))
-                    : onError("Upload failed.");
-
-            xhr.onerror = () => onError("Network error during upload.");
-
-            xhr.open("POST", "/upload");
-            xhr.send(formData);
-        }
-    };
-
-    /* --- Application Logic (Controller) --- */
+    /**
+     * Application Controller
+     * Orchestrates events, API interaction, and state changes.
+     */
     const App = {
+        /**
+         * Initializes application and sets default navigation state.
+         */
         init() {
             this.bindEvents();
-
-            // Initialize history lock
             history.replaceState({ step: 0 }, "", window.location.href);
             window.addEventListener("popstate", this.handleBackForward.bind(this));
-
+            
+            // Fade-in effect for the dashboard
             document.body.style.opacity = "1";
         },
 
+        /**
+         * Handles native browser navigation (back/forward buttons).
+         * Neutralizes external navigation if history is locked.
+         */
         handleBackForward(event) {
             if (!state._historyLocked) return;
-
-            // Force user back to current step (neutralize back/forward)
             const step = event.state?.step ?? state.currentStep;
             UI.showStep(step, false);
             history.pushState({ step }, "", window.location.href);
         },
 
+        /**
+         * Attaches event listeners to primary interactive elements.
+         */
         bindEvents() {
             document.getElementById("upload")?.addEventListener("change", (e) => this.handleFileUpload(e));
             document.getElementById("back-btn")?.addEventListener("click", () => UI.showStep(0));
             document.getElementById("continue-btn")?.addEventListener("click", () => this.handleSetTarget());
         },
 
-        handleFileUpload(e) {
+        /**
+         * Handles file selection, upload progress, and initial data fetching.
+         * @param {Event} e 
+         */
+        async handleFileUpload(e) {
             const file = e.target.files?.[0];
             if (!file) return;
 
+            UI.setFileName(file.name);
             UI.elements.loadingState?.classList.remove("hidden");
             UI.updateProgress(0, "Starting upload...");
 
-            Engine.uploadFile(
-                file,
-                (percent) => UI.updateProgress(percent, percent < 100 ? "Uploading..." : "Syncing..."),
-                async (data) => {
-                    try {
-                        state.datasetId = data.dataset_id;
+            try {
+                // 1. Process File Upload
+                const data = await API.uploadFile(file, (percent) => {
+                    UI.updateProgress(percent, percent < 100 ? "Uploading..." : "Syncing...");
+                });
 
-                        const preview = await Engine.request(
-                            `/preview/${encodeURIComponent(state.datasetId)}`
-                        );
+                state.datasetId = data.dataset_id;
 
-                        UI.renderPreview(preview);
-                        UI.showStep(1);
+                // 2. Load Dataset Preview
+                const preview = await API.fetchPreview(state.datasetId);
+                UI.renderPreview(preview);
+                UI.showStep(1);
 
-                    } catch {
-                        UI.notifyError("Failed to load preview.");
-                    } finally {
-                        UI.elements.loadingState?.classList.add("hidden");
-                    }
-                },
-                (err) => {
-                    UI.notifyError(err);
-                    UI.elements.loadingState?.classList.add("hidden");
-                }
-            );
+            } catch (err) {
+                UI.notifyError(err.message || "Failed to process dataset.");
+                UI.setFileName(""); // Reset on failure
+            } finally {
+                UI.elements.loadingState?.classList.add("hidden");
+            }
         },
 
+        /**
+         * Finalizes the target selection and redirects to the analysis dashboard.
+         */
         async handleSetTarget() {
             const target = UI.elements.targetSelect?.value;
-
             if (!state.datasetId || !target) {
                 return UI.notifyError("Please select a target column.");
             }
@@ -228,16 +237,13 @@
             UI.elements.continueBtn.disabled = true;
 
             try {
-                await Engine.request(`/set-target/${encodeURIComponent(state.datasetId)}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ target })
-                });
+                await API.setTarget(state.datasetId, target);
 
                 UI.toggleOverlay(true, "Launching dashboard...");
-
+                
+                // Controlled redirect to the final dashboard view
                 setTimeout(() => {
-                    state._historyLocked = false; // unlock before navigation
+                    state._historyLocked = false;
                     window.location.href = `/dashboard/${encodeURIComponent(state.datasetId)}`;
                 }, CONFIG.DASHBOARD_REDIRECT_DELAY);
 
@@ -249,6 +255,6 @@
         }
     };
 
+    // Entry point
     App.init();
-
 })();
