@@ -102,12 +102,22 @@ export const Actions = {
   /* ---------- Schema Casting Core ---------- */
 
   toggleCastTip(event) {
-    if (event) event.stopPropagation();
+    event.stopPropagation(); 
     const popup = document.getElementById('cast-tip-popup');
     if (!popup) return;
-    const isHidden = popup.style.display === 'none' || popup.style.display === '';
-    popup.style.display = isHidden ? 'block' : 'none';
+
+    const isShowing = popup.style.display === 'block';
+    popup.style.display = isShowing ? 'none' : 'block';
+
+    if (!isShowing) {
+      const closeHandler = () => {
+        popup.style.display = 'none';
+        document.removeEventListener('click', closeHandler);
+      };
+      setTimeout(() => document.addEventListener('click', closeHandler), 10);
+    }
   },
+
 
   async runCast() {
     const col = document.getElementById("cast-column")?.value;

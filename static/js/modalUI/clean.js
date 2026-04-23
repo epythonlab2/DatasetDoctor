@@ -67,7 +67,7 @@ export const Clean = {
         placeholder.innerHTML = `
             <div class="text-center p-5">
                 <div class="spinner-border text-primary mb-3" role="status"></div>
-                <p class="text-muted small fw-medium">Preparing surgery suite...</p>
+                <p class="text-muted small fw-medium">Preparing cleaning suite...</p>
             </div>
         `;
 
