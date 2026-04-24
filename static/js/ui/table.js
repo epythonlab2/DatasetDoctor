@@ -159,7 +159,8 @@ export const Table = {
             <th>Feature</th>
             <th>Mean</th>
             <th>Std Dev</th>
-            <th>Median</th>
+            <th>Median(50%)</th>
+            
             <th style="width: 200px;">Predictive Signal</th>
         </tr>`;
 

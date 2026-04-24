@@ -5,7 +5,14 @@
  * ingestion, progress tracking, preview rendering, and target selection.
  */
 
+import { initNavigationGuard } from './utils/navigationGuard.js';
+
 import { API } from './api.js';
+
+
+// Initialize the navigation guard immediately at the top of the file
+initNavigationGuard();
+
 
 (() => {
     "use strict";
@@ -65,7 +72,7 @@ import { API } from './api.js';
          * @param {number} index - The step index to show.
          * @param {boolean} [pushHistory=true] - Whether to update browser history.
          */
-        showStep(index, pushHistory = true) {
+        showStep(index, pushHistory = false) {
             state.currentStep = index;
             const isUpload = index === 0;
 
@@ -79,6 +86,10 @@ import { API } from './api.js';
             if (pushHistory) {
                 history.pushState({ step: index }, "", window.location.href);
             }
+            else {
+		// This keeps the URL the same without adding "back" steps
+		history.replaceState({ step: index }, "", window.location.href);
+	    }
         },
 
         /**

@@ -155,46 +155,35 @@
         </div>
     </div>
 
-    <script>
-        // Initialize Icons
-        lucide.createIcons();
+    <script type="module">
+    lucide.createIcons();
+    import { API } from '/static/js/api.js';
 
-        // 1. Navigation Restriction
-        function blockBack() {
-            window.history.pushState(null, null, window.location.href);
-        }
+	(async () => {
+	    // 1. Immediately block the back button
+	    const blockBack = () => window.history.pushState(null, null, window.location.href);
+	    blockBack();
+	    window.onpopstate = blockBack;
 
-        window.onload = function() {
-            blockBack();
-            window.onpopstate = blockBack;
-        };
+	    // 2. Clear navigation guards to allow automatic redirect
+	    window.onbeforeunload = null;
 
-        // 2. Optimized Recovery Logic
-        async function performRecoveryReset() {
-            const btn = document.getElementById('reset-btn');
-            const spinner = document.getElementById('btn-spinner');
-            const btnText = document.getElementById('btn-text');
+	    try {
+		const datasetId = localStorage.getItem("dataset_id");
 
-            // UI Feedback
-            btn.disabled = true;
-            spinner.style.display = "block";
-            btnText.innerText = "Reseting...";
-
-            try {
-                // Post to backend reset endpoint
-                await fetch('/reset', { method: 'POST' });
-            } catch (e) {
-                console.error("Critical: Reset protocol failed", e);
-            } finally {
-                // Force replace history to home to prevent "back" loops
-                window.location.replace("/");
-            }
-        }
-
-        // Prevent accidental closing
-        window.onbeforeunload = function() {
-            return "Session expired. Navigation is restricted until reset.";
-        };
-    </script>
+		if (datasetId) {
+		    // Redirect to active analysis
+		    window.location.replace(`/dashboard/${encodeURIComponent(datasetId)}`);
+		} else {
+		    // No session found, send to start
+		    window.location.replace("/uploader");
+		}
+	    } catch (e) {
+		console.error("Routing error:", e);
+		// Emergency fallback to uploader if localStorage fails
+		window.location.replace("/uploader");
+	    }
+})();
+</script>
 </body>
 </html>

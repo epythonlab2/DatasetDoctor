@@ -20,7 +20,7 @@ export const About = {
         });
 
         // Optional preload
-        this._preload();
+        //this._preload();
     },
 
     async _preload() {

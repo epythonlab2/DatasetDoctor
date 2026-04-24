@@ -52,11 +52,33 @@ class SmartCastPlugin(CleaningPlugin):
                     1: True, 0: False,
                     True: True, False: False
                 }
+            
                 # Standardize to string for mapping, then cast to nullable boolean
                 df_cleaned[target_column] = df_cleaned[target_column].astype(str).str.lower().map(bool_map).astype("boolean")
             
-            elif target_type == "string":
-                df_cleaned[target_column] = df_cleaned[target_column].astype(str)
+            elif target_type == "encode":
+                col = target_column  # enforce consistency
+
+                # 1. Clean values (DO NOT blindly cast to string)
+                series = df_cleaned[col]
+
+                # 2. Get unique categories safely
+                unique_vals = sorted(series.dropna().unique())
+
+                # 3. Create mapping for ALL cases (not just binary)
+                mapping = {val: idx for idx, val in enumerate(unique_vals)}
+
+                # 4. Apply mapping
+                encoded = series.map(mapping)
+
+                # 5. Validate: detect unmapped values
+                if encoded.isna().any():
+                    missing = series[encoded.isna()].unique()
+                    raise ValueError(f"Unmapped values found: {missing}")
+
+                # 6. Enforce integer type
+                df_cleaned[col] = encoded.astype("int64")
+                            
 
             else:
                 return df, {"error": f"Unsupported target type: {target_type}"}
