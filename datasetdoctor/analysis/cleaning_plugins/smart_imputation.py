@@ -50,7 +50,7 @@ class SmartImputationPlugin(CleaningPlugin):
         # FIX: Changed fill_na() to fillna()
         df_cleaned[target_column] = col_data.fillna(fill_value)
 
-        logger.info(f"Imputed {initial_nulls} values in '{target_column}' using {strategy}.")
+        logger.info(f"Imputed {initial_nulls} values in '{target_column}' using {strategy} with value {fill_value}.")
 
         return df_cleaned, {
             "column": target_column,

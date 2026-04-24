@@ -118,7 +118,8 @@ def run_cleaning(
         if "columns" in results:
             ui_type_map = {
                 "date": "datetime64[ns]", "datetime": "datetime64[ns]",
-                "float": "float64", "int": "Int64", "bool": "boolean"
+                "float": "float64", "int": "Int64", "bool": "boolean",
+                "encode":"Int64"
             }
 
             # Update memory if we just performed a cast

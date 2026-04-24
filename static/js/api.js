@@ -72,6 +72,7 @@ export const API = {
     /* ---------- Data Retrieval ---------- */
 
     async fetchAnalysis(id) {
+    	localStorage.setItem("dataset_id", id);
         return this.fetchWithRetry(getUrl(`/analysis/${id}`));
     },
 
@@ -129,9 +130,12 @@ export const API = {
 
     /* ---------- System ---------- */
 
-    async reset() {
-        const res = await fetch(getUrl("/reset"), { method: "POST" });
+    async reset(datasetId) {
+        const res = await fetch(getUrl(`/reset/${encodeURIComponent(datasetId)}`),
+        { method: "POST" });
         if (!res.ok) throw new Error("Reset failed");
         return res.json();
     }
 };
+
+

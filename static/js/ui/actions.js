@@ -14,28 +14,44 @@ export const Actions = {
 
   /* ---------- Session & Export ---------- */
 
-async reset() {
+  async reset() {
     if (!confirm("This will delete all analysis. Continue?")) return;
-
+           
     try {
-        this._clearPolling();
+      this._clearPolling();
 
-        // 🔥 Invalidate session BEFORE redirect
+        // 🔥 Get dataset ID BEFORE clearing it
+        const getDatasetIdFromUrl = () => {
+            const parts = window.location.pathname.split('/').filter(Boolean);
+            return parts.length ? parts[parts.length - 1] : null;
+        };
+
+        const id = state.datasetId || getDatasetIdFromUrl();
+
+        if (!id) {
+            console.warn("No datasetId found. Skipping backend reset.");
+        } else {
+            // 🔥 Call API with dataset ID
+            await withTimeout(API.reset(id));
+            // Removes specifically the dataset_id
+	    localStorage.removeItem("dataset_id");
+        }
+
+        // 🔥 Now invalidate local state
         state.datasetId = null;
 
-        await withTimeout(API.reset());
-
-        // 🔥 Replace history so back button won't return here
+        // 🔥 Clean redirect (no back history)
         window.location.replace("/uploader");
 
     } catch (err) {
         console.error("Reset failed:", err);
 
-        // fallback redirect
-        window.location.replace("/uploader");
+        // 🔥 KEEP fallback (as you requested)
+        window.location.href = "/uploader";
     }
-},
-
+  },
+  
+ 
   async export() {
     const id = state.datasetId;
     

@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DatasetDoctor | Intelligence at the Source</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' 
+      height='24' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='3' 
+      stroke-linecap='round' stroke-linejoin='round'><path d='M22 12h-4l-3 9L9 3l-3 9H2'></path></svg>"
+    />
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="/static/css/custom_dialog.css">
     <link rel="stylesheet" href="/static/css/land_page.css">
@@ -18,13 +25,13 @@
 
     <nav class="navbar">
         <div class="dashboard-container nav-content">
-            <div class="logo" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" style="cursor: pointer; font-weight: 800; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+            <div class="logo" onclick="window.location.href='/'" style="cursor: pointer; font-weight: 800; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="activity" style="color: var(--primary)"></i> DatasetDoctor
             </div>
             
             <div class="nav-actions" style="display: flex; gap: 0.75rem;">
            	 <button class="btn btn-secondary shadow-sm" onclick="document.getElementById('ai-intelligence').scrollIntoView()">
-                    <i data-lucide="shield-check" style="width: 16px; color: var(--primary)"></i>
+                    <i data-lucide="brain-circuit" style="width: 16px; color: var(--primary)"></i>
                     <span>Intelligence</span>
                 </button>
                 
@@ -32,7 +39,7 @@
                     <i data-lucide="shield-check" style="width: 16px; color: var(--primary)"></i>
                     <span>Audit Suite</span>
                 </button>
-                <button class="btn btn-primary shadow-sm" onclick="window.location.href='/uploader'">
+                <button class="btn btn-primary shadow-sm"  onclick="openUploader()">
                     <i data-lucide="zap" style="width: 16px"></i> 
                     <span>Launch Engine</span>
                 </button>
@@ -50,7 +57,7 @@
             The industrial-grade engine built to audit, refine, and validate massive datasets for production AI and high-stakes analytics.
         </p>
         <div style="display: flex; gap: 1rem; margin-top: 2.5rem;">
-            <button onclick="window.location.href='/uploader'" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1rem; border-radius: 12px; background: var(--primary); color: white; border: none; cursor: pointer;">
+            <button onclick="openUploader()" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1rem; border-radius: 12px; background: var(--primary); color: white; border: none; cursor: pointer;">
                 Launch Engine
             </button>
             <button onclick="document.getElementById('architecture').scrollIntoView()" class="btn btn-secondary" style="padding: 1rem 2.5rem; font-size: 1rem; border-radius: 12px; border: 1px solid var(--border); background: white; cursor: pointer;">
@@ -84,6 +91,7 @@
     <section id="features">
         <div class="dashboard-container">
             <div style="text-align: center; margin-bottom: 4rem;">
+            <i data-lucide="zap" class="text-warning"></i>
                 <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -0.02em;">Core Audit Suite</h2>
                 <p style="color: var(--text-muted); font-size: 1.1rem;">Modular plugins designed to separate signal from noise.</p>
             </div>
@@ -284,5 +292,12 @@
     <script>
         lucide.createIcons();
     </script>
+    
+    <script>
+function openUploader() {
+    // Opens uploader in a new tab
+    window.open('/uploader', '_blank', 'noopener,noreferrer');
+}
+</script>
 </body>
 </html>

@@ -1,27 +1,41 @@
 # analysis/inspect.py
-from typing import Any, Dict
-
+from typing import Any, Dict, Optional
 import pandas as pd
-
-# Import the new architecture
 from .plugins.executor import PluginExecutor
 
-# from datasetdoctor.core.logger import logger
-
-
 def _infer_type(series: pd.Series) -> str:
+    """Returns the string representation of a pandas Series dtype."""
     return str(series.dtype)
 
-
 def analyze_dataset(
-    file_path: str, target: str | None = None, filename: str | None = None
+    file_path: str, target: Optional[str] = None, filename: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Orchestrates dataset analysis using a streaming profile-driven approach.
-    Leverages PluginExecutor and adds v2 Interpretability metrics.
+    Orchestrates dataset analysis using a memory-efficient streaming profile approach.
+
+    This function reads large datasets in chunks to calculate global profile metrics 
+    (total rows, missing values, duplicates) without loading the entire file into 
+    memory. It then executes a suite of analysis plugins on a combined sample 
+    to generate descriptive statistics and data quality insights.
+
+    Args:
+        file_path: Path to the CSV dataset.
+        target: Optional name of the target variable for predictive analysis.
+        filename: Original filename for metadata display.
+
+    Returns:
+        A dictionary containing global summary, column metadata, and plugin results.
     """
     CHUNK_SIZE = 100_000
-    reader = pd.read_csv(file_path, chunksize=CHUNK_SIZE, parse_dates=True)
+    
+    # FIX: low_memory=False prevents DtypeWarning by processing the whole 
+    # file column-wise internally during type inference, even when chunking.
+    reader = pd.read_csv(
+        file_path, 
+        chunksize=CHUNK_SIZE, 
+        parse_dates=True, 
+        low_memory=False
+    )
 
     total_rows = 0
     missing_counts = None
@@ -29,7 +43,7 @@ def analyze_dataset(
     first_chunk = None
     second_chunk = None
 
-    # --- Phase 1: Streaming Profile Generation (Full File Scan) ---
+    # --- Phase 1: Streaming Profile Generation ---
     for i, chunk in enumerate(reader):
         if chunk.empty:
             continue
@@ -102,7 +116,7 @@ def analyze_dataset(
         ),
         "quality_score": dq_res.get("score", 0),
         "ml_readiness": ml_res.get("value", 0),
-        "target_column": target,  # Explicitly return the target for UI sync
+        "target_column": target,
     }
 
     column_stats = []
@@ -123,7 +137,7 @@ def analyze_dataset(
         "filename": filename,
         "summary": summary,
         "columns": column_stats,
-        "predictive_power": plugin_results.get("predictive_power"),  # New v2 key
+        "predictive_power": plugin_results.get("predictive_power"),
         "statistics": plugin_results.get("stats", {}),
         "outliers": plugin_results.get("outliers", {}),
         "imbalance": plugin_results.get("imbalance", {}),

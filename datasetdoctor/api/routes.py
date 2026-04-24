@@ -234,17 +234,35 @@ async def set_target_api(dataset_id: str, req: TargetRequest, background_tasks: 
 # -------------------------
 # Reset
 # -------------------------
-@router.post("/reset")
-async def reset():
+@router.post("/reset/{dataset_id}")
+async def reset(dataset_id: str):
     try:
-        await run_in_threadpool(shutil.rmtree, config.DATA_DIR, ignore_errors=True)
+        def delete_dataset_files():
+            for base_dir in config.ALL_DATA_DIRS:
+                logger.info(f"[RESET] Scanning: {base_dir}")
 
-        def recreate():
-            for d in config.ALL_DATA_DIRS:
-                d.mkdir(parents=True, exist_ok=True)
+                for item in base_dir.iterdir():
+                    name = item.name
 
-        await run_in_threadpool(recreate)
-        return {"status": "reset complete"}
+                    if dataset_id in name:
+                        logger.info(f"[RESET] Match: {item}")
+
+                        try:
+                            if item.is_file():
+                                item.unlink()
+                                logger.info(f"[RESET] Deleted FILE: {item}")
+                            elif item.is_dir():
+                                shutil.rmtree(item)
+                                logger.info(f"[RESET] Deleted DIR: {item}")
+                        except Exception as e:
+                            logger.error(f"[RESET] Failed deleting {item}: {e}")
+
+        await run_in_threadpool(delete_dataset_files)
+
+        return {
+            "status": "dataset reset complete",
+            "dataset_id": dataset_id
+        }
 
     except Exception as e:
         logger.exception(f"[RESET FAILED]: {e}")

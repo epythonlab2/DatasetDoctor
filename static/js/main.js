@@ -2,6 +2,8 @@
  * Entry Point: Dataset Analysis Dashboard
  * Coordinates the polling logic, state initialization, and UI distribution.
  */
+import { initNavigationGuard } from './utils/navigationGuard.js';
+
 
 import { state } from "./utils/state.js";
 import { Controller } from "./ui/controller.js";
@@ -14,6 +16,18 @@ import { Actions } from "./ui/actions.js";
  * Fetches data via the Controller and distributes it to UI components 
  * once the backend status moves from 'processing' to 'ready'.
  */
+ 
+ /**
+ * Sticky Session Guard
+ * Prevents the back button from leaving the dashboard if a session is active.
+ */
+/**
+ * Silent Sticky Session Guard
+ * Traps the back button using localStorage without triggering browser alerts.
+ */
+// Initialize the navigation guard immediately at the top of the file
+initNavigationGuard();
+
 async function startAnalysisPolling() {
     const id = getDatasetId();
     state.datasetId = id;
@@ -118,23 +132,4 @@ window.resetAnalysis = async () => {
 };
 window.exportDataset = Actions.export;
 
-window.onload = () => {
-    const params = new URLSearchParams(window.location.search);
 
-    if (params.get('error') === 'session_expired') {
-        // 1. Notify the user
-        alert("Your session has expired or the dataset was not found. Redirecting to reset...");
-
-        // 2. Execute the full reset flow
-        if (typeof window.resetAnalysis === 'function') {
-            window.resetAnalysis().catch(err => {
-                console.error("Reset failed, forcing home:", err);
-                window.location.href = "/";
-            });
-        } else {
-            // Fallback if the Actions module isn't loaded/mapped yet
-            localStorage.clear();
-            window.location.replace("/");
-        }
-    }
-};
