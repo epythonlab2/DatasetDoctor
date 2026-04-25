@@ -5,12 +5,17 @@ import { state } from "../utils/state.js";
 export const DashboardService = {
   async getAnalysis() {
     const data = await API.fetchAnalysis(state.datasetId);
-
     return this._normalize(data);
   },
 
   scheduleRetry(callback, delay = 3000) {
-    setTimeout(callback, delay);
+    // Safety Check: Ensure callback is actually a function
+    if (typeof callback !== 'function') {
+      console.error("CSP Safety Triggered: scheduleRetry requires a function, not a string.");
+      return;
+    }
+    
+    setTimeout(() => callback, delay);
   },
 
   _normalize(data) {

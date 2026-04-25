@@ -16,60 +16,71 @@
     <link rel="stylesheet" href="/static/css/land_page.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
+    
    
 </head>
 <body>
 
-    <div class="hero-glow"></div>
+     <div class="hero-glow"></div>
 
     <nav class="navbar">
         <div class="dashboard-container nav-content">
-            <div class="logo" onclick="window.location.href='/'" style="cursor: pointer; font-weight: 800; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="activity" style="color: var(--primary)"></i> DatasetDoctor
+
+            <!-- 🔥 removed onclick -->
+            <div class="logo nav-home">
+                <i data-lucide="activity" class="icon-primary"></i>
+                DatasetDoctor
             </div>
-            
-            <div class="nav-actions" style="display: flex; gap: 0.75rem;">
-           	 <button class="btn btn-secondary shadow-sm" onclick="document.getElementById('ai-intelligence').scrollIntoView()">
-                    <i data-lucide="brain-circuit" style="width: 16px; color: var(--primary)"></i>
+
+            <div class="nav-actions nav-flex">
+                <button class="btn btn-secondary shadow-sm nav-scroll" data-target="ai-intelligence">
+                    <i data-lucide="brain-circuit" class="icon-sm icon-primary"></i>
                     <span>Intelligence</span>
                 </button>
-                
-                <button class="btn btn-secondary shadow-sm" onclick="document.getElementById('features').scrollIntoView()">
-                    <i data-lucide="shield-check" style="width: 16px; color: var(--primary)"></i>
+
+                <button class="btn btn-secondary shadow-sm nav-scroll" data-target="features">
+                    <i data-lucide="shield-check" class="icon-sm icon-primary"></i>
                     <span>Audit Suite</span>
                 </button>
-                <button class="btn btn-primary shadow-sm"  onclick="openUploader()">
-                    <i data-lucide="zap" style="width: 16px"></i> 
+
+                <button class="btn btn-primary shadow-sm" id="launch-engine-btn">
+                    <i data-lucide="zap" class="icon-sm"></i>
                     <span>Launch Engine</span>
                 </button>
             </div>
+
         </div>
     </nav>
-    
 
-    <header class="dashboard-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 80vh;">
-        <div class="badge-live"> V3.0 CORE PIPELINE ACTIVE</div>
+    <header class="dashboard-container hero-center">
+        <div class="badge-live">V3.0 CORE PIPELINE ACTIVE</div>
+
         <h1 class="display-title">
-            Intelligence <br><span style="color: var(--primary)">at the Source.</span>
+            Intelligence <br><span class="text-primary">at the Source.</span>
         </h1>
+
         <p class="lead-text">
             The industrial-grade engine built to audit, refine, and validate massive datasets for production AI and high-stakes analytics.
         </p>
-        <div style="display: flex; gap: 1rem; margin-top: 2.5rem;">
-            <button onclick="openUploader()" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1rem; border-radius: 12px; background: var(--primary); color: white; border: none; cursor: pointer;">
+
+        <div class="hero-actions">
+            <button id="hero-launch-btn" class="btn btn-primary btn-lg">
                 Launch Engine
             </button>
-            <button onclick="document.getElementById('architecture').scrollIntoView()" class="btn btn-secondary" style="padding: 1rem 2.5rem; font-size: 1rem; border-radius: 12px; border: 1px solid var(--border); background: white; cursor: pointer;">
+
+            <button class="btn btn-secondary btn-lg nav-scroll" data-target="architecture">
                 System Specs
             </button>
         </div>
     </header>
-    <div class="ad-slot-wrapper" style="background: var(--bg-alt);">
-        <div class="ad-placeholder" style="width: 100%; max-width: 970px; height: 250px;">
-            Google Ads Placeholder [Billboard 970x250]
-        </div>
+    <!--
+    <div class="ad-slot-wrapper">
+    	<div class="ad-placeholder billboard-ad">
+        	Google Ads Placeholder [Billboard 970x250]
+    	</div>
     </div>
+    -->
 
     <section id="about" style="background: var(--bg-alt); padding: 2rem 0;">
     <div class="dashboard-container">
@@ -269,35 +280,34 @@
           </div>
         </section>
 
-    <footer style="padding: 5rem 0; background: white; border-top: 1px solid var(--border);">
-        <div class="dashboard-container" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2rem;">
-            <div class="logo" style="font-size: 1.5rem; font-weight: 800;"><i data-lucide="activity" style="color: var(--primary)"></i> DatasetDoctor</div>
-            <p style="max-width: 480px; color: var(--text-muted); font-size: 0.95rem;">Building high-performance data engineering tools for architects who demand precision at the source.</p>
-            
-            <div style="display: flex; gap: 2.5rem; font-weight: 600; font-size: 0.85rem;">
-                <a href="#" style="text-decoration: none; color: var(--text-main);">Documentation</a>
-                <a href="#" style="text-decoration: none; color: var(--text-main);">GitHub</a>
-                <a href="#" style="text-decoration: none; color: var(--text-main);">Security</a>
+    <footer class="footer">
+        <div class="dashboard-container footer-container">
+            <div class="logo footer-logo">
+                <i data-lucide="activity" class="icon-primary"></i>
+                DatasetDoctor
             </div>
 
-            <div style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 2rem; width: 100%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">© 2026 <strong>DatasetDoctor</strong> Intelligence System.</p>
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">
-                    <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span> ENGINE V3.0
+            <p class="footer-text">
+                Building high-performance data engineering tools for architects who demand precision at the source.
+            </p>
+
+            <div class="footer-links">
+                <a href="#">Documentation</a>
+                <a href="#">GitHub</a>
+                <a href="#">Security</a>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2026 <strong>DatasetDoctor</strong> Intelligence System.</p>
+                <div class="engine-status">
+                    <span class="status-dot"></span> ENGINE V3.0
                 </div>
             </div>
         </div>
     </footer>
 
-    <script>
-        lucide.createIcons();
-    </script>
-    
-    <script>
-function openUploader() {
-    // Opens uploader in a new tab
-    window.open('/uploader', '_blank', 'noopener,noreferrer');
-}
-</script>
+    <!-- 🔥 ONLY SAFE SCRIPT -->
+    <script type="module" src="/static/js/modalUI/landing.js"></script>
+
 </body>
 </html>

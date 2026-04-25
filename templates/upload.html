@@ -4,19 +4,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DatasetDoctor | Uploader</title>
+
+    <!-- Fonts (allowed via CSP) -->
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Favicon (allowed via img-src data:) -->
     <link
       rel="icon"
       type="image/svg+xml"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' 
-      height='24' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='3' 
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'
+      viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='3'
       stroke-linecap='round' stroke-linejoin='round'><path d='M22 12h-4l-3 9L9 3l-3 9H2'></path></svg>"
     />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/styles.css" />
     <link rel="stylesheet" href="/static/css/uploader.css" />
   </head>
+
   <body class="upload-page">
     <main class="dashboard-container">
       <div class="stepper">
@@ -39,21 +47,15 @@
 
         <label for="upload" class="upload-label" id="upload-ui">
           <div class="upload-icon-wrapper">
-            <svg
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
           </div>
+
           <div class="upload-text">
             <p><strong>Click to upload</strong> or drag and drop</p>
             <small>Supports CSV (Max 200MB)</small>
@@ -65,10 +67,14 @@
             <h3 id="status-text">Uploading data...</h3>
             <span id="progress-percent">0%</span>
           </div>
+
           <div class="progress-bar-container">
             <div class="progress-fill" id="progress-fill"></div>
           </div>
-          <p class="file-info">File: <span id="file-name-display">-</span></p>
+
+          <p class="file-info">
+            File: <span id="file-name-display">-</span>
+          </p>
         </div>
       </section>
 
@@ -81,47 +87,32 @@
         </div>
 
         <div class="target-select">
-          <label>Select Target Variable:</label>
+          <label for="target-select">Select Target Variable:</label>
           <select id="target-select"></select>
         </div>
 
         <button id="continue-btn">Continue →</button>
       </section>
     </main>
-    <!-- FOOTER -->
+
+    <!-- Footer (NO inline styles anymore) -->
     <footer class="custom-footer">
       <div class="footer-status-wrap">
-        <p class="text-muted mb-0" style="font-size: 0.7rem">
+        <p class="footer-small">
           © 2026 <strong>DatasetDoctor</strong> Intelligence System
         </p>
       </div>
-      <span class="text-muted" style="font-size: 0.65rem; opacity: 0.7"
-        >Engine V3.0</span
-      >
+      <span class="footer-tiny">Engine V3.0</span>
     </footer>
 
     <div id="overlay-loader" class="overlay hidden">
       <div class="loader-box">
         <div class="spinner"></div>
-        <p id="overlay-text">Diagnostic scaning...</p>
+        <p id="overlay-text">Diagnostic scanning...</p>
       </div>
     </div>
 
+    <!-- ONLY external script -->
     <script type="module" src="/static/js/uploader.js"></script>
-    
-    <script>
-       // Force reload when coming back via browser cache (back/forward)
-	window.addEventListener("pageshow", (event) => {
-	    const nav = performance.getEntriesByType("navigation")[0];
-
-	    const isBackForward =
-		event.persisted || (nav && nav.type === "back_forward");
-
-	    if (isBackForward) {
-		// 🔥 Hard reload so app re-validates state
-		window.location.reload();
-	    }
-	});
-</script>
   </body>
 </html>

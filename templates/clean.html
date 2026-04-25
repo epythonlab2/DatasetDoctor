@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DatasetDoctor - Intelligence at the Source</title>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="/static/css/custom_dialog.css" />
 </head>
 <body>
@@ -81,7 +80,7 @@
                         <span class="text-muted small">No columns selected for removal...</span>
                     </div>
 
-                    <label class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2">
+                    <label class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2" for="col-drop-selector">
                         <i data-lucide="search" style="width: 14px; height: 14px; color: #10b981"></i>
                         <span>Select Column to Add</span>
                     </label>
@@ -103,7 +102,7 @@
                     </div>
 
                     <div class="control-group mb-3">
-                        <label class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2">
+                        <label class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2" for="impute-column">
                             <i data-lucide="columns" style="width: 14px"></i> Target Column
                         </label>
                         <div class="select-wrapper">
@@ -114,12 +113,12 @@
                     </div>
 
                     <div class="control-group mb-4">
-                        <label class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2">
+                        <div class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2" >
                             <i data-lucide="settings-2" style="width: 14px"></i> Method
                             <div class="help-trigger" onclick="Actions.toggleImputeTip(event)" style="cursor: pointer;">
                                 <i data-lucide="help-circle" class="text-primary" style="width: 16px; height: 16px;"></i>
                             </div>
-                        </label>
+                        </div>
 
                         <div id="impute-tip-popup" class="popover-tip shadow-lg border-0 p-0" 
                              style="display: none; position: absolute; z-index: 100; background: white; border-radius: 16px; width: 280px; right: 0; top: 35px; overflow: hidden;">
@@ -174,7 +173,7 @@
                     </div>
 
                     <div class="control-group mb-3">
-                        <label class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2">
+                        <label class="small fw-bold text-muted mb-2 d-flex-custom align-items-center gap-2" for="cast-column">
                             <i data-lucide="type" style="width: 14px"></i> Select Column
                         </label>
                         <select id="cast-column" class="form-select custom-select" style="width: 100%; min-width: 0; table-layout: fixed;">
@@ -184,12 +183,12 @@
 
                     <div class="control-group mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="small fw-bold text-muted d-flex-custom align-items-center gap-2 mb-0">
+                            <div class="small fw-bold text-muted d-flex-custom align-items-center gap-2 mb-0" >
                                 <i data-lucide="refresh-cw" style="width: 14px"></i> Desired Type
                                 <div class="help-trigger" onclick="Actions.toggleCastTip(event)" style="cursor: pointer;">
                                    <i data-lucide="help-circle" class="text-primary" style="width: 16px; height: 16px;"></i>
                                </div>
-                            </label>
+                            </div>
                             
                             
                         </div>
@@ -230,7 +229,7 @@
                         <select id="cast-type" class="form-select custom-select" style="width: 100%; min-width: 0; table-layout: fixed;">
                             <option value="int">Integer (Whole Numbers)</option>
                             <option value="float">Float (Decimals)</option>
-                            <option value="encode">Encode-Categorical(0, 1, 2...)</option>
+                            <option value="encode">Encode categorical(0,1, 2,3)</option>
                             <option value="date">DateTime (Calendar Dates)</option>
                             <option value="bool">Boolean (0/1)</option>
                         </select>
@@ -254,11 +253,6 @@
             </p>
         </footer>
     </div>
-
-    <script>
-        lucide.createIcons();
-    </script>
-    
     
 </body>
 </html>
