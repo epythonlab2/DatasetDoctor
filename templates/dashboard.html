@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
     <title>Dataset Health Analysis | DatasetDoctor</title>
     <link
       rel="icon"
@@ -16,8 +17,8 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="/static/css/styles.css" />
   </head>
   <body>
@@ -292,18 +293,7 @@
         <div id="clean-content-placeholder"></div>
       </div>
     </div>
-    <!--
-<script>
-// Function that opens your custom modal
-function openMyCustomModal(datasetId) {
-    // 1. Hand off the ID to the Deduplicator
-    DataDeduplicator.prepare(datasetId);
-    
-    // 2. Show your modal
-    document.getElementById('aboutModal').style.display = 'block';
-}
-</script>
---->
+ 
 
     <script type="module" src="/static/js/main.js"></script>
      <script type="module" src="/static/js/utils/timeTicker.js"></script>

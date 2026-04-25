@@ -381,3 +381,12 @@ body {
     width          : 100%;
     gap            : 1rem;
 }
+
+.footer-small {
+  font-size: 0.7rem;
+}
+
+.footer-tiny {
+  font-size: 0.65rem;
+  opacity: 0.7;
+}

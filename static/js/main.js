@@ -43,8 +43,8 @@ async function startAnalysisPolling() {
             // Show partial stats if available to improve perceived performance
             UI.updateStats(data); 
             
-            // Recursive call after 2-second delay
-            setTimeout(startAnalysisPolling, 2000);
+            // ✅ Explicitly wrap the call to ensure no string evaluation occurs
+	    setTimeout(() => startAnalysisPolling(), 2000);
         } 
         
         // Case 2: Analysis complete

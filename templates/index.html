@@ -16,7 +16,8 @@
     <link rel="stylesheet" href="/static/css/land_page.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
+    
    
 </head>
 <body>
@@ -39,7 +40,7 @@
                     <i data-lucide="shield-check" style="width: 16px; color: var(--primary)"></i>
                     <span>Audit Suite</span>
                 </button>
-                <button class="btn btn-primary shadow-sm"  onclick="openUploader()">
+		        <button class="btn btn-primary shadow-sm"  id="launch-engine-btn">
                     <i data-lucide="zap" style="width: 16px"></i> 
                     <span>Launch Engine</span>
                 </button>
@@ -57,7 +58,7 @@
             The industrial-grade engine built to audit, refine, and validate massive datasets for production AI and high-stakes analytics.
         </p>
         <div style="display: flex; gap: 1rem; margin-top: 2.5rem;">
-            <button onclick="openUploader()" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1rem; border-radius: 12px; background: var(--primary); color: white; border: none; cursor: pointer;">
+            <button id="hero-launch-btn" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1rem; border-radius: 12px; background: var(--primary); color: white; border: none; cursor: pointer;">
                 Launch Engine
             </button>
             <button onclick="document.getElementById('architecture').scrollIntoView()" class="btn btn-secondary" style="padding: 1rem 2.5rem; font-size: 1rem; border-radius: 12px; border: 1px solid var(--border); background: white; cursor: pointer;">
@@ -65,11 +66,13 @@
             </button>
         </div>
     </header>
-    <div class="ad-slot-wrapper" style="background: var(--bg-alt);">
-        <div class="ad-placeholder" style="width: 100%; max-width: 970px; height: 250px;">
-            Google Ads Placeholder [Billboard 970x250]
-        </div>
+    <!--
+    <div class="ad-slot-wrapper">
+    	<div class="ad-placeholder billboard-ad">
+		Google Ads Placeholder [Billboard 970x250]
+	    </div>
     </div>
+    -->
 
     <section id="about" style="background: var(--bg-alt); padding: 2rem 0;">
     <div class="dashboard-container">
@@ -289,15 +292,7 @@
         </div>
     </footer>
 
-    <script>
-        lucide.createIcons();
-    </script>
-    
-    <script>
-function openUploader() {
-    // Opens uploader in a new tab
-    window.open('/uploader', '_blank', 'noopener,noreferrer');
-}
-</script>
+  <script src="/static/js/modalUI/landing.js"></script>
+
 </body>
 </html>
