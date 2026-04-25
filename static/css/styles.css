@@ -976,3 +976,20 @@ tr:last-child td {
     width          : 100%;
     gap            : 1rem;
 }
+
+.btn-sponsor {
+    text-decoration: none;
+    border: 1px solid #fee2e2;
+    background: #fffafb;
+}
+
+.icon-heart {
+    width: 16px;
+    color: #ef4444;
+    fill: #ef4444;
+}
+
+.text-sponsor {
+    color: #b91c1c;
+    font-weight: 600;
+}

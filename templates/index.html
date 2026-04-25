@@ -4,21 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DatasetDoctor | Intelligence at the Source</title>
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' 
-      height='24' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='3' 
-      stroke-linecap='round' stroke-linejoin='round'><path d='M22 12h-4l-3 9L9 3l-3 9H2'></path></svg>"
-    />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M22 12h-4l-3 9L9 3l-3 9H2'></path></svg>" />
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="/static/css/custom_dialog.css">
     <link rel="stylesheet" href="/static/css/land_page.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
-    
-   
 </head>
 <body>
 
@@ -26,123 +18,121 @@
 
     <nav class="navbar">
         <div class="dashboard-container nav-content">
-            <div class="logo" onclick="window.location.href='/'" style="cursor: pointer; font-weight: 800; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="activity" style="color: var(--primary)"></i> DatasetDoctor
+            <div class="logo nav-logo-link" onclick="window.location.href='/'">
+                <i data-lucide="activity" class="icon-primary"></i> DatasetDoctor
             </div>
             
-            <div class="nav-actions" style="display: flex; gap: 0.75rem;">
-           	 <button class="btn btn-secondary shadow-sm" onclick="document.getElementById('ai-intelligence').scrollIntoView()">
-                    <i data-lucide="brain-circuit" style="width: 16px; color: var(--primary)"></i>
+            <div class="nav-actions nav-actions-wrapper">
+                <a href="https://www.youtube.com/channel/UCsFz0IGS9qFcwrh7a91juPg/join" target="_blank" class="btn btn-secondary shadow-sm btn-sponsor">
+                    <i data-lucide="heart" class="icon-heart"></i>
+                    <span class="text-sponsor">Sponsor</span>
+                </a>
+                <button class="btn btn-secondary shadow-sm" onclick="document.getElementById('ai-intelligence').scrollIntoView()">
+                    <i data-lucide="brain-circuit" class="icon-nav"></i>
                     <span>Intelligence</span>
                 </button>
                 
                 <button class="btn btn-secondary shadow-sm" onclick="document.getElementById('features').scrollIntoView()">
-                    <i data-lucide="shield-check" style="width: 16px; color: var(--primary)"></i>
+                    <i data-lucide="shield-check" class="icon-nav"></i>
                     <span>Audit Suite</span>
                 </button>
-		        <button class="btn btn-primary shadow-sm"  id="launch-engine-btn">
-                    <i data-lucide="zap" style="width: 16px"></i> 
+                <button class="btn btn-primary shadow-sm" id="launch-engine-btn">
+                    <i data-lucide="zap" class="icon-sm"></i> 
                     <span>Launch Engine</span>
                 </button>
             </div>
         </div>
     </nav>
-    
 
-    <header class="dashboard-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 80vh;">
+    <header class="dashboard-container hero-header">
         <div class="badge-live"> V3.0 CORE PIPELINE ACTIVE</div>
         <h1 class="display-title">
-            Intelligence <br><span style="color: var(--primary)">at the Source.</span>
+            Intelligence <br><span class="text-primary-span">at the Source.</span>
         </h1>
         <p class="lead-text">
             The industrial-grade engine built to audit, refine, and validate massive datasets for production AI and high-stakes analytics.
         </p>
-        <div style="display: flex; gap: 1rem; margin-top: 2.5rem;">
-            <button id="hero-launch-btn" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1rem; border-radius: 12px; background: var(--primary); color: white; border: none; cursor: pointer;">
+        <div class="hero-btn-group">
+            <button id="hero-launch-btn" class="btn btn-primary btn-hero-launch">
                 Launch Engine
             </button>
-            <button onclick="document.getElementById('architecture').scrollIntoView()" class="btn btn-secondary" style="padding: 1rem 2.5rem; font-size: 1rem; border-radius: 12px; border: 1px solid var(--border); background: white; cursor: pointer;">
+            <button onclick="document.getElementById('architecture').scrollIntoView()" class="btn btn-secondary btn-hero-specs">
                 System Specs
             </button>
+            <a href="https://www.youtube.com/channel/UCsFz0IGS9qFcwrh7a91juPg/join" target="_blank" class="link-support">
+                <i data-lucide="server" class="icon-support"></i> 
+                Support Cloud Deployment & Pipelining
+            </a>
         </div>
     </header>
-    <!--
-    <div class="ad-slot-wrapper">
-    	<div class="ad-placeholder billboard-ad">
-		Google Ads Placeholder [Billboard 970x250]
-	    </div>
-    </div>
-    -->
 
-    <section id="about" style="background: var(--bg-alt); padding: 2rem 0;">
-    <div class="dashboard-container">
-        <div class="quality-score-hero responsive-hero" style="background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-            
-            <div class="score-icon-container" style="background: var(--primary); color: white; width: 72px; height: 72px; border-radius: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <i data-lucide="award" style="width: 36px; height: 36px;"></i>
-            </div>
-            
-            <div style="flex: 1; min-width: 250px;">
-                <h2 class="hero-text-h2" style="font-weight: 800; margin-bottom: 0.75rem; letter-spacing: -0.02em;">Data Quality Score (DQS)</h2>
-                <p style="color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.6;">Our proprietary weighted heuristic measures statistical health, feature sparsity, and distribution reliability at the schema level.</p>
-                <span class="badge-tag" style="background: var(--primary-light); color: var(--primary); font-weight: 700; padding: 6px 14px; border-radius: 8px; font-size: 0.8rem;">PROPRIETARY METRIC</span>
-            </div>
-        </div>
-    </div>
-</section>
-
-    <section id="features">
+    <section id="about" class="section-alt">
         <div class="dashboard-container">
-            <div style="text-align: center; margin-bottom: 4rem;">
-            <i data-lucide="zap" class="text-warning"></i>
-                <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -0.02em;">Core Audit Suite</h2>
-                <p style="color: var(--text-muted); font-size: 1.1rem;">Modular plugins designed to separate signal from noise.</p>
-            </div>
-
-            <div class="feature-card-grid">
-                <div class="feature-mini-card" style="padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
-                    <div class="mini-icon" style="color: #3b82f6; margin-bottom: 1.25rem;"><i data-lucide="bar-chart-3"></i></div>
-                    <strong style="display: block; margin-bottom: 0.5rem; font-size: 1.1rem;">Statistical Moments</strong>
-                    <p style="color: var(--text-muted); font-size: 0.95rem; margin: 0;">Deep analysis of mean, variance, skewness, and kurtosis.</p>
+            <div class="quality-score-hero responsive-hero dqs-card">
+                <div class="score-icon-container dqs-icon-box">
+                    <i data-lucide="award" class="icon-dqs"></i>
                 </div>
-                <div class="feature-mini-card" style="padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
-                    <div class="mini-icon" style="color: #10b981; margin-bottom: 1.25rem;"><i data-lucide="shield-check"></i></div>
-                    <strong style="display: block; margin-bottom: 0.5rem; font-size: 1.1rem;">ML Readiness</strong>
-                    <p style="color: var(--text-muted); font-size: 0.95rem; margin: 0;">Validation of data structures for tensor compatibility.</p>
-                </div>
-                <div class="feature-mini-card" style="padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
-                    <div class="mini-icon" style="color: #8b5cf6; margin-bottom: 1.25rem;"><i data-lucide="copy"></i></div>
-                    <strong style="display: block; margin-bottom: 0.5rem; font-size: 1.1rem;">Duplication Check</strong>
-                    <p style="color: var(--text-muted); font-size: 0.95rem; margin: 0;">Exhaustive row-level entropy analysis to find repeats.</p>
-                </div>
-                <div class="feature-mini-card" style="padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
-                    <div class="mini-icon" style="color: #f59e0b; margin-bottom: 1.25rem;"><i data-lucide="scale"></i></div>
-                    <strong style="display: block; margin-bottom: 0.5rem; font-size: 1.1rem;">Class Imbalance</strong>
-                    <p style="color: var(--text-muted); font-size: 0.95rem; margin: 0;">Real-time detection of target label distribution skew.</p>
-                </div>
-                <div class="feature-mini-card" style="padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
-                    <div class="mini-icon" style="color: #ef4444; margin-bottom: 1.25rem;"><i data-lucide="trending-up"></i></div>
-                    <strong style="display: block; margin-bottom: 0.5rem; font-size: 1.1rem;">Outlier Detection</strong>
-                    <p style="color: var(--text-muted); font-size: 0.95rem; margin: 0;">Automated Z-score and IQR anomaly isolation.</p>
-                </div>
-                <div class="feature-mini-card" style="padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
-                    <div class="mini-icon" style="color: #06b6d4; margin-bottom: 1.25rem;"><i data-lucide="layers"></i></div>
-                    <strong style="display: block; margin-bottom: 0.5rem; font-size: 1.1rem;">Feature Cardinality</strong>
-                    <p style="color: var(--text-muted); font-size: 0.95rem; margin: 0;">Detects high-variance categorical overhead.</p>
+                
+                <div class="dqs-content">
+                    <h2 class="hero-text-h2 dqs-title">Data Quality Score (DQS)</h2>
+                    <p class="dqs-description">Our proprietary weighted heuristic measures statistical health, feature sparsity, and distribution reliability at the schema level.</p>
+                    <span class="badge-tag badge-proprietary">PROPRIETARY METRIC</span>
                 </div>
             </div>
         </div>
     </section>
-    <!-- PREDICTIVE POWER -->
-        
-<section id="ai-intelligence" style="background: var(--bg-alt); padding: 4rem 0;">
+
+    <section id="features">
+        <div class="dashboard-container">
+            <div class="features-header">
+                <i data-lucide="zap" class="text-warning"></i>
+                <h2 class="features-title">Core Audit Suite</h2>
+                <p class="features-subtitle">Modular plugins designed to separate signal from noise.</p>
+            </div>
+
+            <div class="feature-card-grid">
+                <div class="feature-mini-card card-mini">
+                    <div class="mini-icon icon-mini-wrapper" style="color: #3b82f6;"><i data-lucide="bar-chart-3"></i></div>
+                    <strong class="card-mini-title">Statistical Moments</strong>
+                    <p class="card-mini-text">Deep analysis of mean, variance, skewness, and kurtosis.</p>
+                </div>
+                <div class="feature-mini-card card-mini">
+                    <div class="mini-icon icon-mini-wrapper" style="color: #10b981;"><i data-lucide="shield-check"></i></div>
+                    <strong class="card-mini-title">ML Readiness</strong>
+                    <p class="card-mini-text">Validation of data structures for tensor compatibility.</p>
+                </div>
+                <div class="feature-mini-card card-mini">
+                    <div class="mini-icon icon-mini-wrapper" style="color: #8b5cf6;"><i data-lucide="copy"></i></div>
+                    <strong class="card-mini-title">Duplication Check</strong>
+                    <p class="card-mini-text">Exhaustive row-level entropy analysis to find repeats.</p>
+                </div>
+                <div class="feature-mini-card card-mini">
+                    <div class="mini-icon icon-mini-wrapper" style="color: #f59e0b;"><i data-lucide="scale"></i></div>
+                    <strong class="card-mini-title">Class Imbalance</strong>
+                    <p class="card-mini-text">Real-time detection of target label distribution skew.</p>
+                </div>
+                <div class="feature-mini-card card-mini">
+                    <div class="mini-icon icon-mini-wrapper" style="color: #ef4444;"><i data-lucide="trending-up"></i></div>
+                    <strong class="card-mini-title">Outlier Detection</strong>
+                    <p class="card-mini-text">Automated Z-score and IQR anomaly isolation.</p>
+                </div>
+                <div class="feature-mini-card card-mini">
+                    <div class="mini-icon icon-mini-wrapper" style="color: #06b6d4;"><i data-lucide="layers"></i></div>
+                    <strong class="card-mini-title">Feature Cardinality</strong>
+                    <p class="card-mini-text">Detects high-variance categorical overhead.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="ai-intelligence" class="section-ai">
         <div class="dashboard-container">
             <div class="feature-highlight" style="margin-bottom: 3rem;">
                 <div class="highlight-header">
                     <i data-lucide="activity" style="width: 18px"></i> Predictive Power Signal
                 </div>
                 <div class="highlight-body">
-                    <p style="margin: 0; font-size: 0.9rem; opacity: 0.9">
+                    <p class="highlight-text-box">
                         Uses <strong>Mutual Information (MI)</strong> to detect <strong>data leakage</strong> and separate signal from noise.
                     </p>
                     <div class="status-labels">
@@ -155,144 +145,107 @@
             </div>
 
             <div class="ai-grid-container">
-                <div class="ai-card" style="padding: 2.5rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: white;">
-                    <h4 style="display: flex; align-items: center; gap: 10px; font-size: 1.3rem; margin-bottom: 1rem; letter-spacing: -0.02em;">
-                        <i data-lucide="brain-circuit" style="color: var(--primary)"></i> AI Smart Suggestions
+                <div class="ai-card card-ai-main">
+                    <h4 class="ai-card-title">
+                        <i data-lucide="brain-circuit" class="icon-primary"></i> AI Smart Suggestions
                     </h4>
-                    <p style="color: var(--text-muted); margin: 0;">Context-aware recommendations for feature engineering, encoding strategies, and data enrichment based on column semantics.</p>
+                    <p class="ai-card-desc">Context-aware recommendations for feature engineering, encoding strategies, and data enrichment based on column semantics.</p>
                 </div>
-                <div class="ai-card" style="padding: 2.5rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: white;">
-                    <h4 style="display: flex; align-items: center; gap: 10px; font-size: 1.3rem; margin-bottom: 1rem; letter-spacing: -0.02em;">
+                <div class="ai-card card-ai-main">
+                    <h4 class="ai-card-title">
                         <i data-lucide="sparkles" style="color: #16a34a"></i> Basic Cleaning
                     </h4>
-                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem;">
-                        <li style="display: flex; align-items: center; gap: 10px; color: var(--text-muted);"><i data-lucide="check" style="width:16px; color:#16a34a"></i> Smart Imputation</li>
-                        <li style="display: flex; align-items: center; gap: 10px; color: var(--text-muted);"><i data-lucide="check" style="width:16px; color:#16a34a"></i> Deduplication</li>
-                        <li style="display: flex; align-items: center; gap: 10px; color: var(--text-muted);"><i data-lucide="check" style="width:16px; color:#16a34a"></i> Type Casting</li>
+                    <ul class="ai-list">
+                        <li class="ai-list-item"><i data-lucide="check" class="icon-check"></i> Smart Imputation</li>
+                        <li class="ai-list-item"><i data-lucide="check" class="icon-check"></i> Deduplication</li>
+                        <li class="ai-list-item"><i data-lucide="check" class="icon-check"></i> Type Casting</li>
                     </ul>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ARCHITECTURE -->
-        <section id="architecture" class="architecture-section">
-          <div
-            style="
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              gap: 0.5rem;
-            "
-          >
-            <div
-              style="
-                background: var(--primary-light);
-                color: var(--primary);
-                padding: 8px;
-                border-radius: 8px;
-              "
-            >
-              <i data-lucide="workflow" style="width: 20px"></i>
+    <section id="architecture" class="architecture-section">
+        <div class="arch-header-stack">
+            <div class="arch-icon-badge">
+                <i data-lucide="workflow" style="width: 20px"></i>
             </div>
-            <h3 style="margin: 0; font-weight: 800">System Architecture</h3>
-            <span
-              class="badge-tag"
-              style="background: var(--primary); color: white; border: none"
-              >V3.0 CORE</span
-            >
-          </div>
+            <h3 class="arch-title">System Architecture</h3>
+            <span class="badge-tag badge-core">V3.0 CORE</span>
+        </div>
 
-          <div class="arch-pipeline">
-            <!-- Layer 1 -->
+        <div class="arch-pipeline">
             <div class="arch-layer">
-              <span class="layer-tag">Data Ingest</span>
-              <div class="arch-node">
-                <div
-                  class="arch-icon"
-                  style="background: #eff6ff; color: #3b82f6"
-                >
-                  <i data-lucide="upload-cloud"></i>
+                <span class="layer-tag">Data Ingest</span>
+                <div class="arch-node">
+                    <div class="arch-icon arch-icon-box">
+                        <i data-lucide="upload-cloud"></i>
+                    </div>
+                    <div class="node-content">
+                        <strong>Source Connectors</strong>
+                        <span>CSV / JSON / SQL</span>
+                    </div>
                 </div>
-                <div class="node-content">
-                  <strong>Source Connectors</strong>
-                  <span>CSV / JSON / SQL</span>
-                </div>
-              </div>
             </div>
 
             <div class="connector"></div>
 
-            <!-- Layer 2 -->
             <div class="arch-layer engine">
-              <span class="layer-tag">Intelligence Engine</span>
-              <div class="arch-node">
-                <div
-                  class="arch-icon"
-                  style="background: rgba(255, 255, 255, 0.2)"
-                >
-                  <i data-lucide="cpu"></i>
+                <span class="layer-tag">Intelligence Engine</span>
+                <div class="arch-node">
+                    <div class="arch-icon arch-icon-box-engine">
+                        <i data-lucide="cpu"></i>
+                    </div>
+                    <div class="node-content">
+                        <strong>Core Inspector</strong>
+                        <span>Orchestration & Registry</span>
+                    </div>
                 </div>
-                <div class="node-content">
-                  <strong>Core Inspector</strong>
-                  <span>Orchestration & Registry</span>
+                <div class="satellite-pills">
+                    <div class="pill"><i data-lucide="package" style="width: 12px"></i> Plugins</div>
+                    <div class="pill"><i data-lucide="shield-check" style="width: 12px"></i> Audit</div>
+                    <div class="pill"><i data-lucide="sparkles" style="width: 12px"></i> Clean</div>
                 </div>
-              </div>
-              <div class="satellite-pills">
-                <div class="pill">
-                  <i data-lucide="package" style="width: 12px"></i> Plugins
-                </div>
-                <div class="pill">
-                  <i data-lucide="shield-check" style="width: 12px"></i> Audit
-                </div>
-                <div class="pill">
-                  <i data-lucide="sparkles" style="width: 12px"></i> Clean
-                </div>
-              </div>
             </div>
 
             <div class="connector"></div>
 
-            <!-- Layer 3 -->
             <div class="arch-layer">
-              <span class="layer-tag">Presentation</span>
-              <div class="arch-node">
-                <div
-                  class="arch-icon"
-                  style="background: #ecfeff; color: #0891b2"
-                >
-                  <i data-lucide="layout-dashboard"></i>
+                <span class="layer-tag">Presentation</span>
+                <div class="arch-node">
+                    <div class="arch-icon arch-icon-box-ui">
+                        <i data-lucide="layout-dashboard"></i>
+                    </div>
+                    <div class="node-content">
+                        <strong>Intelligence UI</strong>
+                        <span>Reactive Overlays & Insights</span>
+                    </div>
                 </div>
-                <div class="node-content">
-                  <strong>Intelligence UI</strong>
-                  <span>Reactive Overlays & Insights</span>
-                </div>
-              </div>
             </div>
-          </div>
-        </section>
+        </div>
+    </section>
 
-    <footer style="padding: 5rem 0; background: white; border-top: 1px solid var(--border);">
-        <div class="dashboard-container" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2rem;">
-            <div class="logo" style="font-size: 1.5rem; font-weight: 800;"><i data-lucide="activity" style="color: var(--primary)"></i> DatasetDoctor</div>
-            <p style="max-width: 480px; color: var(--text-muted); font-size: 0.95rem;">Building high-performance data engineering tools for architects who demand precision at the source.</p>
+    <footer class="footer-main">
+        <div class="dashboard-container footer-container">
+            <div class="logo footer-logo"><i data-lucide="activity" class="icon-primary"></i> DatasetDoctor</div>
+            <p class="footer-desc">Building high-performance data engineering tools for architects who demand precision at the source.</p>
             
-            <div style="display: flex; gap: 2.5rem; font-weight: 600; font-size: 0.85rem;">
-                <a href="#" style="text-decoration: none; color: var(--text-main);">Documentation</a>
-                <a href="#" style="text-decoration: none; color: var(--text-main);">GitHub</a>
-                <a href="#" style="text-decoration: none; color: var(--text-main);">Security</a>
+            <div class="footer-links">
+                <a href="#" class="footer-link-item">Documentation</a>
+                <a href="#" class="footer-link-item">GitHub</a>
+                <a href="#" class="footer-link-item">Security</a>
             </div>
 
-            <div style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 2rem; width: 100%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">© 2026 <strong>DatasetDoctor</strong> Intelligence System.</p>
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">
-                    <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span> ENGINE V3.0
+            <div class="footer-bottom">
+                <p class="footer-copy">© 2026 <strong>DatasetDoctor</strong> Intelligence System.</p>
+                <div class="engine-status">
+                    <span class="status-dot"></span> ENGINE V3.0
                 </div>
             </div>
         </div>
     </footer>
 
-  <script src="/static/js/modalUI/landing.js"></script>
+    <script src="/static/js/modalUI/landing.js"></script>
 
 </body>
 </html>
