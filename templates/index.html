@@ -246,6 +246,15 @@
     </footer>
 
     <script src="/static/js/modalUI/landing.js"></script>
+    
+    <script type="module">
+    import { getOrCreateClientId } from './static/js/utils/identity.js'; // Adjust path as needed
+
+    // This runs as soon as the module is loaded (on page open)
+    const clientId = getOrCreateClientId();
+    
+    console.log("DatasetDoctor Session Initialized:", clientId);
+   </script>
 
 </body>
 </html>

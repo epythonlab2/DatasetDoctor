@@ -28,3 +28,5 @@ document.getElementById("hero-launch-btn")?.addEventListener("click", openUpload
 
 // Initialize Lucide Icons
 lucide.createIcons();
+
+

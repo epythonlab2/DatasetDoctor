@@ -16,11 +16,15 @@ BASE_DIR = Path(__file__).resolve().parent
 # ROOT_DIR: root_project (Goes up twice from api folder)
 ROOT_DIR = BASE_DIR.parent.parent
 
+
 # DATA DIRECTORIES
 DATA_DIR = ROOT_DIR / "data"
 UPLOAD_DIR = DATA_DIR / "uploads"
 CLEAN_DIR = DATA_DIR / "cleaned"
 META_DIR = DATA_DIR / "metadata"
+
+LOG_DIR = ROOT_DIR / "logs"
+
 
 # UI DIRECTORIES
 STATIC_DIR = ROOT_DIR / "static"

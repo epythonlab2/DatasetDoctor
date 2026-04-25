@@ -17,7 +17,9 @@ dependencies = [
     "typer",
     "scikit-learn",
     "pydantic",
-    "filelock"
+    "filelock",
+    "user-agents",
+    "requests"
 
 ]
 

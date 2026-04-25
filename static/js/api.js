@@ -1,7 +1,10 @@
 /**
- * API Module
- * Handles all network communication with the FastAPI backend.
+ * API Module (CSP-safe + Deterministic Identity Injection)
  */
+
+import { getOrCreateClientId } from './utils/identity.js';
+
+/* ---------- URL Builder ---------- */
 
 const getUrl = (path) => {
     const origin = window.location.origin;
@@ -10,42 +13,91 @@ const getUrl = (path) => {
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+/* ---------- Identity Guard ---------- */
+
+function safeClientId() {
+    const id = getOrCreateClientId();
+
+    console.log("[IDENTITY] Client ID:", id);
+
+    if (!id || id === "null" || id === "undefined") {
+        throw new Error("[CRITICAL] Client identity missing or invalid.");
+    }
+
+    return id;
+}
+
+/* ---------- Core API ---------- */
+
 export const API = {
+
     getUrl,
 
-    /* ---------- Core Network Logic ---------- */
+    /* ---------- Core Request Handler ---------- */
 
     async fetchWithRetry(url, options = {}, retries = 5) {
+
+        // Ensure headers object exists FIRST
+        const headers = {
+            ...(options.headers || {}),
+            "X-Client-ID": safeClientId()   // ✅ ALWAYS wins
+        };
+
         for (let i = 0; i < retries; i++) {
-            const res = await fetch(url, options);
-            
-            if (res.status === 404 && i < retries - 1) {
-                console.warn(`[RETRYING] Instance mismatch (404) at ${url}. Attempt ${i + 1}`);
-                await sleep(300);
-                continue;
+            try {
+
+                console.log("[API REQUEST]", {
+                    url,
+                    method: options.method || "GET",
+                    headers
+                });
+
+                const res = await fetch(url, {
+                    ...options,                  // ✅ spread first
+                    headers,                    // ✅ enforce headers AFTER
+                    credentials: "same-origin"  // ✅ attach cookies if needed
+                });
+
+                if (res.status === 404 && i < retries - 1) {
+                    console.warn(`[RETRY] ${url} (attempt ${i + 1})`);
+                    await sleep(300);
+                    continue;
+                }
+
+                if (!res.ok) {
+                    const errBody = await res.json().catch(() => ({
+                        detail: `Error ${res.status}`
+                    }));
+                    throw new Error(errBody.detail || `Server Error: ${res.status}`);
+                }
+
+                const text = await res.text();
+                return text ? JSON.parse(text) : {};
+
+            } catch (err) {
+
+                if (i === retries - 1) {
+                    console.error("[API ERROR FINAL]", err);
+                    throw err;
+                }
+
+                console.warn("[API RETRYING]", err.message);
+                await sleep(200);
             }
-            
-            if (!res.ok) {
-                const errBody = await res.json().catch(() => ({ detail: `Error ${res.status}` }));
-                throw new Error(errBody.detail || `Server Error: ${res.status}`);
-            }
-            return res.json();
         }
     },
 
-    /* ---------- File Upload Logic ---------- */
+    /* ---------- Upload (XHR for progress) ---------- */
 
-    /**
-     * Specialized XHR upload to support progress events.
-     */
     uploadFile(file, onProgress) {
         return new Promise((resolve, reject) => {
+
             const xhr = new XMLHttpRequest();
             const formData = new FormData();
             formData.append("file", file);
 
             xhr.upload.onprogress = (e) => {
-                if (e.lengthComputable) {
+                if (e.lengthComputable && onProgress) {
                     const percent = Math.round((e.loaded / e.total) * 100);
                     onProgress(percent);
                 }
@@ -55,7 +107,7 @@ export const API = {
                 if (xhr.status === 200) {
                     try {
                         resolve(JSON.parse(xhr.responseText));
-                    } catch (e) {
+                    } catch {
                         reject(new Error("Malformed server response."));
                     }
                 } else {
@@ -64,7 +116,12 @@ export const API = {
             };
 
             xhr.onerror = () => reject(new Error("Network error during upload."));
+
             xhr.open("POST", getUrl("/upload"));
+
+            // ✅ Inject identity consistently
+            xhr.setRequestHeader("X-Client-ID", safeClientId());
+
             xhr.send(formData);
         });
     },
@@ -72,7 +129,7 @@ export const API = {
     /* ---------- Data Retrieval ---------- */
 
     async fetchAnalysis(id) {
-    	localStorage.setItem("dataset_id", id);
+        localStorage.setItem("dataset_id", id);
         return this.fetchWithRetry(getUrl(`/analysis/${id}`));
     },
 
@@ -89,53 +146,36 @@ export const API = {
     async setTarget(id, target) {
         return this.fetchWithRetry(getUrl(`/set-target/${encodeURIComponent(id)}`), {
             method: "POST",
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({ target })
         });
     },
 
     async cleanDataset(id, payload = { action: 'remove_duplicates' }) {
-        try {
-            const res = await fetch(getUrl(`/clean/${id}`), { 
-                method: "POST",
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({ 
-                    detail: "The cleaning engine encountered an error." 
-                }));
-                throw new Error(errorData.detail);
-            }
-
-            const text = await res.text();
-            return text ? JSON.parse(text) : { status: "processing" };
-        } catch (error) {
-            console.error(`[API ERROR] cleanDataset:`, error);
-            throw error;
-        }
+        return this.fetchWithRetry(getUrl(`/clean/${id}`), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
     },
 
-    /* ---------- Export Logic ---------- */
+    /* ---------- Export ---------- */
 
     async verifyExport(id) {
-        const res = await fetch(getUrl(`/export/${encodeURIComponent(id)}`), { method: 'GET' });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({ detail: "Clean data not found." }));
-            throw new Error(err.detail);
-        }
-        return true; 
+        return this.fetchWithRetry(getUrl(`/export/${encodeURIComponent(id)}`), {
+            method: "GET"
+        });
     },
 
     /* ---------- System ---------- */
 
     async reset(datasetId) {
-        const res = await fetch(getUrl(`/reset/${encodeURIComponent(datasetId)}`),
-        { method: "POST" });
-        if (!res.ok) throw new Error("Reset failed");
-        return res.json();
+        return this.fetchWithRetry(getUrl(`/reset/${encodeURIComponent(datasetId)}`), {
+            method: "POST"
+        });
     }
 };
-
-
