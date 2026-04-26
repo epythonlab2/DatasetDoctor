@@ -2,6 +2,7 @@ import uuid
 import shutil
 import time
 import asyncio
+import json
 import pandas as pd
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile, Request
@@ -51,6 +52,11 @@ async def uploader():
 @router.get("/dashboard/{dataset_id}", response_class=HTMLResponse)
 async def dashboard(dataset_id: str):
     path = config.TEMPLATES_DIR / "dashboard.html"
+    return await safe_read_file(path)
+
+@router.get("/audit", response_class=HTMLResponse)
+async def audit():
+    path = config.TEMPLATES_DIR / "audit.html"
     return await safe_read_file(path)
 
 @router.post("/api/v3/system/ping")
@@ -331,4 +337,44 @@ async def clean_fragment():
         return await safe_read_file(path)
     except HTTPException:
         return HTMLResponse("<p>Content missing</p>", status_code=404)
+        
 
+@router.get("/audit/logs")
+def get_logs(limit: int = 100):
+    """
+    Retrieves system audit logs from the persistent .log file.
+    
+    Args:
+        limit (int): The maximum number of recent log entries to return.
+        
+    Returns:
+        list[dict]: A list of log entries parsed from JSON, newest first.
+    """
+    # Use resolve() to ensure we have the absolute path regardless of where the app started
+    log_path = config.LOG_DIR.resolve() / "system_audit.log"
+
+    if not log_path.exists():
+        return []
+
+    logs = []
+    try:
+        with open(log_path, "r") as f:
+            lines = f.readlines()
+            # Reverse to show newest activity at the top of the table
+            lines.reverse() 
+            
+            for line in lines[:limit]:
+                clean_line = line.strip()
+                if not clean_line:
+                    continue
+                
+                try:
+                    logs.append(json.loads(clean_line))
+                except json.JSONDecodeError:
+                    # Skip lines that might have been interrupted during writing
+                    continue
+    except Exception as e:
+        print(f"[AUDIT ERROR] Failed to read log file: {e}")
+        return []
+
+    return logs

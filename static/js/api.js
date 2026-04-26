@@ -177,5 +177,14 @@ export const API = {
         return this.fetchWithRetry(getUrl(`/reset/${encodeURIComponent(datasetId)}`), {
             method: "POST"
         });
-    }
+    },
+    
+    /* ---------- System Audit ---------- */
+
+ async fetchAuditLogs(limit = 100) {
+ 	console.log("[API] fetchAuditLogs called");
+    return this.fetchWithRetry(getUrl(`/audit/logs?limit=${limit}`));
+}
 };
+
+
