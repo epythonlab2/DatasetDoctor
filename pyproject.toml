@@ -20,7 +20,8 @@ dependencies = [
     "filelock",
     "user-agents",
     "requests",
-    "supabase"
+    "supabase",
+    "geoip2"
 
 ]
 
