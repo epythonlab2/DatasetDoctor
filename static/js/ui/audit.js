@@ -1,8 +1,3 @@
-/**
- * DatasetDoctor Audit UI - Geo-Enabled
- * Retrieves logs and maps environment.geo data to the table.
- */
-
 import { API } from "../api.js";
 
 const formatTimestamp = (iso) => {
@@ -20,29 +15,27 @@ export async function loadAuditLogs() {
     try {
         const logs = await API.fetchAuditLogs(100);
 
-        if (!logs || logs.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="8" class="text-center">No activity found.</td></tr>`;
+        if (!logs || !Array.isArray(logs) || logs.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" class="text-center">No activity found.</td></tr>`;
             return;
         }
 
         tableBody.innerHTML = logs.map(log => {
-            // Mapping Logic
             const time = formatTimestamp(log.timestamp);
             const user = log.actor?.user_id || "anonymous";
             const action = typeof log.action === 'object' ? log.action.slug : log.action;
             const entity = log.action?.entity || log.dataset_id || "-";
             
-            // Geographic Mapping
-            const country = log.environment?.geo?.country || "Local";
-            const city = log.environment?.geo?.city || "Host";
-            const ip = log.environment?.ip || "127.0.0.1";
+            const country = log.environment?.geo?.country || "Cloud";
+            const city = log.environment?.geo?.city || "Remote";
+            const ip = log.environment?.ip || "0.0.0.0";
             
             return `
                 <tr>
                     <td><small>${time}</small></td>
-                    <td><code class="user-id">${user}</code></td>
+                    <td><code class="user-id" title="${user}">${user.substring(0,8)}...</code></td>
                     <td><span class="badge-action">${action}</span></td>
-                    <td>${entity}</td>
+                    <td><small>${entity}</small></td>
                     <td><strong>${city}, ${country}</strong></td>
                     <td>${ip}</td>
                 </tr>
@@ -50,9 +43,11 @@ export async function loadAuditLogs() {
         }).join("");
 
     } catch (err) {
-        console.error("Audit UI Failure:", err);
-        tableBody.innerHTML = `<tr><td colspan="8" class="error-text">Failed to sync logs.</td></tr>`;
+        // This is crucial for cloud debugging
+        console.error("DEBUG: Audit Sync Error:", err); 
+        tableBody.innerHTML = `<tr><td colspan="6" class="error-text" style="color:red; text-align:center;">Failed to sync logs. Check console.</td></tr>`;
     }
 }
 
-loadAuditLogs();
+// Ensure the DOM is ready before running
+window.addEventListener('DOMContentLoaded', loadAuditLogs);

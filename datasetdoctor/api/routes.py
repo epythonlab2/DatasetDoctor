@@ -340,41 +340,28 @@ async def clean_fragment():
         
 
 @router.get("/audit/logs")
-def get_logs(limit: int = 100):
+def get_logs(request: Request, limit: int = 100):
     """
-    Retrieves system audit logs from the persistent .log file.
+    Retrieves engineering audit trails from Supabase.
+    """
+    # 1. Access the logger instance from the app state
+    audit_sys = getattr(request.app.state, "audit_logger", None)
     
-    Args:
-        limit (int): The maximum number of recent log entries to return.
-        
-    Returns:
-        list[dict]: A list of log entries parsed from JSON, newest first.
-    """
-    # Use resolve() to ensure we have the absolute path regardless of where the app started
-    log_path = config.LOG_DIR.resolve() / "system_audit.log"
-
-    if not log_path.exists():
+    if not audit_sys:
+        print("[AUDIT ERROR] AuditLogger not initialized in app.state")
         return []
 
-    logs = []
     try:
-        with open(log_path, "r") as f:
-            lines = f.readlines()
-            # Reverse to show newest activity at the top of the table
-            lines.reverse() 
+        # 2. Query Supabase: newest first, limited by the UI request
+        # Note: 'execute()' returns the data in a .data attribute
+        response = audit_sys.supabase.table("audit_logs") \
+            .select("*") \
+            .order("timestamp", desc=True) \
+            .limit(limit) \
+            .execute()
             
-            for line in lines[:limit]:
-                clean_line = line.strip()
-                if not clean_line:
-                    continue
-                
-                try:
-                    logs.append(json.loads(clean_line))
-                except json.JSONDecodeError:
-                    # Skip lines that might have been interrupted during writing
-                    continue
-    except Exception as e:
-        print(f"[AUDIT ERROR] Failed to read log file: {e}")
-        return []
+        return response.data
 
-    return logs
+    except Exception as e:
+        print(f"[AUDIT ERROR] Supabase fetch failed: {e}")
+        return []

@@ -1,111 +1,66 @@
 # ---------------------------
-# Python
+# Core Project & Deployment
 # ---------------------------
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.so
-*.egg
-*.egg-info/
-dist/
-build/
-.eggs/
+.fastapicloud/
+# REMOVED: .git/ (Git ignores this automatically)
+# REMOVED: .github/ (KEEP THIS so your GitHub Actions/Workflows work)
 
 # ---------------------------
-# Virtual Environments
-# ---------------------------
-venv/
-env/
-.venv/
-ENV/
-env.bak/
-
-# ---------------------------
-# Environment Variables
+# Environment & Secrets (CRITICAL)
 # ---------------------------
 .env
 .env.*
 *.env
+.streamlit/secrets.toml
 
 # ---------------------------
-# Logs
+# DatasetDoctor Specific Data
 # ---------------------------
-*.log
-logs/
-
-# ---------------------------
-# Jupyter Notebooks
-# ---------------------------
-.ipynb_checkpoints/
-
-# ---------------------------
-# Data Files
-# ---------------------------
+# Ignore all dynamic data but keep the directory structure if needed
 data/
-examples/
-data/uploads
+data/uploads/
 data/raw/
 data/processed/
 data/intermediate/
+static/exports/  # If you generate downloadable cleaned files
 
 # ---------------------------
-# Vector Databases
+# Python & Virtual Envs
 # ---------------------------
-vector_store/
-faiss_index/
-chroma_db/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+dist/
+build/
+*.egg-info/
 
 # ---------------------------
-# Model Files
+# Logs (Now handled by Supabase)
 # ---------------------------
-models/*.bin
-models/*.pt
-models/*.gguf
-models/*.safetensors
-models/checkpoints/
+*.log
+logs/
+system_audit.log
 
 # ---------------------------
-# HuggingFace Cache
+# Machine Learning & AI Cache
 # ---------------------------
 .cache/
 huggingface/
 hf_cache/
+models/
+checkpoints/
+vector_store/
 
 # ---------------------------
-# Streamlit
+# Testing & IDE
 # ---------------------------
-.streamlit/secrets.toml
-
-# ---------------------------
-# OS Files
-# ---------------------------
-.DS_Store
-Thumbs.db
-
-# ---------------------------
-# IDE
-# ---------------------------
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# ---------------------------
-# Temporary Files
-# ---------------------------
-tmp/
-temp/
-*.tmp
-
-# ---------------------------
-# Coverage / Testing
-# ---------------------------
+.pytest_cache/
 .coverage
 htmlcov/
-.pytest_cache/
-
-# ---------------------------
-# Local experiment notebooks
-# ---------------------------
-notebooks/output/
+.vscode/
+.idea/
+.DS_Store

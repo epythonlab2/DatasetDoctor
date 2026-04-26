@@ -19,7 +19,8 @@ dependencies = [
     "pydantic",
     "filelock",
     "user-agents",
-    "requests"
+    "requests",
+    "supabase"
 
 ]
 

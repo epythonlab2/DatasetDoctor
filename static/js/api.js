@@ -181,10 +181,28 @@ export const API = {
     
     /* ---------- System Audit ---------- */
 
- async fetchAuditLogs(limit = 100) {
- 	console.log("[API] fetchAuditLogs called");
-    return this.fetchWithRetry(getUrl(`/audit/logs?limit=${limit}`));
-}
+    /**
+     * Fetches system audit logs from the backend.
+     * @param {number} limit - Number of logs to retrieve.
+     */
+    async fetchAuditLogs(limit = 100) {
+        // Use a relative path from the root or absolute to be safe in cloud
+        const url = `/audit/logs?limit=${limit}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'x-client-id': localStorage.getItem('ds_doctor_client_id') || 'anonymous',
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server responded with ${response.status}`);
+        }
+
+        return await response.json();
+    },
 };
 
 
