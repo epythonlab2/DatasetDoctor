@@ -1,30 +1,47 @@
-import uuid
-import requests
-from datetime import datetime
+import geoip2.database
+from pathlib import Path
 from user_agents import parse
 from supabase import create_client, Client
+from datasetdoctor.core.logger import logger
 
 class AuditLogger:
     def __init__(self, supabase_url: str, supabase_key: str):
-        """
-        Initializes the Supabase client for cloud-persistent logging.
-        """
+        # 1. Initialize Supabase
         self.supabase: Client = create_client(supabase_url, supabase_key)
+        
+        # 2. Initialize MaxMind Reader once
+        # Suggestion: Put the .mmdb in your 'data' folder
+        self.db_path = Path(__file__).parent.parent.parent / "mmdb" / "GeoLite2-Country.mmdb"
+        
+        try:
+            self.reader = geoip2.database.Reader(str(self.db_path))
+        except Exception as e:
+            logger.info(f"⚠️ GeoIP Database not found at {self.db_path}: {e}")
+            self.reader = None
 
     def get_geo_info(self, ip):
-        # Keeps your original logic for GeoIP resolution
+        """
+        Uses the lightweight Country DB (4MB). 
+        No city data is available in this version.
+        """
+        if not self.reader or ip in ["127.0.0.1", "localhost", None]:
+            return {"country": "Local", "city": "N/A", "org": "Development"}
+
         try:
-            if ip in ["127.0.0.1", "localhost", None]:
-                return {"country": "Local", "city": "Host", "org": "Development"}
-                
-            response = requests.get(f"https://ipapi.co/{ip}/json/", timeout=3).json()
+            # 1. Use the .country() method specifically
+            response = self.reader.country(ip)
+            
+            # 2. Return only what the database actually contains
             return {
-                "country": response.get("country_code", "XX"),
-                "city": response.get("city", "Unknown"),
-                "org": response.get("org", "Unknown")
+                "country": response.country.iso_code or "XX", # e.g., "ET", "US"
+                "city": "—",                                  # Use a dash or N/A
+                "org": "Local-Country-DB"
             }
-        except:
-            return {"country": "XX", "city": "Unknown", "org": "Unknown"}
+        except Exception:
+            # If the IP is private or not in the MaxMind range
+            return {"country": "XX", "city": "—", "org": "Unknown"}
+        
+        
 
     def log_activity(self, user_data, action_slug, entity_id, meta_delta):
         """
@@ -58,4 +75,10 @@ class AuditLogger:
         try:
             self.supabase.table("audit_logs").insert(audit_entry).execute()
         except Exception as e:
-            print(f"❌ Supabase Logging Failure: {e}")
+            logger.info(f"❌ Supabase Logging Failure: {e}")
+
+
+    def __del__(self):
+        """Cleanup: Ensure the reader closes when the app stops"""
+        if hasattr(self, 'reader') and self.reader:
+            self.reader.close()
