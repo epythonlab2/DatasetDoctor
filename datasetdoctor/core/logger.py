@@ -1,10 +1,10 @@
 import logging
-from pathlib import Path
+from datasetdoctor.core import config
 
-LOG_DIR = Path("logs")
-LOG_DIR.mkdir(exist_ok=True)
 
-LOG_FILE = LOG_DIR / "app.log"
+config.LOG_DIR.mkdir(exist_ok=True)
+
+LOG_FILE = config.LOG_DIR / "app.log"
 
 
 def setup_logger():

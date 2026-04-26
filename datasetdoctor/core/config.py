@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # -------------------------
 # FILE LIMITS
@@ -16,11 +17,15 @@ BASE_DIR = Path(__file__).resolve().parent
 # ROOT_DIR: root_project (Goes up twice from api folder)
 ROOT_DIR = BASE_DIR.parent.parent
 
+
 # DATA DIRECTORIES
 DATA_DIR = ROOT_DIR / "data"
 UPLOAD_DIR = DATA_DIR / "uploads"
 CLEAN_DIR = DATA_DIR / "cleaned"
 META_DIR = DATA_DIR / "metadata"
+
+LOG_DIR = ROOT_DIR / "logs"
+
 
 # UI DIRECTORIES
 STATIC_DIR = ROOT_DIR / "static"
@@ -34,8 +39,12 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 # -------------------------
 # STORAGE CONFIG
 # -------------------------
-STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", "local")  # "local" or "s3"
+# This looks for a .env file and loads the variables into the environment
+load_dotenv()
+# Supabase Credentials - Pulling from Environment Variables
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 
-# S3 CONFIG (only used if STORAGE_BACKEND = "s3")
-#S3_BUCKET = os.getenv("S3_BUCKET", "")
-#S3_REGION = os.getenv("S3_REGION", "us-east-1")
+# Simple validation to catch errors early
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("⚠️ WARNING: Supabase credentials are not set. Audit logging will fail.")
