@@ -1,3 +1,4 @@
+# analysis/plugins/stats.py
 from typing import Any, Dict, Optional
 import pandas as pd
 import numpy as np

@@ -1,15 +1,25 @@
-from datasetdoctor.core.logger import logger
-from typing import Tuple, Dict, Any, Optional
+# analysis/cleaning_plugins/smart_cast.py
+
+from typing import Tuple, Dict, Any, Optional, List
 import pandas as pd
 import numpy as np
 
+from datasetdoctor.core.logger import logger
 from .base import CleaningPlugin
 from .registry import register_cleaning
 
+
 @register_cleaning
 class SmartCastPlugin(CleaningPlugin):
-    # CRITICAL: This must match the 'action' and 'plugin_params' key in your background task
-    name = "cast_schema"
+    """
+    Advanced schema casting plugin with heuristic type detection.
+
+    Supports explicit casting to numeric, datetime, boolean, and categorical 
+    encoding, or 'auto' mode which uses heuristics to guess the best fit.
+    """
+
+    # Matches the 'action' and 'plugin_params' key in backend tasks
+    name: str = "cast_schema"
 
     def run(
         self, 
@@ -18,11 +28,23 @@ class SmartCastPlugin(CleaningPlugin):
         method: str = "auto", 
         **kwargs
     ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
-        
+        """
+        Attempts to cast a column to a specific or auto-detected data type.
+
+        Args:
+            df (pd.DataFrame): The input DataFrame.
+            target_column (str): Name of the column to transform.
+            method (str): Casting strategy ('auto', 'date', 'float', 'int', 
+                'bool', 'encode'). Defaults to "auto".
+            **kwargs: Additional options (e.g., date formats).
+
+        Returns:
+            Tuple[pd.DataFrame, Dict[str, Any]]: Transformed DataFrame and 
+                casting metadata or error details.
+        """
         if target_column not in df.columns:
             return df, {"error": f"Column '{target_column}' not found."}
 
-        # Work on a copy to ensure the Executor receives a fresh state
         df_cleaned = df.copy()
         initial_dtype = str(df_cleaned[target_column].dtype)
         
@@ -35,15 +57,23 @@ class SmartCastPlugin(CleaningPlugin):
 
         try:
             if target_type in ["date", "datetime"]:
-                df_cleaned[target_column] = pd.to_datetime(df_cleaned[target_column], errors='coerce')
+                df_cleaned[target_column] = pd.to_datetime(
+                    df_cleaned[target_column], errors='coerce'
+                )
             
             elif target_type in ["float", "numeric"]:
-                # We use .astype(float) to force 'int64' to 'float64' even if no decimals exist
-                df_cleaned[target_column] = pd.to_numeric(df_cleaned[target_column], errors='coerce').astype(float)
+                # Force to float64 even if input is integer
+                df_cleaned[target_column] = pd.to_numeric(
+                    df_cleaned[target_column], errors='coerce'
+                ).astype(float)
             
             elif target_type in ["int", "integer"]:
-                # Use nullable Int64 to prevent conversion to float if NaNs are present
-                df_cleaned[target_column] = pd.to_numeric(df_cleaned[target_column], errors='coerce').round().astype("Int64")
+                # Use nullable Int64 to allow integers and NaNs to coexist
+                df_cleaned[target_column] = (
+                    pd.to_numeric(df_cleaned[target_column], errors='coerce')
+                    .round()
+                    .astype("Int64")
+                )
             
             elif target_type in ["bool", "boolean"]:
                 bool_map = {
@@ -52,41 +82,38 @@ class SmartCastPlugin(CleaningPlugin):
                     1: True, 0: False,
                     True: True, False: False
                 }
-            
-                # Standardize to string for mapping, then cast to nullable boolean
-                df_cleaned[target_column] = df_cleaned[target_column].astype(str).str.lower().map(bool_map).astype("boolean")
+                # Standardize to string for mapping, then use nullable boolean
+                df_cleaned[target_column] = (
+                    df_cleaned[target_column]
+                    .astype(str)
+                    .str.lower()
+                    .map(bool_map)
+                    .astype("boolean")
+                )
             
             elif target_type == "encode":
-                col = target_column  # enforce consistency
-
-                # 1. Clean values (DO NOT blindly cast to string)
-                series = df_cleaned[col]
-
-                # 2. Get unique categories safely
+                series = df_cleaned[target_column]
                 unique_vals = sorted(series.dropna().unique())
-
-                # 3. Create mapping for ALL cases (not just binary)
                 mapping = {val: idx for idx, val in enumerate(unique_vals)}
-
-                # 4. Apply mapping
+                
                 encoded = series.map(mapping)
-
-                # 5. Validate: detect unmapped values
-                if encoded.isna().any():
+                
+                if encoded.isna().any() and not series.isna().any():
                     missing = series[encoded.isna()].unique()
                     raise ValueError(f"Unmapped values found: {missing}")
 
-                # 6. Enforce integer type
-                df_cleaned[col] = encoded.astype("int64")
+                df_cleaned[target_column] = encoded.astype("Int64")
                             
-
             else:
                 return df, {"error": f"Unsupported target type: {target_type}"}
 
         except Exception as e:
             logger.error(f"Cast failed for '{target_column}': {str(e)}")
-            # Return original df so the Executor knows this specific step failed
-            return df, {"error": f"Conversion failed: {str(e)}", "column": target_column}
+            return df, {
+                "error": f"Conversion failed: {str(e)}", 
+                "column": target_column,
+                "success": False
+            }
 
         final_dtype = str(df_cleaned[target_column].dtype)
         logger.info(f"Successfully cast '{target_column}' to {final_dtype}")
@@ -100,7 +127,7 @@ class SmartCastPlugin(CleaningPlugin):
         }
 
     def _determine_target_type(self, series: pd.Series) -> str:
-        """Heuristic to guess the best data type for a column."""
+        """Heuristic to guess the best data type for a column based on a sample."""
         sample = series.dropna().head(100)
         if sample.empty:
             return "string"
@@ -109,17 +136,17 @@ class SmartCastPlugin(CleaningPlugin):
         try:
             pd.to_datetime(sample, errors='raise')
             return "date"
-        except:
+        except (ValueError, TypeError):
             pass
 
         # Check for Numeric
         try:
             num_sample = pd.to_numeric(sample, errors='raise')
-            # If all numbers are whole, suggest int, otherwise float
+            # If all numbers are whole (e.g., 1.0, 2.0), suggest int
             if np.isclose(num_sample % 1, 0).all():
                 return "int"
             return "float"
-        except:
+        except (ValueError, TypeError):
             pass
 
         return "string"
