@@ -111,6 +111,48 @@ document.addEventListener("DOMContentLoaded", () => {
     startAnalysisPolling();
 });
 
+/**
+ * Sidebar Toggle Logic
+ * Specifically for mobile view to trigger the slide-in drawer.
+ */
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+        const isActive = sidebar.classList.toggle('active');
+        
+        // Optional: Change the menu icon to an 'X' when open
+        const toggleIcon = document.querySelector('.mobile-toggle i');
+        if (toggleIcon) {
+            const iconName = isActive ? 'x' : 'menu';
+            toggleIcon.setAttribute('data-lucide', iconName);
+            lucide.createIcons(); // Re-render the icon
+        }
+    }
+}
+
+/**
+ * Click Outside Handler
+ * Closes the sidebar if a user clicks on the main content area while the drawer is open.
+ */
+document.addEventListener('click', (e) => {
+    const sidebar = document.querySelector('.sidebar');
+    const toggle = document.querySelector('.mobile-toggle');
+    
+    // Only run if we are in mobile view and sidebar is actually open
+    if (window.innerWidth <= 1024 && sidebar?.classList.contains('active')) {
+        // If the click was NOT on the sidebar and NOT on the toggle button, close it
+        if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
+            sidebar.classList.remove('active');
+            
+            // Reset icon back to menu
+            const toggleIcon = document.querySelector('.mobile-toggle i');
+            if (toggleIcon) {
+                toggleIcon.setAttribute('data-lucide', 'menu');
+                lucide.createIcons();
+            }
+        }
+    }
+});
 
 /**
  * Global Exports
@@ -131,5 +173,7 @@ window.resetAnalysis = async () => {
     }
 };
 window.exportDataset = Actions.export;
+
+window.toggleSidebar = toggleSidebar;
 
 

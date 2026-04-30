@@ -1,24 +1,24 @@
 /**
  * Charts Module
- * Handles the initialization and lifecycle of Chart.js instances.
+ * Handles the initialization and lifecycle of Chart.js instances for the dashboard.
  * Requires the Chart.js library to be loaded globally.
  */
 import { state } from "../utils/state.js";
 
 export const Charts = {
     /**
-     * Renders a Doughnut chart representing the distribution of target classes.
-     * Includes a self-correcting retry mechanism if the DOM is not yet ready.
-     * * @param {Object} imb - Imbalance data object containing the distribution mapping.
+     * Renders a minimalist Bar chart representing target class distribution.
+     * Features: Descending sort, hidden X-axis labels for SaaS aesthetic, and auto-retry.
+     * 
+     * @param {Object} imb - The imbalance data object.
+     * @param {Object} imb.distribution - Key-value pairs of class names and their counts.
+     * @returns {void}
      */
     renderImbalance(imb) {
         const canvas = document.getElementById("imbalanceChart");
         
-        // 1. ASYNC SAFETY CHECK: 
-        // If the canvas isn't in the DOM yet, we retry after a short delay.
-        // This is useful when the analysis finishes faster than the page transition.
+        // 1. ASYNC SAFETY CHECK: Retry if DOM is not ready
         if (!canvas) {
-            console.warn("imbalanceChart canvas not found. Retrying in 50ms...");
             setTimeout(() => this.renderImbalance(imb), 50);
             return;
         }
@@ -26,72 +26,93 @@ export const Charts = {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        // 2. DATA EXTRACTION:
-        // Expected format of imb.distribution: { "Class A": 800, "Class B": 200 }
+        // 2. DATA PROCESSING: Sort descending for professional visual hierarchy
         const dist = imb?.distribution || {};
-        const labels = Object.keys(dist);
-        const values = Object.values(dist);
+        const sortedData = Object.entries(dist)
+            .map(([label, value]) => ({ label, value }))
+            .sort((a, b) => b.value - a.value);
 
-        // Fail gracefully if no distribution data is present
-        if (labels.length === 0) {
-            console.warn("No distribution data available for imbalance chart.");
-            return;
-        }
+        const labels = sortedData.map(item => item.label);
+        const values = sortedData.map(item => item.value);
 
-        // 3. LIFECYCLE MANAGEMENT:
-        // Chart.js requires existing instances to be destroyed before re-using a canvas.
-        // This prevents visual "ghosting" when hovering over new charts.
+        if (labels.length === 0) return;
+
+        // 3. LIFECYCLE MANAGEMENT: Clean up old instances
         if (state.charts.imbalance) {
             state.charts.imbalance.destroy();
         }
 
         /**
-         * Create the Doughnut Chart instance.
-         * Configuration focuses on a clean, modern look using a blue color palette.
+         * Create the Bar Chart instance.
+         * Configuration emphasizes a clean, "Glass-on-Black" high-contrast look.
          */
         state.charts.imbalance = new Chart(ctx, {
-            type: 'doughnut',
+            type: 'bar',
             data: {
                 labels,
                 datasets: [{
+                    label: 'Class count',
                     data: values,
-                    backgroundColor: [
-                        '#1a5fb4', // Dark Blue (Primary)
-                        '#3584e4', // Mid Blue
-                        '#62a0ea', // Light Blue
-                        '#94bcff'  // Soft Blue
-                    ],
-                    borderWidth: 0,
-                    hoverOffset: 4
+                    backgroundColor: ['#6366f1', '#818cf8', '#c7d2fe'], // User brand primary
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    barThickness: 'flex',
+                    maxBarThickness: 40
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '75%', // Creates the "Ring" look
                 plugins: {
-                    legend: { 
-                        position: 'bottom', 
-                        labels: { 
-                            usePointStyle: true, // Circles instead of rectangles
-                            padding: 20,
-                            font: { size: 12 }
-                        } 
-                    },
+                    legend: { display: false }, // Minimalist look: no legend
                     tooltip: {
-                        enabled: true,
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                        titleFont: { size: 13, weight: '600' },
                         padding: 12,
+                        cornerRadius: 8,
                         callbacks: {
-                            /**
-                             * Custom tooltip label to show both the raw count and percentage.
-                             */
                             label: (context) => {
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const val = context.raw;
                                 const pct = ((val / total) * 100).toFixed(1);
                                 return ` ${context.label}: ${val.toLocaleString()} (${pct}%)`;
                             }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Class Name',
+                            color: '#8e8e93',
+                            font: { size: 10, weight: '600' }
+                        },
+                        grid: { display: false },
+                        ticks: { 
+                            display: true, // Labels now visible
+                            color: '#8e8e93',
+                            font: { size: 10 },
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Frequency',
+                            color: '#8e8e93',
+                            font: { size: 10, weight: '600' }
+                        },
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#8e8e93',
+                            font: { size: 10 },
+                            maxTicksLimit: 5
                         }
                     }
                 }

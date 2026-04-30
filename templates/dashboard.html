@@ -22,10 +22,57 @@
     <link rel="stylesheet" href="/static/css/styles.css" />
   </head>
   <body>
-    <nav class="navbar">
-      <div class="logo" onclick="window.location.href = '#'">
-        <i data-lucide="activity"></i> DatasetDoctor
+  
+  <div class="app-layout">
+  <!-- NEW SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <i data-lucide="activity"></i> <span>DatasetDoctor</span>
       </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+       <!-- <span class="nav-label">Main Menu</span> -->
+        <a href="#" class="nav-link active"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="#" class="nav-link"><i data-lucide="database"></i> Datasets</a>
+        <a href="#" class="nav-link"><i data-lucide="line-chart"></i> Reports</a>
+      </div>
+
+      <div class="nav-group">
+        <span class="nav-label">Tools</span>
+        <a href="#" class="nav-link" onclick="Clean.show()"><i data-lucide="sparkles"></i> Data Cleaner</a>
+        <a href="#" class="nav-link"><i data-lucide="shield-check"></i> Leakage Test</a>
+        <a href="#" class="nav-link"><i data-lucide="binary"></i> Encoding</a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="avatar">DS</div>
+        <div class="user-info">
+          <span class="user-name">Data Scientist</span>
+          <span class="user-status">Pro Plan</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- WRAP EXISTING CONTENT IN THIS DIV -->
+  <div class="main-wrapper">
+    <nav class="navbar">
+	   <div class="nav-left-group">
+	    <!-- Menu Icon (Mobile Only) -->
+	    <button class="mobile-toggle" onclick="toggleSidebar()">
+	      <i data-lucide="menu"></i>
+	    </button>
+
+	    <!-- Logo -->
+	    <div class="logo" onclick="window.location.href = '#'">
+	      <i data-lucide="activity"></i> <span>DatasetDoctor</span>
+	    </div>
+	  </div>
       <div class="nav-actions">
       	<a href="https://www.youtube.com/channel/UCsFz0IGS9qFcwrh7a91juPg/join" target="_blank" class="btn btn-secondary shadow-sm btn-sponsor">
                     <i data-lucide="heart" class="icon-heart"></i>
@@ -54,7 +101,7 @@
         </button>
       </div>
     </nav>
-
+    <!-- Keep your existing <main class="dashboard-container"> here -->
     <main class="dashboard-container">
       <header class="dashboard-header">
         <div>
@@ -111,21 +158,81 @@
             <h2 id="duplicates">--</h2>
           </div>
         </div>
-        <div class="card stat-card">
-          <div class="stat-icon"><i data-lucide="star"></i></div>
-          <div class="stat-content">
-            <span class="card-label">Quality Score</span>
-            <h2 id="quality-score">--</h2>
-          </div>
-        </div>
-        <div class="card stat-card">
-          <div class="stat-icon"><i data-lucide="cpu"></i></div>
-          <div class="stat-content">
-            <span class="card-label">ML Readiness</span>
-            <h2 id="ml-readiness">--</h2>
-          </div>
-        </div>
+       
       </section>
+      <section class="insights-grid">
+            <!-- Column 1: Health Metrics Card -->
+            <div class="card scores-card">
+                <div class="card-header">
+                    <div>
+                        <h3>Dataset Health</h3>
+                        <p class="text-muted" style="font-size: 0.75rem">Quality & Readiness Metrics</p>
+                    </div>
+                    <i data-lucide="activity" class="text-muted" style="width: 18px;"></i>
+                </div>
+                
+                <div class="scores-stack">
+                    <!-- Quality Score -->
+                    <div class="score-item">
+                        <div class="stat-icon icon-gold">
+                            <i data-lucide="star"></i>
+                        </div>
+                        <div class="score-content">
+                            <span class="score-label">Quality Score</span>
+                            <div class="score-flex">
+                                <h2 id="quality-score">88</h2>
+                                <span class="score-total">%</span>
+                            </div>
+                            <div class="score-bar-bg">
+                                <div id= "quality-fill" class="score-bar-fill gold" style="width: 88%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ML Readiness -->
+                    <div class="score-item">
+                        <div class="stat-icon icon-indigo">
+                            <i data-lucide="cpu"></i>
+                        </div>
+                        <div class="score-content">
+                            <span class="score-label">ML Readiness</span>
+                            <div class="score-flex">
+                                <h2 id="ml-readiness">92</h2>
+                                <span class="score-total">%</span>
+                            </div>
+                            <div class="score-bar-bg">
+                                <div id="ml-readiness-fill" class="score-bar-fill indigo" style="width: 92%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 2: Class Distribution Card -->
+            <div class="card chart-card">
+                <div class="card-header">
+                    <div>
+                        <h3>Class Distribution</h3>
+                        <p class="text-muted" style="font-size: 0.75rem">
+                            Target: <span id="target-column-display" style="color: var(--primary); font-weight: 600">Purchase</span>
+                        </p>
+                    </div>
+                     <div id="imbalance-alert">
+                        <span>High Class Imbalance Detected</span>
+                    </div>
+                    <i data-lucide="bar-chart-3" class="text-muted" style="width: 18px;"></i>
+             
+                    
+                </div>
+                <div class="chart-container">
+                    <canvas id="imbalanceChart"></canvas>
+                </div>
+                
+               
+            </div>
+        </section>
+          
+   
 
       <section class="insights-grid">
         <div class="card table-card">
@@ -136,11 +243,7 @@
                 Global numerical distribution
               </p>
             </div>
-            <div class="glass-tabs">
-              <button class="tab-btn" onclick="UI.exportStats()">
-                <i data-lucide="download-cloud" style="width: 14px"></i>
-              </button>
-            </div>
+             <i data-lucide="sigma" lass="text-muted" style="width: 18px"></i>
           </div>
 
           <div id="stats-container" class="table-wrapper">
@@ -172,31 +275,7 @@
           </div>
         </div>
 
-        <div class="card chart-card">
-          <div class="card-header-simple">
-            <div>
-              <h3>Class Distribution</h3>
-              <p class="text-muted" style="font-size: 0.75rem">
-                Target:
-                <span
-                  id="target-column-display"
-                  style="color: var(--primary); font-weight: 600"
-                  >None</span
-                >
-              </p>
-            </div>
-          </div>
-          <div class="chart-container">
-            <canvas id="imbalanceChart"></canvas>
-          </div>
-          <div
-            id="imbalance-alert"
-            class="badge"
-            style="display: none; width: 100%; margin-top: 1rem"
-          >
-            <span>⚠️ High Class Imbalance Detected</span>
-          </div>
-        </div>
+        
       </section>
 
       <section id="leakage-section"></section>
@@ -270,7 +349,7 @@
         </div>
       </section>
     </main>
-    <!-- FOOTER -->
+      <!-- FOOTER -->
     <footer class="custom-footer">
       <div class="footer-status-wrap">
         <p class="text-muted mb-0" style="font-size: 0.7rem">
@@ -281,7 +360,12 @@
         >Engine V3.0</span
       >
     </footer>
+  </div>
+  
+</div>
+    
 
+    
     <!-- About Modal -->
     <div id="aboutModal" class="custom-modal-overlay">
       <div class="custom-modal-content">
@@ -303,6 +387,8 @@
      <script type="module" src="/static/js/utils/timeTicker.js"></script>
     <script type="module" src="/static/js/modalUI/about.js"></script>
     <script type="module" src="/static/js/modalUI/clean.js"></script>
+    
+   
   
   </body>
 </html>

@@ -14,10 +14,6 @@
     --radius-lg    : 12px;
     --radius-md    : 8px;
     --shadow       : 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --border: #e2e8f0;
-    --glass: rgba(255, 255, 255, 0.7);
-    --gold: #f59e0b;
-    --indigo: #6366f1;
 }
 
 
@@ -70,15 +66,17 @@ body {
 
 /* --- Navbar --- */
 .navbar {
-    background     : var(--bg-card);
-    border-bottom  : 1px solid var(--border);
-    padding        : 0.75rem 2rem;
-    display        : flex;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 2rem;
+    display: flex;
     justify-content: space-between;
-    align-items    : center;
-    position       : sticky;
-    top            : 0;
-    z-index        : 1001;
+    align-items: center;
+    
+    /* This keeps the header fixed at the top */
+    position: sticky;
+    top: 0;
+    z-index: 1001; /* Higher than sidebar if necessary */
     width: 100%;
 }
 .nav-left-group {
@@ -108,13 +106,15 @@ body {
     display      : inline-flex;
     align-items  : center;
     gap          : 0.5rem;
-    padding      : 0.5rem 1rem;
+    padding      : 0.6rem 1.2rem;
     border-radius: var(--radius-md);
-    font-weight  : 500;
+    border-radius: 10px;
+    font-weight  : 600;
     font-size    : 0.875rem;
     cursor       : pointer;
     transition   : all 0.2s;
     border       : 1px solid transparent;
+    
 }
 
 .btn-primary {
@@ -133,6 +133,7 @@ body {
     color       : var(--text-main);
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
+
 
 .btn-secondary:hover {
     border-color: var(--primary);
@@ -173,7 +174,7 @@ body {
     margin-bottom  : 2rem;
 }
 
-dashboard-header h1 {
+.dashboard-header h1 {
     font-size: 2rem;
     letter-spacing: -0.025em;
     color: #0f172a;
@@ -182,7 +183,12 @@ dashboard-header h1 {
     font-size: 0.95rem;
     margin-top: 4px;
 }
+
 /* --- Grids --- */
+.stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
 .stats-grid,
 .insights-grid {
     display      : grid;
@@ -203,29 +209,24 @@ dashboard-header h1 {
     background   : var(--bg-card);
     border       : 1px solid var(--border);
     border-radius: var(--radius-lg);
+    border-radius: 16px;
     padding      : 1.5rem;
     box-shadow   : var(--shadow);
 }
 
 .stat-card {
-    display    : flex;
-    align-items: center;
-    gap        : 1rem;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .stat-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.05);
 }
+
 .stat-icon {
-    width          : 48px;
-    height         : 48px;
-    border-radius  : var(--radius-md);
-    background     : #f1f5f9;
-    display        : flex;
-    align-items    : center;
-    justify-content: center;
-    color          : var(--primary);
-    transition     : color 0.3s ease, background 0.3s ease;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .stat-icon i {
@@ -249,9 +250,18 @@ dashboard-header h1 {
     letter-spacing: 0.025em;
 }
 
-.stat-content h2 {
-    font-size  : 1.5rem;
+.stat-content .card-label {
+    font-size: 0.7rem;
     font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+    display: block;
+}
+
+.stat-content h2 {
+    font-size: 1.75rem;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
 }
 
 /* --- Charts --- */
@@ -266,6 +276,19 @@ dashboard-header h1 {
     padding : 0.5rem;
 }
 
+#imbalance-alert {
+    display        : flex;
+    align-items    : center;
+    justify-content: center;
+    gap            : 0.5rem;
+    margin         : 1rem;
+    background     : #fff7ed;
+    color          : #c2410c;
+    border         : 1px solid #ffedd5;
+    font-weight    : 600;
+    font-size      : 0.8125rem;
+    animation      : pulseSubtle 2s infinite ease-in-out;
+}
 
 /* --- Tables & Lists --- */
 .table-card {
@@ -283,13 +306,19 @@ dashboard-header h1 {
     flex-wrap      : wrap;
     gap            : 1rem;
 }
+.card-header-flex h3, .card-header-simple h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #334155;
+}
 
 .table-wrapper,
 #stats-container {
     overflow-x   : auto;
     border-radius: var(--radius-md);
-    border       : 1px solid var(--border);
     background   : var(--bg-card);
+    border: none; /* Remove inner border for cleaner look */
+    border-radius: 0 0 16px 16px;
 }
 
 table,
@@ -299,7 +328,6 @@ table,
     font-size      : 0.875rem;
     text-align     : left;
 }
-
 
 th,
 .stats-table th {
@@ -1006,7 +1034,7 @@ tr:last-child td {
     font-weight: 600;
 }
 
-* --- App Layout --- */
+/* --- App Layout --- */
 .app-layout {
     display: flex;
     min-height: 100vh;
@@ -1228,142 +1256,5 @@ tr:last-child td {
     height: 100vh;
 }
 
-.card-header {
-     padding: 1.25rem 1.5rem;
-     display: flex;
-     justify-content: space-between;
-     align-items: center;
-     border-bottom: 1px solid var(--border);
-}
 
-.card-header h3 {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
- /* Health Metrics Styles */
-/* Health Metrics Styles */
-.scores-stack {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.score-item {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-}
-
-.stat-icon {
-    padding: 0.75rem;
-    border-radius: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.stat-icon i { 
-    width: 20px; 
-    height: 20px; 
-}
-
-.icon-gold { 
-    background: #fffbeb; 
-    color: var(--gold); 
-}
-
-.icon-indigo { 
-    background: #eef2ff; 
-    color: var(--indigo); 
-}
-
-.score-content { 
-    flex: 1; 
-}
-
-.score-label { 
-    font-size: 0.85rem; 
-    font-weight: 500; 
-    color: var(--text-muted); 
-}
-
-.score-flex {
-    display: flex;
-    align-items: baseline;
-    gap: 0.25rem;
-    margin: 0.25rem 0;
-}
-
-.score-flex h2 { 
-    margin: 0; 
-    font-size: 1.75rem; 
-    font-weight: 700; 
-}
-
-.score-total { 
-    color: var(--text-muted); 
-    font-size: 0.9rem; 
-}
-
-.score-bar-bg {
-    height: 6px;
-    background: #f1f5f9;
-    border-radius: 10px;
-    margin-top: 0.5rem;
-    overflow: hidden;
-}
-
-.score-bar-fill { 
-    height: 100%; 
-    border-radius: 10px; 
-    transition: width 1s ease-out; 
-}
-
-.score-bar-fill.gold { 
-    background: var(--gold); 
-}
-
-.score-bar-fill.indigo { 
-    background: var(--indigo); 
-}
-/* Chart Styling */
-.chart-container {
-  padding: 1.5rem;
-  flex: 1;
-  min-height: 220px;
-  display: flex;
-  align-items: center;
-}
-
-#imbalance-alert {
-  background: #fff1f2;
-  color: #e11d48;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.25rem 0.5rem;
-  border-radius: 2rem;
-  border: 1px solid #fecdd3;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.loader-text {
-  font-weight: 500;
-  color: var(--text-main);
-}
-
-.loader-subtext {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}      
 
