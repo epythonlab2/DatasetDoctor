@@ -134,7 +134,9 @@ export const API = {
     },
 
     async fetchMeta(id) {
-        return this.fetchWithRetry(getUrl(`/get_meta/${id}`));
+        // This hits @router.get("/get_meta/{dataset_id}")
+        // fetchWithRetry will handle the JSON parsing automatically
+        return this.fetchWithRetry(getUrl(`/get_meta/${encodeURIComponent(id)}`));
     },
 
     async fetchPreview(id) {
@@ -163,13 +165,7 @@ export const API = {
         });
     },
 
-    /* ---------- Export ---------- */
-
-    async verifyExport(id) {
-        return this.fetchWithRetry(getUrl(`/export/${encodeURIComponent(id)}`), {
-            method: "GET"
-        });
-    },
+   
 
     /* ---------- System ---------- */
 
