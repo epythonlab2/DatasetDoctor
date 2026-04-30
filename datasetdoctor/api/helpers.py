@@ -35,22 +35,35 @@ def get_clean_path(dataset_id: str) -> Path:
 
 # =========================================================
 # METADATA READ (LOCAL ONLY)
-# NOTE: In production S3 mode, this will be bypassed
 # =========================================================
 def load_meta(dataset_id: str) -> Dict[str, Any]:
     path = meta_file(dataset_id)
 
     logger.info(f"[DEBUG] Looking for meta at: {path.absolute()}")
 
+    # ✅ Instead of failing → return safe state
     if not path.exists():
-        logger.error(f"[META MISS] {dataset_id}")
-        raise HTTPException(404, f"Metadata not found: {dataset_id}")
+        logger.warning(f"[META MISSING - RETURNING DEFAULT STATE] {dataset_id}")
+
+        return {
+            "dataset_id": dataset_id,
+            "status": "processing",
+            "stage": "initializing",
+            "error": None
+        }
 
     try:
         return json.loads(path.read_text(encoding="utf-8"))
+
     except Exception as e:
         logger.exception(f"[META READ ERROR] {dataset_id}: {e}")
-        raise HTTPException(500, "Metadata read failed")
+
+        return {
+            "dataset_id": dataset_id,
+            "status": "failed",
+            "error": "Metadata corrupted",
+            "stage": "error"
+        }
 
 
 # =========================================================
@@ -82,7 +95,17 @@ def update_meta(dataset_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
     lock = FileLock(str(path) + ".lock")
 
     with lock:
-        meta = load_meta(dataset_id)
+        # ✅ ensure base state always exists
+        if path.exists():
+            meta = load_meta(dataset_id)
+        else:
+            meta = {
+                "dataset_id": dataset_id,
+                "status": "processing",
+                "stage": "init",
+                "error": None
+            }
+
         meta.update(updates)
         save_meta(dataset_id, meta)
 

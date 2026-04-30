@@ -15,74 +15,12 @@
   
   <div class="app-layout">
     <!-- [SECTION] SIDEBAR -->
-      <aside class="sidebar">
-      <div class="sidebar-header">
-        <div class="logo">
-          <i data-lucide="activity"></i> <span>DatasetDoctor</span>
-        </div>
-      </div>
-      
-      <nav class="sidebar-nav">
-        <div class="nav-group">
-          <a href="#" class="nav-link active"><i data-lucide="layout-dashboard"></i> Dashboard</a>
-          <a href="#" class="nav-link"><i data-lucide="database" style="color:var(--primary);"></i> Datasets</a>
-          <a href="#" class="nav-link"><i data-lucide="line-chart" style="color:var(--primary);"></i> Reports</a>
-        </div>
-
-        <div class="nav-group">
-          <span class="nav-label">Tools</span>
-          <a href="#" class="nav-link" onclick="Clean.show()"><i data-lucide="sparkles" style="color:var(--primary);"></i> Data Cleaner</a>
-          <a href="#" class="nav-link"><i data-lucide="shield-check" style="color:var(--primary);"></i> Leakage Test</a>
-          <a href="#" class="nav-link"><i data-lucide="binary" style="color:var(--primary);"></i> Encoding</a>
-        </div>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="user-profile">
-          <div class="avatar">DS</div>
-          <div class="user-info">
-            <span class="user-name">Data Scientist</span>
-            <span class="user-status">Pro Plan</span>
-          </div>
-        </div>
-      </div>
-    </aside>
-
+      {% include 'includes/sidebar.html' %}
 
     <!-- [SECTION] MAIN CONTENT WRAPPER -->
     <div class="main-wrapper">
       <!-- [SUB-SECTION] TOP NAVBAR -->
-      <nav class="navbar">
-        <div class="nav-left-group">
-          <button class="mobile-toggle" onclick="toggleSidebar()">
-            <i data-lucide="menu"></i>
-          </button>
-          <div class="logo logo-nav" onclick="window.location.href = '#'">
-            <i data-lucide="activity"></i> <span>DatasetDoctor</span>
-          </div>
-        </div>
-        <div class="nav-actions">
-          <a href="https://www.youtube.com/channel/UCsFz0IGS9qFcwrh7a91juPg/join" target="_blank" class="btn btn-secondary shadow-sm btn-sponsor">
-            <i data-lucide="heart" class="icon-heart"></i>
-            <span class="text-sponsor">Sponsor</span>
-          </a>
-          <button class="btn btn-secondary shadow-sm" onclick="About.show()">
-            <i data-lucide="info" style="width: 16px; color: var(--primary)"></i>
-            <span>About</span>
-          </button>
-          <button class="btn btn-secondary" onclick="resetAnalysis()">
-            <i data-lucide="refresh-ccw" style="width: 16px; color: var(--primary)"></i>
-            <span>New Upload</span>
-          </button>
-          <button class="btn btn-primary" onclick="Clean.show()">
-            <i data-lucide="sparkles" style="width: 16px"></i> <span>Clean</span>
-          </button>
-          <button class="btn btn-secondary" onclick="exportDataset()">
-            <i data-lucide="download" style="width: 16px; color: var(--primary)"></i>
-            <span>Export</span>
-          </button>
-        </div>
-      </nav>
+      {% include 'includes/navbar.html' %}
 
       <!-- [SUB-SECTION] DASHBOARD MAIN CONTAINER -->
       <main class="dashboard-container">

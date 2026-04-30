@@ -33,59 +33,46 @@ export const API = {
 
     getUrl,
 
-    /* ---------- Core Request Handler ---------- */
+      /* ---------- Core Request Handler ---------- */
 
-    async fetchWithRetry(url, options = {}, retries = 5) {
+	async fetchWithRetry(url, options = {}, retries = 30) {
+	    const headers = {
+		...(options.headers || {}),
+		"X-Client-ID": safeClientId()
+	    };
 
-        // Ensure headers object exists FIRST
-        const headers = {
-            ...(options.headers || {}),
-            "X-Client-ID": safeClientId()   // ✅ ALWAYS wins
-        };
+	    for (let i = 0; i < retries; i++) {
+		try {
+		    const res = await fetch(url, { 
+		        ...options, 
+		        headers,
+		        credentials: "same-origin"
+		    });
 
-        for (let i = 0; i < retries; i++) {
-            try {
+		    // ✅ Handle NOT READY explicitly
+		    if (res.status === 425) {
+		        return null; // Don't throw
+		    }
 
-                console.log("[API REQUEST]", {
-                    url,
-                    method: options.method || "GET",
-                    headers
-                });
+		    // ✅ Retry infra issues only
+		    if ((res.status === 404 || res.status === 504) && i < retries - 1) {
+		        await sleep(500 * (i + 1));
+		        continue;
+		    }
 
-                const res = await fetch(url, {
-                    ...options,                  // ✅ spread first
-                    headers,                    // ✅ enforce headers AFTER
-                    credentials: "same-origin"  // ✅ attach cookies if needed
-                });
+		    if (!res.ok) {
+		        const errBody = await res.json().catch(() => ({ detail: `Error ${res.status}` }));
+		        throw new Error(errBody.detail || `Server Error: ${res.status}`);
+		    }
 
-                if (res.status === 404 && i < retries - 1) {
-                    console.warn(`[RETRY] ${url} (attempt ${i + 1})`);
-                    await sleep(300);
-                    continue;
-                }
+		    return await res.json();
 
-                if (!res.ok) {
-                    const errBody = await res.json().catch(() => ({
-                        detail: `Error ${res.status}`
-                    }));
-                    throw new Error(errBody.detail || `Server Error: ${res.status}`);
-                }
-
-                const text = await res.text();
-                return text ? JSON.parse(text) : {};
-
-            } catch (err) {
-
-                if (i === retries - 1) {
-                    console.error("[API ERROR FINAL]", err);
-                    throw err;
-                }
-
-                console.warn("[API RETRYING]", err.message);
-                await sleep(200);
-            }
-        }
-    },
+		} catch (err) {
+		    if (i === retries - 1) throw err;
+		    await sleep(300);
+		}
+	    }
+	},
 
     /* ---------- Upload (XHR for progress) ---------- */
 
@@ -134,7 +121,9 @@ export const API = {
     },
 
     async fetchMeta(id) {
-        return this.fetchWithRetry(getUrl(`/get_meta/${id}`));
+        // This hits @router.get("/get_meta/{dataset_id}")
+        // fetchWithRetry will handle the JSON parsing automatically
+        return this.fetchWithRetry(getUrl(`/get_meta/${encodeURIComponent(id)}`));
     },
 
     async fetchPreview(id) {
@@ -164,12 +153,25 @@ export const API = {
     },
 
     /* ---------- Export ---------- */
-
     async verifyExport(id) {
-        return this.fetchWithRetry(getUrl(`/export/${encodeURIComponent(id)}`), {
-            method: "GET"
-        });
-    },
+	    const response = await fetch(getUrl(`/export/${encodeURIComponent(id)}`), {
+		method: "GET"
+	    });
+
+	    if (!response.ok) {
+		// Try to parse the {"detail": "..."} from the backend
+		const errorData = await response.json().catch(() => ({}));
+		
+		// Create an error object and attach the detail
+		const error = new Error(errorData.detail || "Export verification failed");
+		error.detail = errorData.detail; 
+		error.status = response.status;
+		throw error;
+	    }
+
+	    return response; // Success
+	},
+   
 
     /* ---------- System ---------- */
 
