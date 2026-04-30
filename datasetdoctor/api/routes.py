@@ -8,6 +8,7 @@ import pandas as pd
 from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile, Request
 from fastapi.responses import FileResponse, RedirectResponse, HTMLResponse
 from starlette.concurrency import run_in_threadpool
+from fastapi.templating import Jinja2Templates
 
 from datasetdoctor.core import config
 from datasetdoctor.core.logger import logger
@@ -28,36 +29,42 @@ from datasetdoctor.core.audit import log_audit_event
 
 router = APIRouter()
 
+# Initialize templates (assuming TEMPLATES_DIR is a Path object from your config)
+templates = Jinja2Templates(directory=str(config.TEMPLATES_DIR))
 
 # -------------------------
 # UI
 # -------------------------
 
 @router.get("/dashboard/", response_class=HTMLResponse)
-async def dashboard_missing_id():
-    path = config.TEMPLATES_DIR / "session_expired.html"
-    return await safe_read_file(path)
+async def dashboard_missing_id(request: Request): # Add request
+    return templates.TemplateResponse("session_expired.html", {"request": request})
 
 @router.get("/", response_class=HTMLResponse)
-async def home():
-    path = config.TEMPLATES_DIR / "index.html"
-    return await safe_read_file(path)
+async def home(request: Request): # Add request
+    # This now allows index.html to use {% include "includes/sidebar.html" %}
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html")
 
 @router.get("/uploader", response_class=HTMLResponse)
-async def uploader():
-    path = config.TEMPLATES_DIR / "upload.html"
-    return await safe_read_file(path)
-
+async def uploader(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="upload.html")
 
 @router.get("/dashboard/{dataset_id}", response_class=HTMLResponse)
-async def dashboard(dataset_id: str):
-    path = config.TEMPLATES_DIR / "dashboard.html"
-    return await safe_read_file(path)
+async def dashboard(request: Request, dataset_id: str):
+    return templates.TemplateResponse(
+        request=request,             # Pass request as a keyword arg
+        name="dashboard.html",       # Pass template name
+        context={"dataset_id": dataset_id} # Pass extra data here
+    )
 
 @router.get("/audit", response_class=HTMLResponse)
-async def audit():
-    path = config.TEMPLATES_DIR / "audit.html"
-    return await safe_read_file(path)
+async def audit(request: Request):
+    return templates.TemplateResponse("audit.html", {"request": request})
+    
 
 @router.post("/api/v3/system/ping")
 async def system_ping(request: Request, background_tasks: BackgroundTasks):
@@ -211,6 +218,11 @@ async def get_meta(dataset_id: str):
     meta = load_meta(dataset_id)
     if not meta:
         raise HTTPException(404, "Metadata not found")
+    
+    # Dynamically check if the cleaned file exists
+    clean_path = get_clean_path(dataset_id)
+    meta["has_cleaned_data"] = clean_path.exists()
+    
     return meta
 
 
@@ -219,15 +231,26 @@ async def get_meta(dataset_id: str):
 # -------------------------
 @router.get("/export/{dataset_id}", response_class=FileResponse)
 async def export(dataset_id: str):
+    # 1. Get the path (Ensure it's a string or Path object)
     path = get_clean_path(dataset_id)
-
+    
+    # 2. Check if file exists using your utility
     if not await path_exists(path):
-        raise HTTPException(404, "No cleaned data available. Please run a cleaning action first.")
+        # Log this as a warning—user clicked export before cleaning finished
+        logger.warning(f"Export attempted for missing file: {dataset_id}")
+        raise HTTPException(
+            status_code=404, 
+            detail="No cleaned data available. Please run a cleaning action first."
+        )
 
+    # 3. Return FileResponse
+    # media_type="text/csv" is correct for CSVs
     return FileResponse(
         path=path,
         media_type="text/csv",
         filename=f"cleaned_{dataset_id}.csv",
+        # Use 'attachment' to force the "Save As" dialog in browsers
+        content_disposition_type="attachment" 
     )
 
 
@@ -319,24 +342,19 @@ async def reset(request: Request, dataset_id: str, background_tasks: BackgroundT
 # Fragments
 # -------------------------
 @router.get("/about-fragment", response_class=HTMLResponse)
-async def about_fragment():
-    path = config.TEMPLATES_DIR / "about.html"
-
-    try:
-        return await safe_read_file(path)
-    except HTTPException:
-        return HTMLResponse("<p>Content missing</p>", status_code=404)
-
-
+async def about_fragment(request: Request):
+    return templates.TemplateResponse(
+        request=request, 
+        name="about.html"
+    )
+        
 
 @router.get("/clean-fragment", response_class=HTMLResponse)
-async def clean_fragment():
-    path = config.TEMPLATES_DIR / "clean.html"
-
-    try:
-        return await safe_read_file(path)
-    except HTTPException:
-        return HTMLResponse("<p>Content missing</p>", status_code=404)
+async def about_fragment(request: Request):
+    return templates.TemplateResponse(
+        request=request, 
+        name="clean.html"
+    )
         
 
 @router.get("/audit/logs")
