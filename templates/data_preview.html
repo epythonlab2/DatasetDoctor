@@ -26,12 +26,19 @@
             <main class="dashboard-container">
                 <!-- Header -->
                 <header class="dashboard-header">
-                    <div>
-                        <h1>Dataset Analysis <span class="badge-live">Live</span></h1>
-                        <p id="filename-display" class="text-muted">
-                            Analyzing: <span id="current-file" style="font-weight: 600; color: var(--text-main)">loading...</span>
-                        </p>
-                    </div>
+                    <div class="dataset-header">
+  
+			  <div class="title-row">
+			    <h1>Dataset Analysis</h1>
+			    <span class="badge-live"> Live</span>
+			  </div>
+
+			  <p id="filename-display" class="dataset-meta">
+			    <span class="label">Analyzing</span>
+			    <span id="current-file" class="file-name">dataset...</span>
+			  </p>
+
+			</div>
                     <div>
                         <span class="text-muted">
                             <i data-lucide="clock" style="width: 12px; display: inline-block; vertical-align: middle"></i>
@@ -64,8 +71,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- Initial Skeleton Loaders -->
-                        	<tr>
+                                    <tr>
                         		<td><div class="is-loading skeleton-text"></div></td>
                         		<td><div class="is-loading skeleton-text"></div></td>
                         		<td><div class="is-loading skeleton-text"></div></td>
