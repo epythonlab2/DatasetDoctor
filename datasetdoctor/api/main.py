@@ -1,14 +1,16 @@
-from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from starlette.concurrency import run_in_threadpool
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
 
-from datasetdoctor.core import config
-from .routes import router
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 
 # 1. Import the updated AuditLogger (the Supabase version)
-from datasetdoctor.admincp.audit_engine import AuditLogger 
+from datasetdoctor.admincp.audit_engine import AuditLogger
+from datasetdoctor.core import config
+
+from .routes import router
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,12 +22,12 @@ async def lifespan(app: FastAPI):
     # 2. Initialize the Supabase-based logger
     # Ensure these variables are defined in your config.py/env
     app.state.audit_logger = AuditLogger(
-        supabase_url=config.SUPABASE_URL,
-        supabase_key=config.SUPABASE_KEY
+        supabase_url=config.SUPABASE_URL, supabase_key=config.SUPABASE_KEY
     )
 
     await run_in_threadpool(init_dirs)
     yield
+
 
 app = FastAPI(title="DatasetDoctor API", lifespan=lifespan)
 

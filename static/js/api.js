@@ -18,7 +18,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 function safeClientId() {
     const id = getOrCreateClientId();
 
-    console.log("[IDENTITY] Client ID:", id);
+    //console.log("[IDENTITY] Client ID:", id);
 
     if (!id || id === "null" || id === "undefined") {
         throw new Error("[CRITICAL] Client identity missing or invalid.");
@@ -116,7 +116,7 @@ export const API = {
     /* ---------- Data Retrieval ---------- */
 
     async fetchAnalysis(id) {
-        localStorage.setItem("dataset_id", id);
+        
         return this.fetchWithRetry(getUrl(`/analysis/${id}`));
     },
 
@@ -126,8 +126,11 @@ export const API = {
         return this.fetchWithRetry(getUrl(`/get_meta/${encodeURIComponent(id)}`));
     },
 
+    /* ---------- api.js ---------- */
     async fetchPreview(id) {
-        return this.fetchWithRetry(getUrl(`/preview/${encodeURIComponent(id)}`));
+	  // Crucial: Point to /api/ to get JSON, not /dashboard/ to get HTML
+	  localStorage.setItem("dataset_id", id);
+	  return this.fetchWithRetry(getUrl(`/api/v1/preview/${encodeURIComponent(id)}`));
     },
 
     /* ---------- Data Actions ---------- */

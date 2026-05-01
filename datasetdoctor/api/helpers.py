@@ -49,7 +49,7 @@ def load_meta(dataset_id: str) -> Dict[str, Any]:
             "dataset_id": dataset_id,
             "status": "processing",
             "stage": "initializing",
-            "error": None
+            "error": None,
         }
 
     try:
@@ -62,7 +62,7 @@ def load_meta(dataset_id: str) -> Dict[str, Any]:
             "dataset_id": dataset_id,
             "status": "failed",
             "error": "Metadata corrupted",
-            "stage": "error"
+            "stage": "error",
         }
 
 
@@ -103,7 +103,7 @@ def update_meta(dataset_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
                 "dataset_id": dataset_id,
                 "status": "processing",
                 "stage": "init",
-                "error": None
+                "error": None,
             }
 
         meta.update(updates)
@@ -123,20 +123,13 @@ def set_target(dataset_id: str, target: str) -> Dict[str, str]:
 
     update_meta(dataset_id, {"target": target})
 
-    return {
-        "message": "Target set successfully",
-        "target": target
-    }
+    return {"message": "Target set successfully", "target": target}
 
 
 # =========================================================
 # FILE VALIDATION ONLY (NO STORAGE / NO PATH SIDE EFFECTS)
 # =========================================================
-ALLOWED_MIME_TYPES = {
-    "text/csv",
-    "application/vnd.ms-excel",
-    "text/plain"
-}
+ALLOWED_MIME_TYPES = {"text/csv", "application/vnd.ms-excel", "text/plain"}
 
 
 def validate_csv(file: UploadFile) -> None:

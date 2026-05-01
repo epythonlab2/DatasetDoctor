@@ -16,14 +16,14 @@ Design Principles:
 
 from __future__ import annotations
 
-from datasetdoctor.core.logger import logger
 from typing import Any, Dict, Optional
 
 import pandas as pd
 
+from datasetdoctor.core.logger import logger
+
 from .base import AnalysisPlugin
 from .registry import register_plugin
-
 
 
 @register_plugin

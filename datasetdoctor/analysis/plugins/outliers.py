@@ -1,30 +1,33 @@
 from typing import Any, Dict, Optional
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+
 from .base import AnalysisPlugin
 from .registry import register_plugin
+
 
 @register_plugin
 class OutliersPlugin(AnalysisPlugin):
     """
     Detects outliers in numeric columns using the Interquartile Range (IQR) method.
-    
-    This plugin calculates the 'Tukey's Fences' at 1.5 * IQR below the first 
+
+    This plugin calculates the 'Tukey's Fences' at 1.5 * IQR below the first
     quartile and above the third quartile.
     """
 
     name: str = "outliers"
 
     def run(
-        self, 
-        df: pd.DataFrame, 
-        target: Optional[str] = None, 
-        profile: Optional[Dict[str, Any]] = None, 
-        context: Optional[Dict[str, Any]] = None
+        self,
+        df: pd.DataFrame,
+        target: Optional[str] = None,
+        profile: Optional[Dict[str, Any]] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Identifies outlier counts and ratios for all numeric columns.
-        
+
         Args:
             df: The input DataFrame.
             target: Ignored by this plugin.
@@ -49,10 +52,10 @@ class OutliersPlugin(AnalysisPlugin):
         iqr = q3 - q1
 
         # 3. Filter for columns with variance (IQR > 0)
-        # Columns with IQR = 0 (constant values) would result in every 
+        # Columns with IQR = 0 (constant values) would result in every
         # non-constant value being flagged as an outlier.
         valid_cols = iqr[iqr > 0].index
-        
+
         if valid_cols.empty:
             return {}
 
@@ -65,12 +68,14 @@ class OutliersPlugin(AnalysisPlugin):
             upper_bound = q3[col] + 1.5 * iqr[col]
 
             # Use bitwise OR for vectorized boolean indexing
-            is_outlier = (numeric_df[col] < lower_bound) | (numeric_df[col] > upper_bound)
+            is_outlier = (numeric_df[col] < lower_bound) | (
+                numeric_df[col] > upper_bound
+            )
             count = int(is_outlier.sum())
 
             results[col] = {
                 "count": count,
-                "ratio": round(count / total_rows, 4) if total_rows > 0 else 0.0
+                "ratio": round(count / total_rows, 4) if total_rows > 0 else 0.0,
             }
 
         return results

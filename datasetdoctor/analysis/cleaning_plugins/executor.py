@@ -1,8 +1,10 @@
 # analysis/cleaning_plugins/executor.py
+from typing import Any, Dict, List, Optional, Tuple
+
 import pandas as pd
-from typing import List, Tuple, Dict, Any, Optional
 
 from datasetdoctor.core.logger import logger
+
 from .registry import REGISTRY
 
 
@@ -10,8 +12,8 @@ class CleaningExecutor:
     """
     Orchestrates the sequential execution of cleaning plugins on a DataFrame.
 
-    This class maintains the state of the DataFrame throughout the cleaning 
-    pipeline and compiles an audit report of all changes and errors encountered 
+    This class maintains the state of the DataFrame throughout the cleaning
+    pipeline and compiles an audit report of all changes and errors encountered
     during the process.
     """
 
@@ -26,28 +28,28 @@ class CleaningExecutor:
         self.clean_report: Dict[str, Any] = {}
 
     def run(
-        self, 
-        plugin_names: List[str], 
-        params: Optional[Dict[str, Any]] = None
+        self, plugin_names: List[str], params: Optional[Dict[str, Any]] = None
     ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
         """
         Sequentially runs the specified plugins.
 
         Args:
             plugin_names: A list of plugin identifiers (e.g., ['remove_duplicates']).
-            params: A dictionary where keys are plugin names and values are 
+            params: A dictionary where keys are plugin names and values are
                 the keyword arguments for that plugin's `run` method.
 
         Returns:
             A tuple of (final_df, full_audit_report).
         """
         params = params or {}
-        
+
         for name in plugin_names:
             plugin_cls = REGISTRY.get(name)
-            
+
             if not plugin_cls:
-                logger.warning(f"Executor: Plugin '{name}' not found in registry. Skipping.")
+                logger.warning(
+                    f"Executor: Plugin '{name}' not found in registry. Skipping."
+                )
                 continue
 
             try:
@@ -57,7 +59,7 @@ class CleaningExecutor:
 
                 # Execute the plugin logic
                 new_df, stats = plugin.run(self.df, **plugin_args)
-                
+
                 # Update the state only if no logical error was reported
                 if "error" not in stats:
                     self.df = new_df
@@ -67,16 +69,16 @@ class CleaningExecutor:
                         f"Executor: Plugin '{name}' reported an error. "
                         f"State preserved. Error: {stats['error']}"
                     )
-                
+
                 # Record results in the audit report
                 self.clean_report[name] = stats
 
             except Exception as e:
                 logger.error(f"Executor: Critical failure on plugin '{name}': {e}")
                 self.clean_report[name] = {
-                    "status": "failed", 
+                    "status": "failed",
                     "error": str(e),
-                    "success": False
+                    "success": False,
                 }
-                
+
         return self.df, self.clean_report

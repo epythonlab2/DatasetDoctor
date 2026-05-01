@@ -1,11 +1,13 @@
 # analysis/core/audit.py
 
-import geoip2.database
 import ipaddress
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
+import geoip2.database
+from supabase import Client, create_client
 from user_agents import parse
-from supabase import create_client, Client
+
 from datasetdoctor.core.logger import logger
 
 
@@ -27,16 +29,18 @@ class AuditLogger:
             supabase_key (str): The Supabase service role or anon key.
         """
         self.supabase: Client = create_client(supabase_url, supabase_key)
-        
+
         # Pathing: Adjust relative to this file's location
         self.db_path = (
             Path(__file__).parent.parent.parent / "mmdb" / "GeoLite2-Country.mmdb"
         )
-        
+
         try:
             self.reader = geoip2.database.Reader(str(self.db_path))
         except Exception as e:
-            logger.warning(f"AuditLogger: GeoIP Database not found at {self.db_path}. Geo-enrichment disabled.")
+            logger.warning(
+                f"AuditLogger: GeoIP Database not found at {self.db_path}. Geo-enrichment disabled."
+            )
             self.reader = None
 
     def get_geo_info(self, ip: str) -> Optional[Dict[str, str]]:
@@ -57,15 +61,11 @@ class AuditLogger:
             return {
                 "country": response.country.name or "Unknown",
                 "city": "—",
-                "org": "MaxMind-GeoLite2"
+                "org": "MaxMind-GeoLite2",
             }
         except Exception:
             # Captures 'AddressNotFound' or invalid IP formats
-            return {
-                "country": "Unknown",
-                "city": "—",
-                "org": "Unknown"
-            }
+            return {"country": "Unknown", "city": "—", "org": "Unknown"}
 
     def is_local_ip(self, ip: Optional[str]) -> bool:
         """
@@ -79,7 +79,7 @@ class AuditLogger:
         """
         if not ip or ip in ["localhost", "127.0.0.1"]:
             return True
-        
+
         try:
             addr = ipaddress.ip_address(ip)
             return addr.is_private or addr.is_loopback
@@ -87,11 +87,11 @@ class AuditLogger:
             return True
 
     def log_activity(
-        self, 
-        user_data: Dict[str, Any], 
-        action_slug: str, 
-        entity_id: str, 
-        meta_delta: Dict[str, Any]
+        self,
+        user_data: Dict[str, Any],
+        action_slug: str,
+        entity_id: str,
+        meta_delta: Dict[str, Any],
     ) -> None:
         """
         Processes and sends an audit entry to the Supabase 'audit_logs' table.
@@ -112,22 +112,15 @@ class AuditLogger:
         ua = parse(ua_string)
 
         audit_entry = {
-            "actor": {
-                "user_id": user_data.get("id"),
-                "role": user_data.get("role")
-            },
-            "action": {
-                "slug": action_slug,
-                "entity": entity_id,
-                "delta": meta_delta
-            },
+            "actor": {"user_id": user_data.get("id"), "role": user_data.get("role")},
+            "action": {"slug": action_slug, "entity": entity_id, "delta": meta_delta},
             "environment": {
                 "ip": ip,
                 "geo": self.get_geo_info(ip),
                 "device": ua.device.family,
                 "os": ua.os.family,
-                "browser": ua.browser.family
-            }
+                "browser": ua.browser.family,
+            },
         }
 
         try:

@@ -1,6 +1,6 @@
 import logging
-from datasetdoctor.core import config
 
+from datasetdoctor.core import config
 
 config.LOG_DIR.mkdir(exist_ok=True)
 

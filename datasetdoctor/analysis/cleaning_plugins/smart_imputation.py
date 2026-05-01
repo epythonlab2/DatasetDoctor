@@ -1,8 +1,10 @@
 # analysis/cleaning_plugins/smart_imputation.py
-from typing import Tuple, Dict, Any, Optional
+from typing import Any, Dict, Optional, Tuple
+
 import pandas as pd
 
 from datasetdoctor.core.logger import logger
+
 from .base import CleaningPlugin
 from .registry import register_cleaning
 
@@ -11,19 +13,15 @@ from .registry import register_cleaning
 class SmartImputationPlugin(CleaningPlugin):
     """
     Intelligent imputation plugin that fills missing values based on data types.
-    
-    If 'auto' is selected, it uses statistical skewness to choose between mean 
+
+    If 'auto' is selected, it uses statistical skewness to choose between mean
     and median for numerical data, and defaults to mode for categorical data.
     """
 
     name = "smart_impute"
 
     def run(
-        self, 
-        df: pd.DataFrame, 
-        target_column: str, 
-        method: str = "auto", 
-        **kwargs
+        self, df: pd.DataFrame, target_column: str, method: str = "auto", **kwargs
     ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
         """
         Executes the imputation process on a specific column.
@@ -47,8 +45,8 @@ class SmartImputationPlugin(CleaningPlugin):
 
         if initial_nulls == 0:
             return df_cleaned, {
-                "imputed": False, 
-                "reason": f"No missing values in '{target_column}'."
+                "imputed": False,
+                "reason": f"No missing values in '{target_column}'.",
             }
 
         # Resolve strategy
@@ -71,7 +69,7 @@ class SmartImputationPlugin(CleaningPlugin):
             "column": target_column,
             "strategy_used": strategy,
             "fill_value": self._serialize_value(fill_value),
-            "nulls_fixed": int(initial_nulls)
+            "nulls_fixed": int(initial_nulls),
         }
 
     def _determine_strategy(self, series: pd.Series) -> str:

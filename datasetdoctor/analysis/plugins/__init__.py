@@ -1,16 +1,7 @@
 # analysis/plugins/__init__.py
 
-from . import (
-    data_leakage,
-    data_quality,
-    imbalance,
-    ml_readiness,
-    outliers,
-    predictive_power,
-    stats,
-    suggestions,
-)
-
+from . import (data_leakage, data_quality, imbalance, ml_readiness, outliers,
+               predictive_power, stats, suggestions)
 from .registry import REGISTRY, register_plugin
 
 __all__ = [
