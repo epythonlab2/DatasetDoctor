@@ -1,11 +1,15 @@
 # analysis/inspect.py
 from typing import Any, Dict, Optional
+
 import pandas as pd
+
 from .plugins.executor import PluginExecutor
+
 
 def _infer_type(series: pd.Series) -> str:
     """Returns the string representation of a pandas Series dtype."""
     return str(series.dtype)
+
 
 def analyze_dataset(
     file_path: str, target: Optional[str] = None, filename: Optional[str] = None
@@ -13,9 +17,9 @@ def analyze_dataset(
     """
     Orchestrates dataset analysis using a memory-efficient streaming profile approach.
 
-    This function reads large datasets in chunks to calculate global profile metrics 
-    (total rows, missing values, duplicates) without loading the entire file into 
-    memory. It then executes a suite of analysis plugins on a combined sample 
+    This function reads large datasets in chunks to calculate global profile metrics
+    (total rows, missing values, duplicates) without loading the entire file into
+    memory. It then executes a suite of analysis plugins on a combined sample
     to generate descriptive statistics and data quality insights.
 
     Args:
@@ -27,14 +31,11 @@ def analyze_dataset(
         A dictionary containing global summary, column metadata, and plugin results.
     """
     CHUNK_SIZE = 100_000
-    
-    # FIX: low_memory=False prevents DtypeWarning by processing the whole 
+
+    # FIX: low_memory=False prevents DtypeWarning by processing the whole
     # file column-wise internally during type inference, even when chunking.
     reader = pd.read_csv(
-        file_path, 
-        chunksize=CHUNK_SIZE, 
-        parse_dates=True, 
-        low_memory=False
+        file_path, chunksize=CHUNK_SIZE, parse_dates=True, low_memory=False
     )
 
     total_rows = 0

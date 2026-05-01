@@ -50,33 +50,34 @@ export const Actions = {
         window.location.href = "/uploader";
     }
   },
-  
+    async export() {
+	    const id = state.datasetId;
+	    if (!id) return;
+
+	    try {
+		// 1. Pre-flight verification 
+		// This is where the 400 "No cleaned data" error will trigger
+		await API.verifyExport(id);
+
+		// 2. Metadata Check (Optional secondary safety)
+		const meta = await API.fetchMeta(id);
+		if (meta.status !== "ready") {
+		    throw new Error("Dataset is still processing.");
+		}
+
+		// 3. Trigger Download
+		window.location.href = API.getUrl(`/export/${encodeURIComponent(id)}`);
+
+	    } catch (err) {
+		// If the error contains our specific backend detail, show that.
+		// Otherwise, show the generic error message.
+		const errorMsg = err.detail || err.message || "An unexpected error occurred";
+		
+		alert(`Export Warning: ${errorMsg}`);
+	    }
+	},
  
-  async export() {
-    const id = state.datasetId;
-    
-    // 1. Basic validation
-    if (!id || !isValidId(id)) return alert("Invalid dataset session.");
-
-    try {
-      // 2. Pre-flight verification
-      // This calls the backend to ensure the file exists/is cleaned
-      // The API.verifyExport should throw an error if status is 400 or 404
-      await withTimeout(API.verifyExport(encodeURIComponent(id)), 5000);
-
-      // 3. Trigger Download
-      // If verification passes, we navigate to the download URL
-      window.location.href = API.getUrl(`/export/${encodeURIComponent(id)}`);
-
-    } catch (err) {
-      // 4. Handle specific "No Clean Data" or "Not Found" alerts
-      console.error("Export verification failed:", err);
-      
-      // err.message will contain the "detail" from your FastAPI HTTPException
-      alert(`Export Failed: ${err.message}`);
-    }
-  },
-  
+ 
 
   /* ---------- Smart Imputation Core ---------- */
 

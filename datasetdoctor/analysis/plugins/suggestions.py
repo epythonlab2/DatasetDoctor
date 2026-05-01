@@ -1,19 +1,21 @@
 from .base import AnalysisPlugin
 from .registry import register_plugin
 
+
 @register_plugin
 class SuggestionsPlugin(AnalysisPlugin):
     """
-    Analyzes dataset profiles to provide data cleaning and 
+    Analyzes dataset profiles to provide data cleaning and
     feature engineering recommendations.
     """
+
     name = "suggestions"
     MISSING_THRESHOLD = 0.3
 
     def run(self, df, target=None, profile=None, context=None):
         """
         Generates suggestions based on missingness, cardinality, and naming conventions.
-        
+
         :param df: The input pandas DataFrame.
         :param profile: Dictionary containing 'rows', 'nunique', and 'missing_counts'.
         :return: Dict containing a list of suggestion strings.
@@ -23,9 +25,13 @@ class SuggestionsPlugin(AnalysisPlugin):
 
         suggestions = []
         rows = profile["rows"]
-        
+
         # Pull thresholds from context if available, otherwise use default
-        missing_limit = context.get("missing_threshold", self.MISSING_THRESHOLD) if context else self.MISSING_THRESHOLD
+        missing_limit = (
+            context.get("missing_threshold", self.MISSING_THRESHOLD)
+            if context
+            else self.MISSING_THRESHOLD
+        )
 
         for col in df.columns:
             nunique = profile.get("nunique", {}).get(col, 0)
@@ -44,6 +50,8 @@ class SuggestionsPlugin(AnalysisPlugin):
 
             # 3. Temporal Feature Heuristic
             if "date" in col.lower() or "time" in col.lower():
-                suggestions.append(f"{col}: potential datetime → extract temporal features")
+                suggestions.append(
+                    f"{col}: potential datetime → extract temporal features"
+                )
 
         return {"value": suggestions}

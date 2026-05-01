@@ -117,8 +117,17 @@ document.addEventListener("DOMContentLoaded", () => {
  */
 function toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');
-    if (!sidebar) return; // Guard clause if sidebar hasn't loaded yet
-    sidebar.classList.toggle('active');
+    if (sidebar) {
+        const isActive = sidebar.classList.toggle('active');
+        
+        // Optional: Change the menu icon to an 'X' when open
+        const toggleIcon = document.querySelector('.mobile-toggle i');
+        if (toggleIcon) {
+            const iconName = isActive ? 'x' : 'menu';
+            toggleIcon.setAttribute('data-lucide', iconName);
+            lucide.createIcons(); // Re-render the icon
+        }
+    }
 }
 
 /**

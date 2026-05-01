@@ -16,15 +16,15 @@ Security & Reliability Considerations:
 
 from __future__ import annotations
 
-from datasetdoctor.core.logger import logger
 from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
 
+from datasetdoctor.core.logger import logger
+
 from .base import AnalysisPlugin
 from .registry import register_plugin
-
 
 
 @register_plugin

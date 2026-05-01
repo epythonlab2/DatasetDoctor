@@ -13,14 +13,14 @@ Supports:
 
 from __future__ import annotations
 
-from datasetdoctor.core.logger import logger
 from typing import Any, Dict, Optional
 
 import pandas as pd
 
+from datasetdoctor.core.logger import logger
+
 from .base import AnalysisPlugin
 from .registry import register_plugin
-
 
 
 @register_plugin
@@ -106,9 +106,7 @@ class ImbalancePlugin(AnalysisPlugin):
             return {
                 "target_column": target,
                 "num_classes": num_classes,
-                "distribution": {
-                    str(k): round(v, 4) for k, v in dist.items()
-                },
+                "distribution": {str(k): round(v, 4) for k, v in dist.items()},
                 "majority_class_ratio": round(max_ratio, 4),
                 "minority_class_ratio": round(min_ratio, 4),
                 "imbalance_severity": severity,

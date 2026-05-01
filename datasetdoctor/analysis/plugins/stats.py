@@ -1,7 +1,9 @@
 # analysis/plugins/stats.py
 from typing import Any, Dict, Optional
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+
 from .base import AnalysisPlugin
 from .registry import register_plugin
 
@@ -10,20 +12,20 @@ from .registry import register_plugin
 class StatsPlugin(AnalysisPlugin):
     """
     Computes comprehensive descriptive statistics for all column types.
-    
-    Automatically handles numeric, categorical, and datetime objects, 
-    ensuring results are JSON-serializable by converting NumPy types to 
+
+    Automatically handles numeric, categorical, and datetime objects,
+    ensuring results are JSON-serializable by converting NumPy types to
     Python natives and handling Null/NaN values.
     """
 
     name: str = "stats"
 
     def run(
-        self, 
-        df: pd.DataFrame, 
-        target: Optional[str] = None, 
-        profile: Optional[Dict[str, Any]] = None, 
-        context: Optional[Dict[str, Any]] = None
+        self,
+        df: pd.DataFrame,
+        target: Optional[str] = None,
+        profile: Optional[Dict[str, Any]] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Generates a statistical summary of the dataset.
@@ -35,7 +37,7 @@ class StatsPlugin(AnalysisPlugin):
             context: Execution context for optional configuration.
 
         Returns:
-            A nested dictionary where keys are column names and values 
+            A nested dictionary where keys are column names and values
             are their respective statistical metrics.
         """
         if df.empty:

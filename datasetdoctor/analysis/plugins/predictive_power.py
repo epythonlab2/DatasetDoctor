@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 
 import numpy as np
 import pandas as pd
@@ -172,13 +172,22 @@ class PredictivePowerPlugin(AnalysisPlugin):
                 std = float(std_mi[i])
                 norm_mi = mi / (max_mi_in_chunk + 1e-6)
 
-                # Linear correlation check (only relevant for regression tasks)
                 corr = 0.0
                 if not is_class:
                     try:
-                        corr = abs(np.corrcoef(X_chunk[col], y)[0, 1])
-                    except:
-                        pass
+                        # np.corrcoef returns a 2x2 matrix; [0, 1] is the correlation between x and y
+                        coef_matrix = np.corrcoef(X_chunk[col], y)
+                        # Check if the matrix is valid (constant input results in NaNs)
+                        if not np.isnan(coef_matrix[0, 1]):
+                            corr = abs(coef_matrix[0, 1])
+                    except (ValueError, TypeError, RuntimeWarning) as e:
+                        # Log the specific reason if needed for debugging the engine
+                        logger.debug(f"Correlation failed for {col}: {e}")
+                        corr = 0.0
+                    except Exception as e:
+                        logger.debug(f"Correlation failed for {col}: {e}")
+                        # Catch-all for other non-critical logic errors, excluding SystemExit/KeyboardInterrupt
+                        corr = 0.0
 
                 # Stability score: penalizes features that fluctuate wildly across bootstrap samples
                 stability = self._stability_confidence(mi, std)

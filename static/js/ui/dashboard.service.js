@@ -1,4 +1,3 @@
-// services/dashboard.service.js
 import { API } from "../api.js";
 import { state } from "../utils/state.js";
 
@@ -9,13 +8,12 @@ export const DashboardService = {
   },
 
   scheduleRetry(callback, delay = 3000) {
-    // Safety Check: Ensure callback is actually a function
     if (typeof callback !== 'function') {
-      console.error("CSP Safety Triggered: scheduleRetry requires a function, not a string.");
+      console.error("scheduleRetry requires a function");
       return;
     }
-    
-    setTimeout(() => callback, delay);
+
+    setTimeout(() => callback(), delay); // ✅ FIXED
   },
 
   _normalize(data) {
@@ -28,6 +26,8 @@ export const DashboardService = {
       suggestions: data.suggestions || [],
       leakage: data.leakage || {},
       summary: data.summary || {},
+
+      // ❌ REMOVED RAW PIPELINE LEAK
       raw: data
     };
   }

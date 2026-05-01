@@ -18,7 +18,9 @@ class PluginExecutor:
     - Collect structured results
     """
 
-    def __init__(self, df: pd.DataFrame, profile: Optional[Dict[str, Any]] = None, registry=None):
+    def __init__(
+        self, df: pd.DataFrame, profile: Optional[Dict[str, Any]] = None, registry=None
+    ):
         self.df = df
         self.registry = registry or REGISTRY
         self.profile = profile or self._internal_profile(df)

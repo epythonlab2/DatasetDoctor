@@ -1,7 +1,7 @@
 # ---------------------------
 # Core Project & Deployment
 # ---------------------------
-.fastapicloud/
+
 # REMOVED: .git/ (Git ignores this automatically)
 # REMOVED: .github/ (KEEP THIS so your GitHub Actions/Workflows work)
 
@@ -30,6 +30,7 @@ static/exports/  # If you generate downloadable cleaned files
 __pycache__/
 *.py[cod]
 *$py.class
+.cache/**
 *.so
 .venv/
 venv/

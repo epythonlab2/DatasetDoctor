@@ -18,9 +18,10 @@ Design Principles:
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
-from datasetdoctor.core.logger import logger
 
 import pandas as pd
+
+from datasetdoctor.core.logger import logger
 
 from .base import AnalysisPlugin
 from .registry import register_plugin
@@ -88,9 +89,7 @@ class MLReadinessPlugin(AnalysisPlugin):
                 logger.warning("Missing imbalance dependency")
 
             dq_score = dq.get("score") if isinstance(dq, dict) else None
-            is_imbalanced = (
-                imb.get("is_imbalanced") if isinstance(imb, dict) else False
-            )
+            is_imbalanced = imb.get("is_imbalanced") if isinstance(imb, dict) else False
 
             # -------------------------
             # Scoring Components
