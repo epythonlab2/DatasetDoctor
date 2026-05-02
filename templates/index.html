@@ -1,21 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- ==========================================
+         METADATA & SEO
+         ========================================== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DatasetDoctor | Intelligence at the Source</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M22 12h-4l-3 9L9 3l-3 9H2'></path></svg>" />
+
+    <!-- ==========================================
+         STYLESHEETS
+         ========================================== -->
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="/static/css/custom_dialog.css">
     <link rel="stylesheet" href="/static/css/land_page.css">
+    
+    <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- ICONS -->
     <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
+    <!-- VISUAL EFFECTS -->
     <div class="hero-glow"></div>
 
+    <!-- ==========================================
+         NAVIGATION BAR
+         ========================================== -->
     <nav class="navbar">
         <div class="dashboard-container nav-content">
             <div class="logo nav-logo-link" onclick="window.location.href='/'">
@@ -44,28 +59,51 @@
         </div>
     </nav>
 
+    <!-- ==========================================
+         HERO SECTION
+         ========================================== -->
     <header class="dashboard-container hero-header">
-        <div class="badge-live"> V3.0 CORE PIPELINE ACTIVE</div>
-        <h1 class="display-title">
-            Intelligence <br><span class="text-primary-span">at the Source.</span>
-        </h1>
-        <p class="lead-text">
-            The industrial-grade engine built to audit, refine, and validate massive datasets for production AI and high-stakes analytics.
-        </p>
-        <div class="hero-btn-group">
-            <button id="hero-launch-btn" class="btn btn-primary btn-hero-launch">
-                Launch Engine
-            </button>
-            <button onclick="document.getElementById('architecture').scrollIntoView()" class="btn btn-secondary btn-hero-specs">
-                System Specs
-            </button>
-            <a href="https://www.youtube.com/channel/UCsFz0IGS9qFcwrh7a91juPg/join" target="_blank" class="link-support">
-                <i data-lucide="server" class="icon-support"></i> 
-                Support Cloud Deployment & Pipelining
-            </a>
+        <!-- Visual Assets / Slideshow -->
+        <div class="mobile-frame-container">
+            <div class="mobile-frame">
+                <div class="mobile-notch"></div>
+                <div class="slideshow-bg">
+                    <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-35.jpg');"></div>
+                    <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-38.jpg');"></div>
+                    <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-39.jpg');"></div>
+                    <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-37.jpg');"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Copy & CTAs -->
+        <div class="hero-content">
+            
+            <h1 class="display-title">
+                Intelligence <br><span class="text-primary-span">at the Source.</span>
+            </h1>
+            <p class="lead-text">
+                The industrial-grade engine built to audit, refine, and validate massive datasets for production AI and high-stakes analytics.
+            </p>
+            <div class="hero-btn-group">
+                <button id="hero-launch-btn" class="btn btn-primary btn-hero-launch">
+                    Launch Engine
+                </button>
+                <button onclick="document.getElementById('architecture').scrollIntoView()" class="btn btn-secondary btn-hero-specs">
+                    System Specs
+                </button>
+                <!--
+                <a href="https://www.youtube.com/channel/UCsFz0IGS9qFcwrh7a91juPg/join" target="_blank" class="link-support">
+                    <i data-lucide="server" class="icon-support"></i> 
+                    Support Cloud Deployment & Pipelining
+                </a> -->
+            </div>
         </div>
     </header>
 
+    <!-- ==========================================
+         DQS METRIC SECTION
+         ========================================== -->
     <section id="about" class="section-alt">
         <div class="dashboard-container">
             <div class="quality-score-hero responsive-hero dqs-card">
@@ -82,6 +120,9 @@
         </div>
     </section>
 
+    <!-- ==========================================
+         FEATURES / AUDIT SUITE
+         ========================================== -->
     <section id="features">
         <div class="dashboard-container">
             <div class="features-header">
@@ -91,6 +132,7 @@
             </div>
 
             <div class="feature-card-grid">
+                <!-- Feature Cards -->
                 <div class="feature-mini-card card-mini">
                     <div class="mini-icon icon-mini-wrapper" style="color: #3b82f6;"><i data-lucide="bar-chart-3"></i></div>
                     <strong class="card-mini-title">Statistical Moments</strong>
@@ -125,8 +167,12 @@
         </div>
     </section>
 
+    <!-- ==========================================
+         AI INTELLIGENCE SECTION
+         ========================================== -->
     <section id="ai-intelligence" class="section-ai">
         <div class="dashboard-container">
+            <!-- MI Signal Box -->
             <div class="feature-highlight" style="margin-bottom: 3rem;">
                 <div class="highlight-header">
                     <i data-lucide="activity" style="width: 18px"></i> Predictive Power Signal
@@ -144,6 +190,7 @@
                 </div>
             </div>
 
+            <!-- Smart Suggestion Cards -->
             <div class="ai-grid-container">
                 <div class="ai-card card-ai-main">
                     <h4 class="ai-card-title">
@@ -165,6 +212,9 @@
         </div>
     </section>
 
+    <!-- ==========================================
+         ARCHITECTURE DIAGRAM SECTION
+         ========================================== -->
     <section id="architecture" class="architecture-section">
         <div class="arch-header-stack">
             <div class="arch-icon-badge">
@@ -175,6 +225,7 @@
         </div>
 
         <div class="arch-pipeline">
+            <!-- Layer 1: Ingest -->
             <div class="arch-layer">
                 <span class="layer-tag">Data Ingest</span>
                 <div class="arch-node">
@@ -190,6 +241,7 @@
 
             <div class="connector"></div>
 
+            <!-- Layer 2: Engine -->
             <div class="arch-layer engine">
                 <span class="layer-tag">Intelligence Engine</span>
                 <div class="arch-node">
@@ -210,6 +262,7 @@
 
             <div class="connector"></div>
 
+            <!-- Layer 3: UI -->
             <div class="arch-layer">
                 <span class="layer-tag">Presentation</span>
                 <div class="arch-node">
@@ -225,6 +278,9 @@
         </div>
     </section>
 
+    <!-- ==========================================
+         FOOTER
+         ========================================== -->
     <footer class="footer-main">
         <div class="dashboard-container footer-container">
             <div class="logo footer-logo"><i data-lucide="activity" class="icon-primary"></i> DatasetDoctor</div>
@@ -245,16 +301,18 @@
         </div>
     </footer>
 
+    <!-- ==========================================
+         SCRIPTS
+         ========================================== -->
     <script src="/static/js/modalUI/landing.js"></script>
     
     <script type="module">
-    import { getOrCreateClientId } from './static/js/utils/identity.js'; // Adjust path as needed
+        import { getOrCreateClientId } from './static/js/utils/identity.js';
 
-    // This runs as soon as the module is loaded (on page open)
-    const clientId = getOrCreateClientId();
-    
-    console.log("DatasetDoctor Session Initialized:", clientId);
-   </script>
+        // Initialize Session
+        const clientId = getOrCreateClientId();
+        console.log("DatasetDoctor Session Initialized:", clientId);
+    </script>
 
 </body>
 </html>
