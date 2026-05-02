@@ -127,17 +127,8 @@ section {
     z-index: -1;
     pointer-events: none;
 }
-/* Default layout for desktop */
-.hero-btn-group {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2.5rem;
-    justify-content: center; /* Center buttons horizontally */
-    align-items: center;    /* Align buttons vertically */
-}
 
-
-.hero-actions {
+.hero-btn-group, .hero-actions {
     display: flex;
     gap: 1rem;
     margin-top: 2.5rem;
@@ -222,7 +213,6 @@ section {
 .section-alt {
     background: var(--bg-alt);
     padding: 2rem 0;
-    margin-top: 20px;
 }
 
 .dqs-card {
@@ -403,7 +393,6 @@ section {
     border-radius: 8px;
     font-size: 0.8rem;
     color: var(--primary);
-    margin-top: 10px;
 }
 
 .badge-core { background: var(--primary); color: white; }
@@ -522,14 +511,46 @@ section {
         align-items: flex-start;
     }
 
-   .hero-btn-group {
+    .hero-btn-group {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .hero-btn-group > :nth-child(3) {
+        grid-column: 1 / -1;
+    }
+}
+/* =========================
+   HERO BUTTON JUSTIFICATION
+========================= */
+
+/* Default layout for desktop */
+.hero-btn-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    justify-content: center; /* Center buttons horizontally */
+    align-items: center;    /* Align buttons vertically */
+}
+
+/* Specific logic for when they are inside the mobile-frame or on mobile screens */
+@media (max-width: 768px) {
+    .hero-btn-group {
         display: grid;
         grid-template-columns: 1fr 1fr; /* Split into two columns */
         gap: 0.75rem;
         width: 100%;
         padding: 0 1rem; /* Prevent buttons from touching frame edges */
     }
-     /* Ensure buttons take full width of their grid cell */
+
+    /* Make the primary CTA or the third link span both columns for prominence */
+    .hero-btn-group > :nth-child(1),
+    .hero-btn-group > :nth-child(3) {
+        grid-column: 1 / -1; 
+    }
+
+    /* Ensure buttons take full width of their grid cell */
     .btn-hero-launch, 
     .btn-hero-specs {
         width: 100%;
@@ -538,5 +559,10 @@ section {
         justify-content: center;
         align-items: center;
     }
-}
 
+    /* Center the support link text within the grid */
+    .link-support {
+        justify-content: center;
+        text-align: center;
+    }
+}
