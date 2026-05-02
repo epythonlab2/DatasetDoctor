@@ -140,9 +140,16 @@ body {
 }
 
 .nav-actions {
-    display: flex;
-    gap    : 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
+
+.btn-clean{
+    display: none !important;
+}
+
+
 
 /* --- Sidebar --- */
 .sidebar {
@@ -1320,6 +1327,42 @@ tr:last-child td {
         width          : 100%;
         justify-content: space-between;
     }
+    .nav-icon-btn {
+       display: none !important;
+  }
+  .nav-actions .btn {
+        flex-direction: column;
+        align-items: center;
+         /* icon padding inside box */
+        margin-bottom: 18px;       /* space for the label below */
+        position: relative;
+    }
+
+    .nav-actions .btn span {
+        display: block !important;
+        position: absolute;
+        bottom: -18px;             /* sits just below the box */
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10.5px;
+        font-weight: 500;
+        color: var(--text-secondary, #6B7280);
+        white-space: nowrap;
+    }
+
+    /* Primary button label matches brand color */
+    .nav-actions .btn-primary span {
+        color: var(--primary);
+    }
+
+    .nav-actions .btn span {
+        display: block !important;  /* override your earlier display:none */
+    }
+  
+  .btn-clean {
+     display: flex !important;
+     margin-left: auto;
+  }
 
     .dashboard-header {
         flex-direction: column;
