@@ -1,3 +1,4 @@
+
 <nav class="navbar">
         <div class="nav-left-group">
           <button class="mobile-toggle" onclick="toggleSidebar()">
@@ -6,21 +7,27 @@
           <div class="logo logo-nav" onclick="window.location.href = '#'">
             <i data-lucide="activity"></i> <span>DatasetDoctor</span>
           </div>
+           <!-- CLEAN moved here -->
+	    <button class="btn btn-primary btn-clean" onclick="Clean.show()">
+	      <i data-lucide="sparkles"></i>
+	      <span>Clean</span>
+	    </button>
         </div>
+        
         <div class="nav-actions">
           <a href="https://www.youtube.com/channel/UCsFz0IGS9qFcwrh7a91juPg/join" target="_blank" class="btn btn-secondary shadow-sm btn-sponsor">
             <i data-lucide="heart" class="icon-heart"></i>
             <span class="text-sponsor">Sponsor</span>
           </a>
-          <button class="btn btn-secondary shadow-sm" onclick="About.show()">
+          <button class="btn btn-secondary" onclick="About.show()">
             <i data-lucide="info" style="width: 16px; color: var(--primary)"></i>
             <span>About</span>
           </button>
-          <button class="btn btn-secondary" onclick="resetAnalysis()">
+          <button class="btn btn-secondary " onclick="resetAnalysis()">
             <i data-lucide="refresh-ccw" style="width: 16px; color: var(--primary)"></i>
             <span>New Upload</span>
           </button>
-          <button class="btn btn-primary" onclick="Clean.show()">
+          <button class="btn btn-primary nav-icon-btn" onclick="Clean.show()">
             <i data-lucide="sparkles" style="width: 16px"></i> <span>Clean</span>
           </button>
           <button class="btn btn-secondary" onclick="exportDataset()">
