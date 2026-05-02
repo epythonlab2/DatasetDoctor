@@ -316,6 +316,7 @@ body {
 
 .btn:active {
     transform: scale(0.95);
+    
 }
 
 .btn-primary {
@@ -1333,7 +1334,7 @@ tr:last-child td {
   .nav-actions .btn {
         flex-direction: column;
         align-items: center;
-         /* icon padding inside box */
+            /* icon padding inside box */
         margin-bottom: 18px;       /* space for the label below */
         position: relative;
     }
@@ -1358,11 +1359,22 @@ tr:last-child td {
     .nav-actions .btn span {
         display: block !important;  /* override your earlier display:none */
     }
+    .btn {
+        transition: none;
+    }
+
+    .btn:active {
+	  transform: none;
+	  
+      }
+     .nav-actions .btn {
+	    border-radius: 6px; /* instead of 8px */
+    }
   
-  .btn-clean {
-     display: flex !important;
-     margin-left: auto;
-  }
+   .btn-clean {
+       display: flex !important;
+       margin-left: auto;
+    }
 
     .dashboard-header {
         flex-direction: column;

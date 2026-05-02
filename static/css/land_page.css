@@ -301,22 +301,15 @@ section {
     gap: 0.75rem;
 }
 
-.btn-sponsor {
-    text-decoration: none;
-    border: 1px solid #fee2e2;
-    background: #fffafb;
+@media (max-width: 768px) {
+	
+	.nav-content {
+	    display: flex;
+	    flex-direction: column;
+	    gap: 10px;  /* ✅ this is the right way */
+	}
 }
 
-.icon-heart {
-    width: 16px;
-    color: #ef4444;
-    fill: #ef4444;
-}
-
-.text-sponsor {
-    color: #b91c1c;
-    font-weight: 600;
-}
 
 .icon-nav {
     width: 16px;
