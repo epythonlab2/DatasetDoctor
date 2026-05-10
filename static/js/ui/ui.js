@@ -10,6 +10,27 @@ import { UIRenderer } from "./ui.renderer.js";
 
 export const UI = {
 
+	/**
+	 * Updates the "Last Scanned" timestamp label.
+	 * Can be called independently after any successful data fetch.
+	 */
+	updateLastScanned() {
+	    const timeLabel = document.getElementById('scan-time-label');
+	    if (timeLabel) {
+		// Store the ISO string for potential "Time Ago" calculations later
+		timeLabel.dataset.timestamp = new Date().toISOString();
+		timeLabel.textContent = "Just now";
+		
+		// Optional: Add a brief flash effect to show the user it updated
+		timeLabel.style.transition = "none";
+		timeLabel.style.color = "var(--primary)";
+		setTimeout(() => {
+		    timeLabel.style.transition = "color 0.5s ease";
+		    timeLabel.style.color = ""; // Returns to CSS default
+		}, 100);
+	    }
+	},
+
     /* =========================================================
        1. BASIC UI SETTERS (NO LOGIC)
     ========================================================= */
@@ -37,6 +58,8 @@ export const UI = {
             Analyzing dataset patterns...
         `);
     },
+    
+    
 
     /* =========================================================
        2. STATE → UI RENDERERS (PURE VISUAL UPDATE)
@@ -66,6 +89,7 @@ export const UI = {
         if (summary.duplicatesPercent !== undefined) applyMetric("duplicates", summary.duplicatesPercent + "%", 'error');
         if (summary.missingPercent !== undefined) applyMetric("missing-stat", summary.missingPercent + "%", 'error');
         
+        
 
         // Scoring Logic
         const qScore = summary.quality_score ?? data.quality_score;
@@ -80,14 +104,19 @@ export const UI = {
             applyMetric("ml-readiness", mlScore + "%", 'score');
             this._updateBar("ml-readiness-fill", mlScore);
         }
-
+        
+        const timeLabel = document.getElementById('scan-time-label');
+        if (timeLabel) {
+            timeLabel.dataset.timestamp = new Date().toISOString();
+            timeLabel.textContent = "Just now";
+        }
+        
         
     },
 
     updateImbalance(imb) {
         // GUARD: Only update if we actually have detection results to avoid "Detecting..." flicker
         if (!imb) return;
-	
 
         UIEngine.setText(
             "target-column-display",
@@ -136,6 +165,8 @@ export const UI = {
         state.predictivePower = data.predictive_power || {};
 
         Table.renderGlobalStats(tbody, thead);
+        
+        
     },
 
     updateLeakage(leakage) {

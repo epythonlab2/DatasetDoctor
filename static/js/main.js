@@ -30,6 +30,8 @@ function getDatasetId() {
 document.addEventListener("DOMContentLoaded", () => {
     // 1. Initial icon render
     lucide.createIcons();
+    
+    
 
     // 2. Set UI to loading state
     //UI.setLoadingState(); 
