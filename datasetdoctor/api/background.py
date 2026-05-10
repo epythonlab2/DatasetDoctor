@@ -19,55 +19,40 @@ def _handle_failure(dataset_id: str, error: Exception, stage: str):
 
 
 def run_analysis(dataset_id: str, path: Path) -> None:
-    # 1. Update IMMEDIATELY to stop 404s in the UI
-    update_meta(
-        dataset_id,
-        {
-            "status": "processing",
-            "stage": "analyzing",
-            "error": None,
-            "analysis_start": datetime.now().isoformat(),
-        },
-    )
+    update_meta(dataset_id, {"status": "processing", "stage": "Scanning data..."})
 
     try:
         meta = load_meta(dataset_id) or {}
         target = meta.get("target")
         filename = meta.get("filename", "Unknown File")
 
-        # 2. Get results
-        results = analyze_dataset(str(path), target=target, filename=filename)
+        analysis_gen = analyze_dataset(str(path), target=target, filename=filename)
 
-        # 3. CRITICAL CHECK: Ensure results is a dictionary
-        # This prevents the "method is not iterable" crash
-        if callable(results):
-            results = results()
+        # 1. Catch the partial results (summary + columns + missing %)
+        partial_data = next(analysis_gen) # Gets rows, cols, missing, redundancy
+        update_meta(dataset_id, {
+            **partial_data, # CRITICAL: This sends the actual numbers to the DB
+            "status": "processing",
+            "stage": "Top metrics ready..."
+        })
 
-        if not isinstance(results, dict):
-            logger.error(
-                f"Analysis returned {type(results)}, expected dict. Attempting cast."
-            )
-            results = (
-                dict(results)
-                if hasattr(results, "__iter__")
-                else {"error": "Invalid analysis format"}
-            )
+        # 2. Catch final results (Plugins + Scores)
+        final_results = next(analysis_gen)
 
         final_payload = {
-            **results,
+            **final_results,
             "dataset_id": dataset_id,
             "status": "ready",
             "stage": "complete",
             "last_analyzed": datetime.now().isoformat(),
         }
-
         update_meta(dataset_id, final_payload)
 
     except Exception as e:
         logger.exception(f"Analysis Pipeline Failed for {dataset_id}")
         _handle_failure(dataset_id, e, "Analysis")
-
-
+        
+        
 def run_cleaning(
     dataset_id: str,
     raw_path: str,
@@ -119,13 +104,24 @@ def run_cleaning(
             cleaning_logs = cleaning_logs()
 
         # 5. RE-ANALYZE (The "Forgetful" Step)
+        # 5. RE-ANALYZE (Consuming the Generator)
         update_meta(dataset_id, {"stage": "analyzing_results"})
-        results = analyze_dataset(
+
+        # Create the generator
+        analysis_gen = analyze_dataset(
             str(clean_path),
             target=old_meta.get("target"),
             filename=old_meta.get("filename", "dataset.csv"),
         )
 
+        # Consume the generator to get the FINAL result
+        # This skips the partial yield and waits for the full analysis to complete
+        results = None
+        for update in analysis_gen:
+            results = update 
+
+        # Now 'results' is a dictionary (the last yield from analyze_dataset)
+        
         # 6. ENFORCE MEMORY
         if "columns" in results:
             ui_type_map = {
