@@ -255,32 +255,36 @@
        
 
                 <!-- Floating Batch Bar Markup -->
-                <div id="batch-bar" class="align-items-center justify-content-between">
-                    <div class="d-flex align-items-center gap-3">
-                        <div id="batch-count" class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width:28px; height:28px; font-size: 0.8rem;">0</div>
-                        <div>
-                            <p id="batch-status-title" class="mb-0 fw-bold small">Cleaning Pipeline Queued</p>
-                            <p id="batch-status-sub" class="mb-0 text-muted" style="font-size: 0.7rem;">Batch processing optimized for high-volume datasets.</p>
-                        </div>
-                    </div>
+                <!-- Floating Batch Bar Markup -->
+		<div id="batch-bar" class="align-items-center justify-content-between">
+		    <div class="d-flex align-items-center gap-3" style="display: flex; align-items: center; gap: 12px;">
+		        <div id="batch-count" class="badge batch-badge bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width:28px; height:28px; font-size: 0.8rem; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800;">0</div>
+		        
+		        <div>
+		            <p id="batch-status-title" class="mb-0 fw-bold small" style="margin: 0; font-weight: 800; font-size: 0.875rem; color: #1e293b;">Cleaning Pipeline Queued</p>
+		            <p id="batch-status-sub" class="mb-0 text-muted" style="margin: 0; font-size: 0.7rem; color: #64748b; font-weight: 500;">Batch processing optimized for high-volume datasets.</p>
+		        </div>
+		    </div>
 
-                    <div id="batch-actions" class="d-flex gap-2">
-                        <button class="btn btn-sm btn-light rounded-pill px-3 fw-medium" onclick="Actions.clearQueue()">Discard</button>
-                        <button id="btn-run-batch" class="btn btn-sm btn-primary rounded-pill px-4 fw-bold shadow-sm" onclick="Actions.executePipeline()">
-                            Run Full Analysis
-                        </button>
-                    </div>
+		    <div id="batch-actions" class="d-flex gap-2" style="display: flex; gap: 12px; align-items: center;">
+		        <button class="btn btn-sm btn-light rounded-pill px-3 fw-medium" onclick="Actions.clearQueue()" style="background: none; border: none; font-size: 0.75rem; font-weight: 700; color: #94a3b8; cursor: pointer;">Discard</button>
+		        <button id="btn-run-batch" class="btn btn-sm btn-primary rounded-pill px-4 fw-bold shadow-sm" onclick="Actions.executePipeline()" style="padding: 10px 24px; background: var(--primary); color: white; border-radius: 999px; border: none; font-weight: 700; cursor: pointer;">
+		            Execute Analysis
+		        </button>
+		    </div>
 
-                    <div id="batch-progress-container">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="text-primary fw-bold" style="font-size: 0.7rem;">Processing...</span>
-                            <span id="progress-percent" class="text-muted" style="font-size: 0.7rem;">0%</span>
-                        </div>
-                        <div class="progress-track">
-                            <div id="progress-fill"></div>
-                        </div>
-                    </div>
-                </div>
+		    <div id="batch-progress-container">
+		        <div class="d-flex justify-content-between mb-1" style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+		            <span class="text-primary fw-bold" style="font-size: 0.7rem; color: var(--primary); font-weight: 700;">Processing...</span>
+		            <span id="progress-percent" class="text-muted" style="font-size: 0.7rem; color: var(--text-muted);">0%</span>
+		        </div>
+		        <div class="progress-track">
+		            <div id="progress-fill"></div>
+		        </div>
+		    </div>
+	
+                </div> <!-- End of floating -->
+                
                </div>
             </main>
 
