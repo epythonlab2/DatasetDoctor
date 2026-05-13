@@ -8,7 +8,7 @@
             <i data-lucide="activity"></i> <span>DatasetDoctor</span>
           </div>
            <!-- CLEAN moved here -->
-	    <button class="btn btn-primary btn-clean" onclick="Clean.show()">
+	    <button class="btn btn-primary btn-clean" onclick="window.location.href='/dashboard/clean/{{ dataset_id }}'">
 	      <i data-lucide="sparkles"></i>
 	      <span>Clean</span>
 	    </button>
@@ -27,7 +27,7 @@
             <i data-lucide="refresh-ccw" style="width: 16px; color: var(--primary)"></i>
             <span>New Upload</span>
           </button>
-          <button class="btn btn-primary nav-icon-btn" onclick="Clean.show()">
+          <button class="btn btn-primary nav-icon-btn" onclick="window.location.href='/dashboard/clean/{{ dataset_id }}'">
             <i data-lucide="sparkles" style="width: 16px"></i> <span>Clean</span>
           </button>
           <button class="btn btn-secondary" onclick="exportDataset()">

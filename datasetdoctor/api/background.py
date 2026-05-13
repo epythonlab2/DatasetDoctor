@@ -57,112 +57,124 @@ def run_cleaning(
     dataset_id: str,
     raw_path: str,
     clean_path: str,
-    action: str,
+    action: str = None,
     target_columns: list = None,
+    pipeline: list = None,  # This will receive the list of CleaningStep objects
     **kwargs,
 ) -> None:
     try:
-        # 1. LOAD OLD STATE FIRST
+        # 1. INITIALIZE PIPELINE
+        # If pipeline exists, it contains Pydantic objects. 
+        # If not, we create a single-step list to maintain backward compatibility.
+        if pipeline:
+            steps = pipeline
+        else:
+            # Manually create a simple namespace/object to mimic the Pydantic structure
+            from dataclasses import dataclass
+            @dataclass
+            class SimpleStep:
+                action: str
+                columns: list
+                method: str
+            steps = [SimpleStep(action=action, columns=target_columns, method=kwargs.get("method"))]
+
+        # 2. LOAD OLD STATE
         old_meta = load_meta(dataset_id) or {}
-        # This is our "Memory". If it doesn't exist, initialize it from current columns.
         schema_memory = old_meta.get("schema_memory", {})
         if not schema_memory:
-            schema_memory = {
-                col["name"]: col["type"] for col in old_meta.get("columns", [])
-            }
+            schema_memory = {col["name"]: col["type"] for col in old_meta.get("columns", [])}
 
-        update_meta(dataset_id, {"status": "processing", "stage": "cleaning"})
+        # 3. ITERATIVE PROCESSING
+        # We loop through steps. Each 'step' is a CleaningStep object.
+        for i, step in enumerate(steps):
+            # FIX: Use dot notation for Pydantic objects, or .get() if it's a dict
+            curr_action = step.action if hasattr(step, 'action') else step.get("action")
+            curr_cols = step.columns if hasattr(step, 'columns') else step.get("columns")
+            curr_method = getattr(step, 'method', "mean") if hasattr(step, 'method') else step.get("method", "mean")
 
-        # 2. SOURCE SELECTION
-        current_source = clean_path if os.path.exists(clean_path) else raw_path
+            update_meta(dataset_id, {
+                "status": "processing", 
+                "stage": f"Refining ({i+1}/{len(steps)}): {curr_action}..."
+            })
 
-        # 3. PLUGIN PARAMS
-        plugin_params = {}
-        if action == "drop_columns":
-            plugin_params["drop_columns"] = {"columns_to_drop": target_columns}
-        elif action == "smart_impute":
-            method = kwargs.get("method", "mean")
-            col = target_columns[0] if target_columns else None
-            plugin_params["smart_impute"] = {"target_column": col, "method": method}
-        elif action == "cast_schema":
-            target_type = kwargs.get("method", "auto")
-            target_col = target_columns[0] if target_columns else None
-            plugin_params["cast_schema"] = {
-                "target_column": target_col,
-                "method": target_type,
-            }
+            # SOURCE SELECTION: First step uses raw, subsequent steps use the growing clean file
+            current_source = clean_path if os.path.exists(clean_path) else raw_path
 
-        # 4. EXECUTE ENGINE
-        df_cleaned, cleaning_logs = clean_dataset(
-            raw_path=str(current_source),
-            clean_path=str(clean_path),
-            plugins=[action],
-            plugin_params=plugin_params,
-        )
+            # 4. PLUGIN PARAMS
+            plugin_params = {}
+            if curr_action == "drop_columns":
+                plugin_params["drop_columns"] = {"columns_to_drop": curr_cols}
+            elif curr_action == "smart_impute":
+                plugin_params["smart_impute"] = {"target_column": curr_cols[0] if curr_cols else None, "method": curr_method}
+            elif curr_action == "cast_schema":
+                plugin_params["cast_schema"] = {"target_column": curr_cols[0] if curr_cols else None, "method": curr_method}
+            else:
+                # Default for deduplicate or unknown registry keys
+                plugin_params[curr_action] = {}
 
+            # 5. EXECUTE ENGINE (Incremental Save)
+            df_cleaned, cleaning_logs = clean_dataset(
+                raw_path=str(current_source),
+                clean_path=str(clean_path),
+                plugins=[curr_action],
+                plugin_params=plugin_params,
+            )
+
+        # 6. RE-ANALYZE (Only once after the full pipeline is done)
         if callable(cleaning_logs):
             cleaning_logs = cleaning_logs()
 
-        # 5. RE-ANALYZE (The "Forgetful" Step)
-        # 5. RE-ANALYZE (Consuming the Generator)
-        update_meta(dataset_id, {"stage": "analyzing_results"})
-
-        # Create the generator
         analysis_gen = analyze_dataset(
             str(clean_path),
             target=old_meta.get("target"),
             filename=old_meta.get("filename", "dataset.csv"),
         )
 
-        # Consume the generator to get the FINAL result
-        # This skips the partial yield and waits for the full analysis to complete
         results = None
         for update in analysis_gen:
             results = update 
+            
+            # 7. ENFORCE MEMORY
+            if "columns" in results:
+                ui_type_map = {
+                    "date": "datetime64[ns]", "datetime": "datetime64[ns]",
+                    "float": "float64", "int": "Int64", "bool": "boolean", "encode": "Int64",
+                }
 
-        # Now 'results' is a dictionary (the last yield from analyze_dataset)
-        
-        # 6. ENFORCE MEMORY
-        if "columns" in results:
-            ui_type_map = {
-                "date": "datetime64[ns]",
-                "datetime": "datetime64[ns]",
-                "float": "float64",
-                "int": "Int64",
-                "bool": "boolean",
-                "encode": "Int64",
-            }
+                # If the last action was casting, update schema memory
+                last_step = steps[-1]
+                l_action = last_step.action if hasattr(last_step, 'action') else last_step.get("action")
+                if l_action == "cast_schema":
+                    l_cols = last_step.columns if hasattr(last_step, 'columns') else last_step.get("columns")
+                    l_method = getattr(last_step, 'method', "auto") if hasattr(last_step, 'method') else last_step.get("method", "auto")
+                    if l_cols:
+                        schema_memory[l_cols[0]] = ui_type_map.get(l_method, l_method)
 
-            # Update memory if we just performed a cast
-            if action == "cast_schema" and target_columns:
-                target_col = target_columns[0]
-                requested_type = kwargs.get("method", "auto")
-                schema_memory[target_col] = ui_type_map.get(
-                    requested_type, requested_type
-                )
+                for col_info in results["columns"]:
+                    name = col_info["name"]
+                    if name in schema_memory:
+                        col_info["type"] = schema_memory[name]
 
-            # Apply memory to analyzer results
-            for col_info in results["columns"]:
-                name = col_info["name"]
-                if name in schema_memory:
-                    # OVERRIDE: If we have a stored type, use it.
-                    # Ignore what the analyzer found in the CSV text.
-                    col_info["type"] = schema_memory[name]
+            update_meta(dataset_id, {
+                **results,
+                "status": "processing",
+                "stage": "Finalizing Metrics..."
+            })
 
-        # 7. UPDATE METADATA WITH SCHEMA_MEMORY
+        # 8. FINAL PAYLOAD
         final_payload = {
             **results,
-            "schema_memory": schema_memory,  # Save the memory back!
+            "schema_memory": schema_memory,
             "cleaning": cleaning_logs,
             "status": "ready",
             "stage": "complete",
-            "last_action": action,
+            "last_action": steps[-1].action if hasattr(steps[-1], 'action') else steps[-1].get("action"),
             "cleaned_file_path": str(clean_path),
         }
 
         update_meta(dataset_id, final_payload)
-        logger.info(f"Refine Engine: {action} complete. Schema memory updated.")
+        logger.info(f"Pipeline complete: {len(steps)} steps processed.")
 
     except Exception as e:
-        logger.exception(f"Pipeline crashed during {action}")
-        _handle_failure(dataset_id, e, f"Refinement Pipeline ({action})")
+        logger.exception(f"Pipeline crashed")
+        _handle_failure(dataset_id, e, "Refinement Pipeline")

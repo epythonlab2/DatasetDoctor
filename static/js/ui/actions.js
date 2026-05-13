@@ -1,133 +1,198 @@
 /**
- * Actions Module (Production-Grade)
- * --------------------------------
- * Cleaned, Unified, and Fixed Toggle Logic.
- */
+ * Actions Module (Production-Grade Pipeline)
+ * --------------------------------
+ * Updated with Progress Bar Logic
+ */
 
 import { API } from "../api.js";
 import { state } from "../utils/state.js";
 import { isValidId, formatColumnForDisplay, withTimeout } from "../utils/utils.js";
 
 export const Actions = {
-  _pollInterval: null,
-  _currentAction: null,
+  _pollInterval: null,
+  _currentAction: null,
+  _pipeline: [], // Local queue for CleaningStep objects
 
-  /* ---------- Session & Export ---------- */
+  /* ---------- Pipeline Logic ---------- */
+
+  _stageStep(action, columns = null, method = "auto") {
+    this._pipeline.push({ action, columns, method });
+    this._updateBatchUI();
+  },
+
+  _updateBatchUI() {
+    const bar = document.getElementById('batch-bar');
+    const countEl = document.getElementById('batch-count');
+    if (!bar || !countEl) return;
+
+    if (this._pipeline.length > 0) {
+      countEl.textContent = this._pipeline.length;
+      bar.classList.add('visible');
+    } else {
+      bar.classList.remove('visible');
+      bar.classList.remove('processing'); // Reset state if empty
+    }
+  },
+
+  /**
+   * Helper: Updates the visual progress bar
+   */
+  _updateProgressBar(percent, titleText = null) {
+    const fill = document.getElementById('progress-fill');
+    const text = document.getElementById('progress-percent');
+    const title = document.getElementById('batch-status-title');
+    
+    if (fill) fill.style.width = `${percent}%`;
+    if (text) text.textContent = `${Math.floor(percent)}%`;
+    if (title && titleText) title.textContent = titleText;
+  },
+
+  clearQueue() {
+    this._pipeline = [];
+    this.Dedupe._selectedDropCols.clear();
+    this.Dedupe._renderColumnTags();
+    this._updateBatchUI();
+    this.Dedupe._updateStatus("Queue Cleared", "#64748b");
+    
+    // Reset progress UI
+    const bar = document.getElementById('batch-bar');
+    if (bar) bar.classList.remove('processing');
+    this._updateProgressBar(0, "Cleaning Pipeline Queued");
+  },
+
+  /**
+   * Sends the full pipeline to the backend with progress tracking
+   */
+  /**
+   * Sends the full pipeline to the backend and runs the visual progress loop.
+   */
+  async executePipeline() {
+    const datasetId = state.datasetId;
+    if (!datasetId || this._pipeline.length === 0) return;
+
+    // 1. Map elements from your sample logic
+    const bar = document.getElementById('batch-bar');
+    const actions = document.getElementById('batch-actions');
+    const progressContainer = document.getElementById('batch-progress-container');
+    const fill = document.getElementById('progress-fill');
+    const title = document.getElementById('batch-status-title');
+    const subtitle = document.getElementById('batch-status-sub');
+    const btn = document.getElementById("btn-run-batch");
+
+    // 2. Initial UI State change
+    if (bar) bar.classList.add('processing');
+    if (actions) actions.style.display = 'none';
+    if (progressContainer) progressContainer.style.display = 'block';
+    
+    title.innerText = "Processing Data...";
+    this.Dedupe._setLoading("btn-run-batch", true, "Running...");
+
+    try {
+      // 3. The API Call (runs in background)
+      const apiPromise = API.cleanDataset(datasetId, { pipeline: this._pipeline });
+
+      // 4. Your custom progress loop logic
+      for (let i = 0; i <= 100; i += 5) {
+        if (fill) fill.style.width = i + '%';
+        if (subtitle) subtitle.innerText = `Synchronizing block ${Math.ceil(i / 20)} of 5...`;
+        
+        // Update the percentage text if you have that element
+        const percentText = document.getElementById('progress-percent');
+        if (percentText) percentText.innerText = i + '%';
+
+        await new Promise(r => setTimeout(r, 60));
+      }
+
+      // Wait for API to definitely finish if it's slower than the animation
+      await apiPromise;
+
+      // 5. Completion State
+      title.innerHTML = '<span style="color: #10b981">Analysis Complete</span>';
+      subtitle.innerText = `${this._pipeline.length} operations synchronized successfully.`;
+
+      // 6. Final Polling & Cleanup Delay
+      this._startPolling(datasetId, (meta) => {
+        setTimeout(() => {
+          this.clearQueue(); // This handles clearing the pipeline and resetting UI
+          
+          // Reset UI to original state
+          if (actions) actions.style.display = 'flex';
+          if (progressContainer) progressContainer.style.display = 'none';
+          if (bar) bar.classList.remove('processing');
+          
+          title.innerText = "Cleaning Pipeline Queued";
+          subtitle.innerText = "Batch processing optimized for high-volume datasets.";
+          
+          this.Dedupe._onComplete(meta);
+          this.Dedupe._setLoading("btn-run-batch", false);
+        }, 2500);
+      });
+
+    } catch (err) {
+      this.Dedupe._handleError(err);
+      // Reset UI on error so user isn't stuck
+      if (actions) actions.style.display = 'flex';
+      if (progressContainer) progressContainer.style.display = 'none';
+      if (bar) bar.classList.remove('processing');
+      this.Dedupe._setLoading("btn-run-batch", false);
+    }
+  },
+
+  /* ---------- Session & Export ---------- */
 
   async reset() {
     if (!confirm("This will delete all analysis. Continue?")) return;
-           
     try {
       this._clearPolling();
-
-        // 🔥 Get dataset ID BEFORE clearing it
-        const getDatasetIdFromUrl = () => {
-            const parts = window.location.pathname.split('/').filter(Boolean);
-            return parts.length ? parts[parts.length - 1] : null;
-        };
-
-        const id = state.datasetId || getDatasetIdFromUrl();
-
-        if (!id) {
-            console.warn("No datasetId found. Skipping backend reset.");
-        } else {
-            // 🔥 Call API with dataset ID
-            await withTimeout(API.reset(id));
-            // Removes specifically the dataset_id
-	    localStorage.removeItem("dataset_id");
-        }
-
-        // 🔥 Now invalidate local state
-        state.datasetId = null;
-
-        // 🔥 Clean redirect (no back history)
-        window.location.replace("/uploader");
-
+      const id = state.datasetId || window.location.pathname.split('/').filter(Boolean).pop();
+      if (id) {
+        await withTimeout(API.reset(id));
+        localStorage.removeItem("dataset_id");
+      }
+      state.datasetId = null;
+      window.location.replace("/uploader");
     } catch (err) {
-        console.error("Reset failed:", err);
-
-        // 🔥 KEEP fallback (as you requested)
-        window.location.href = "/uploader";
+      console.error("Reset failed:", err);
+      window.location.href = "/uploader";
     }
   },
-    async export() {
-	    const id = state.datasetId;
-	    if (!id) return;
 
-	    try {
-		// 1. Pre-flight verification 
-		// This is where the 400 "No cleaned data" error will trigger
-		await API.verifyExport(id);
+  async export() {
+    const id = state.datasetId;
+    if (!id) return;
+    try {
+      await API.verifyExport(id);
+      const meta = await API.fetchMeta(id);
+      if (meta.status !== "ready") throw new Error("Dataset is still processing.");
+      window.location.href = API.getUrl(`/export/${encodeURIComponent(id)}`);
+    } catch (err) {
+      alert(`Export Warning: ${err.detail || err.message || "An unexpected error occurred"}`);
+    }
+  },
 
-		// 2. Metadata Check (Optional secondary safety)
-		const meta = await API.fetchMeta(id);
-		if (meta.status !== "ready") {
-		    throw new Error("Dataset is still processing.");
-		}
+  /* ---------- Smart Imputation Core ---------- */
 
-		// 3. Trigger Download
-		window.location.href = API.getUrl(`/export/${encodeURIComponent(id)}`);
+  toggleImputeTip(event) {
+    event.stopPropagation();
+    const popup = document.getElementById('impute-tip-popup');
+    if (!popup) return;
+    popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+  },
 
-	    } catch (err) {
-		// If the error contains our specific backend detail, show that.
-		// Otherwise, show the generic error message.
-		const errorMsg = err.detail || err.message || "An unexpected error occurred";
-		
-		alert(`Export Warning: ${errorMsg}`);
-	    }
-	},
- 
- 
+  async runImpute() {
+    const col = document.getElementById("impute-column")?.value;
+    const method = document.getElementById("impute-method")?.value;
+    if (!col || col.includes("Select")) return alert("Please select a target column.");
 
-  /* ---------- Smart Imputation Core ---------- */
+    this._stageStep("smart_impute", [col], method);
+    this.Dedupe._handleImputeSuccess("Staged!");
+    const popup = document.getElementById('impute-tip-popup');
+    if (popup) popup.style.display = 'none';
+  },
 
-  toggleImputeTip(event) {
-    event.stopPropagation(); 
-    const popup = document.getElementById('impute-tip-popup');
-    if (!popup) return;
-
-    const isShowing = popup.style.display === 'block';
-    popup.style.display = isShowing ? 'none' : 'block';
-
-    if (!isShowing) {
-      const closeHandler = () => {
-        popup.style.display = 'none';
-        document.removeEventListener('click', closeHandler);
-      };
-      setTimeout(() => document.addEventListener('click', closeHandler), 10);
-    }
-  },
-
-  async runImpute() {
-    const col = document.getElementById("impute-column")?.value;
-    const method = document.getElementById("impute-method")?.value;
-
-    if (!col || col.includes("Select")) return alert("Please select a target column.");
-
-    this.Dedupe._setAction("impute");
-    this.Dedupe._setLoading("btn-apply-impute", true, "Fixing...");
-    this.Dedupe._updateStatus("Imputing values...", "#f59e0b");
-
-    try {
-      await API.cleanDataset(state.datasetId, { 
-        action: "smart_impute", 
-        columns: [col], 
-        method: method 
-      });
-      
-      this._startPolling(state.datasetId, (meta) => {
-        this.Dedupe._onComplete(meta);
-        const popup = document.getElementById('impute-tip-popup');
-        if (popup) popup.style.display = 'none';
-      });
-    } catch (err) { 
-      this.Dedupe._handleError(err); 
-    }
-  },
-  
-  /* ---------- Schema Casting Core ---------- */
-
-  toggleCastTip(event) {
+  /* ---------- Schema Casting Core ---------- */
+  
+  toggleCastTip(event) {
     event.stopPropagation(); 
     const popup = document.getElementById('cast-tip-popup');
     if (!popup) return;
@@ -144,285 +209,220 @@ export const Actions = {
     }
   },
 
+  async runCast() {
+    const col = document.getElementById("cast-column")?.value;
+    const type = document.getElementById("cast-type")?.value;
+    if (!col || col.includes("Select")) return alert("Please select a column to convert.");
 
-  async runCast() {
-    const col = document.getElementById("cast-column")?.value;
-    const type = document.getElementById("cast-type")?.value;
+    this._stageStep("cast_schema", [col], type);
+    this.Dedupe._handleCastSuccess("Staged!");
+    const tip = document.getElementById('cast-tip-popup');
+    if (tip) tip.style.display = 'none';
+  },
 
-    if (!col || col.includes("Select")) return alert("Please select a column to convert.");
+  /* ---------- Cleaning Engine (Nested Helpers) ---------- */
 
-    this.Dedupe._setAction("cast");
-    this.Dedupe._setLoading("btn-apply-cast", true, "Converting...");
-    this.Dedupe._updateStatus("Casting schema...", "#3b82f6");
+  Dedupe: {
+    _selectedDropCols: new Set(),
 
-    try {
-      await API.cleanDataset(state.datasetId, { 
-          action: "cast_schema", 
-          columns: [col], 
-          method: type 
-      });
+    prepare(datasetId, columns = []) {
+      if (!isValidId(datasetId)) return;
+      this._resetButtons(datasetId);
+      this._populateColumnSelector(columns);
+      this._selectedDropCols.clear();
+      this._renderColumnTags();
+      Actions._updateBatchUI();
+    },
 
-      this._startPolling(state.datasetId, (meta) => {
-          this.Dedupe._onComplete(meta);
-          const tip = document.getElementById('cast-tip-popup');
-          if (tip) tip.style.display = 'none';
-      });
-    } catch (err) {
-      this.Dedupe._handleError(err);
-    }
-  },
+    async run() {
+      Actions._stageStep("remove_duplicates");
+      this._handleDedupeSuccess(null, true);
+    },
 
-  /* ---------- Cleaning Engine (Nested Helpers) ---------- */
+    async runDropColumns() {
+      const cols = Array.from(this._selectedDropCols);
+      if (!cols.length) return alert("Select at least one column.");
+      Actions._stageStep("drop_columns", cols);
+      this._handleDropSuccess(true);
+    },
 
-  Dedupe: {
-    _selectedDropCols: new Set(),
+    _onComplete(meta) {
+      this._resetLoading();
+      this._updateStatus("Process Complete", "#10b981");
+      this._updateDashboard(meta);
+      this._populateColumnSelector(meta?.columns || []);
+      
+      const bar = document.getElementById('batch-bar');
+      if (bar) bar.classList.remove('processing');
 
-    prepare(datasetId, columns = []) {
-      if (!isValidId(datasetId)) return;
-      this._resetButtons(datasetId);
-      this._populateColumnSelector(columns);
-      this._selectedDropCols.clear();
-      this._renderColumnTags();
-    },
+      if (meta?.cleaning?.remove_duplicates) {
+        this._handleDedupeSuccess(meta, false);
+      }
+    },
 
-    async run() {
-      const datasetId = state.datasetId;
-      if (!isValidId(datasetId)) return;
-      this._setAction("dedupe");
-      this._setLoading("btn-dedupe", true, "Cleaning...");
-      this._updateStatus("Deduplicating...", "#f59e0b");
-      try {
-        await withTimeout(API.cleanDataset(datasetId, { action: "remove_duplicates" }));
-        Actions._startPolling(datasetId, this._onComplete.bind(this));
-      } catch (err) { this._handleError(err); }
-    },
+    _handleImputeSuccess(msg = "Fixed!") {
+      const btn = document.getElementById("btn-apply-impute");
+      if (!btn) return;
+      btn.innerHTML = `<i data-lucide="plus-circle" class="me-2"></i> ${msg}`;
+      btn.style.color = "#10b981";
+      if (window.lucide) window.lucide.createIcons();
+      setTimeout(() => { btn.innerHTML = "Queue Imputation"; btn.style.color = ""; }, 2000);
+    },
 
-    async runDropColumns() {
-      const datasetId = state.datasetId;
-      const cols = Array.from(this._selectedDropCols).map(formatColumnForDisplay);
-      if (!cols.length) return alert("Select at least one column.");
-      if (!confirm(`Permanently drop columns: ${cols.join(", ")}?`)) return;
+    _handleCastSuccess(msg = "Staged") {
+      const btn = document.getElementById("btn-apply-cast");
+      if (!btn) return;
+      btn.innerHTML = `<i data-lucide="plus-circle" class="me-2"></i> ${msg}`;
+      btn.style.color = "#10b981";
+      if (window.lucide) window.lucide.createIcons();
+      setTimeout(() => { btn.innerHTML = "Queue Schema"; btn.style.color = ""; }, 2000);
+    },
 
-      this._setAction("drop");
-      this._setLoading("btn-drop-cols", true, "Dropping...");
-      this._updateStatus("Dropping columns...", "#f59e0b");
+    _handleDedupeSuccess(meta, isStaged = false) {
+      const btn = document.getElementById("btn-dedupe");
+      if (!btn) return;
+      if (isStaged) {
+        btn.innerHTML = `<i data-lucide="plus-circle" class="me-2"></i> Dedupe Staged`;
+        btn.style.color = "#10b981";
+      } else {
+        const removed = meta?.cleaning?.remove_duplicates?.duplicates_removed ?? 0;
+        btn.innerHTML = `<i data-lucide="check-circle" class="me-2"></i> ${removed > 0 ? 'Optimized' : 'Clean'}`;
+        btn.className = "btn btn-success text-white border-0 d-flex align-items-center";
+      }
+      if (window.lucide) window.lucide.createIcons();
+    },
 
-      try {
-        await withTimeout(API.cleanDataset(datasetId, { action: "drop_columns", columns: cols }));
-        Actions._startPolling(datasetId, this._onComplete.bind(this));
-      } catch (err) { this._handleError(err); }
-    },
+    _handleDropSuccess(isStaged = false) {
+      const btn = document.getElementById("btn-drop-cols");
+      if (!btn) return;
+      this._selectedDropCols.clear();
+      this._renderColumnTags();
+      btn.innerHTML = `<i data-lucide="trash-2" class="me-2"></i> ${isStaged ? "Drop Staged" : "Dropped"}`;
+      if (window.lucide) window.lucide.createIcons();
+      setTimeout(() => { btn.textContent = "Add Columns to Queue"; }, 2000);
+    },
 
-    /* --- UI Refresh Handlers --- */
+    _populateColumnSelector(columns) {
+      const selectors = {
+        drop: document.getElementById("col-drop-selector"),
+        impute: document.getElementById("impute-column"),
+        cast: document.getElementById("cast-column")
+      };
 
-    _onComplete(meta) {
-      this._resetLoading();
-      if (Actions._currentAction === "dedupe") this._handleDedupeSuccess(meta);
-      if (Actions._currentAction === "drop") this._handleDropSuccess();
-      if (Actions._currentAction === "impute") this._handleImputeSuccess();
-      if (Actions._currentAction === "cast") this._handleCastSuccess();
+      if (selectors.drop) {
+        selectors.drop.innerHTML = '<option selected disabled>Choose columns...</option>';
+        columns.forEach(col => {
+          const opt = new Option(col.name || col, col.name || col);
+          selectors.drop.add(opt);
+        });
+      }
 
-      this._updateStatus("Process Complete", "#10b981");
-      this._updateDashboard(meta);
-      this._populateColumnSelector(meta?.columns || []);
-    },
+      if (selectors.impute) {
+        const missing = columns.filter(c => (c.missingPercent || c.null_count || 0) > 0);
+        selectors.impute.innerHTML = missing.length 
+          ? '<option selected disabled>Select column...</option>' 
+          : '<option disabled>No missing values! 🎉</option>';
+        missing.forEach(c => selectors.impute.add(new Option(`${c.name} (${c.missingPercent}%)`, c.name)));
+      }
 
-    _handleImputeSuccess() {
-      const btn = document.getElementById("btn-apply-impute");
-      if (!btn) return;
-      btn.innerHTML = `<i data-lucide="check" class="me-2"></i> Fixed!`;
-      btn.style.color = "#10b981";
-      btn.style.borderColor = "#10b981";
-      if (window.lucide) window.lucide.createIcons();
-      setTimeout(() => {
-        btn.innerHTML = "Apply Imputation";
-        btn.style.color = ""; btn.style.borderColor = "";
-      }, 3000);
-    },
+      if (selectors.cast) {
+        selectors.cast.innerHTML = '<option selected disabled>Select column...</option>';
+        columns.forEach(c => selectors.cast.add(new Option(`${c.name} (${c.type})`, c.name)));
+      }
+    },
 
-    _handleCastSuccess() {
-      const btn = document.getElementById("btn-apply-cast");
-      if (!btn) return;
-      btn.innerHTML = `<i data-lucide="check" class="me-2"></i> Type Updated`;
-      btn.style.color = "#10b981";
-      btn.style.borderColor = "#10b981";
-      if (window.lucide) window.lucide.createIcons();
-      setTimeout(() => {
-        btn.innerHTML = "Convert Schema";
-        btn.style.color = ""; btn.style.borderColor = "";
-      }, 3000);
-    },
+    addColumnTag(col) {
+      const clean = formatColumnForDisplay(col);
+      if (!clean || this._selectedDropCols.has(clean)) return;
+      this._selectedDropCols.add(clean);
+      this._renderColumnTags();
+      Actions._updateBatchUI();
+    },
 
-    _handleDedupeSuccess(meta) {
-      const btn = document.getElementById("btn-dedupe");
-      if (!btn) return;
-      const removed = meta?.cleaning?.remove_duplicates?.duplicates_removed ?? 0;
-      btn.innerHTML = `<i data-lucide="${removed > 0 ? 'check-circle' : 'sparkles'}" class="me-2"></i> ${removed > 0 ? 'Optimized' : 'Already Optimized'}`;
-      btn.className = "btn btn-success text-white border-0 d-flex align-items-center";
-      btn.style.color = "#10b981";
-      if (window.lucide) window.lucide.createIcons();
-    },
+    removeColumnTag(col) {
+      this._selectedDropCols.delete(col);
+      this._renderColumnTags();
+      Actions._updateBatchUI();
+    },
 
-    _handleDropSuccess() {
-      const btn = document.getElementById("btn-drop-cols");
-      if (!btn) return;
-      this._selectedDropCols.clear();
-      this._renderColumnTags();
-      btn.innerHTML = `<i data-lucide="trash-2" class="me-2"></i> Columns Dropped`;
-      btn.style.color = "#f2f2f2"; btn.style.borderColor = "#10b981";
-      if (window.lucide) window.lucide.createIcons();
-      setTimeout(() => {
-        btn.textContent = "Drop Selected Columns";
-        btn.style.color = ""; btn.style.borderColor = "";
-      }, 3000);
-    },
+    _renderColumnTags() {
+      const container = document.getElementById("drop-tags-container");
+      if (!container) return;
+      container.innerHTML = this._selectedDropCols.size === 0 ? '<span class="text-muted small ps-1">No selection...</span>' : "";
+      this._selectedDropCols.forEach(col => {
+        const badge = document.createElement("span");
+        badge.className = "badge d-flex align-items-center gap-2 px-3 py-2";
+        badge.style.cssText = "background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.75rem;";
+        badge.innerHTML = `${col} <i data-lucide="x" class="cursor-pointer" style="width:14px; height:14px; color: #ef4444;" onclick="Actions.Dedupe.removeColumnTag('${col}')"></i>`;
+        container.appendChild(badge);
+      });
+      if (window.lucide) window.lucide.createIcons();
+    },
 
-    /* --- Selector & Tag Management --- */
+    _setLoading(btnId, isLoading, text) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.disabled = isLoading;
+      if (isLoading) {
+        btn.dataset.original = btn.innerHTML;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> ${text}`;
+      } else {
+        btn.innerHTML = btn.dataset.original || btn.innerHTML;
+      }
+    },
 
-    _populateColumnSelector(columns) {
-      const dropSelector = document.getElementById("col-drop-selector");
-      const imputeSelector = document.getElementById("impute-column");
-      const castSelector = document.getElementById("cast-column");
+    _resetLoading() {
+      ["btn-dedupe", "btn-drop-cols", "btn-apply-impute", "btn-apply-cast", "btn-run-batch"].forEach(id => this._setLoading(id, false));
+    },
 
-      if (dropSelector) {
-        dropSelector.innerHTML = '<option selected disabled>Choose columns...</option>';
-        columns.forEach(col => {
-          const opt = document.createElement("option");
-          opt.value = col.name || col;
-          opt.textContent = col.name || col;
-          dropSelector.appendChild(opt);
-        });
-      }
+    _updateStatus(text, color) {
+      const el = document.querySelector(".live-indicator .small");
+      const dot = document.querySelector(".live-indicator .dot");
+      if (el) el.textContent = text;
+      if (dot) dot.style.backgroundColor = color;
+    },
 
-      if (imputeSelector) {
-        imputeSelector.innerHTML = '<option selected disabled>Select a column...</option>';
-        const missingCols = columns.filter(col => (col.missingPercent ?? col.null_count ?? 0) > 0);
-        if (!missingCols.length) {
-          imputeSelector.innerHTML = '<option disabled>No missing data found! 🎉</option>';
-        } else {
-          missingCols.forEach(col => {
-            const opt = document.createElement("option");
-            opt.value = col.name;
-            opt.textContent = `${col.name} (${col.missingPercent ?? col.null_count}% missing)`;
-            imputeSelector.appendChild(opt);
-          });
-        }
-      }
+    _updateDashboard(meta) {
+      document.getElementById("rows") && (document.getElementById("rows").textContent = meta?.summary?.rows?.toLocaleString() ?? "-");
+      document.getElementById("quality-score") && (document.getElementById("quality-score").textContent = `${meta?.summary?.quality_score ?? 0}%`);
+    },
 
-      if (castSelector) {
-        castSelector.innerHTML = '<option selected disabled>Select column...</option>';
-        // Show all columns, but beginners usually need to fix 'Object' (String) types
-        columns.forEach(col => {
-            const opt = document.createElement("option");
-            opt.value = col.name;
-            const typeLabel = col.type === 'object' ? 'Text' : col.type;
-            opt.textContent = `${col.name} (${typeLabel})`;
-            castSelector.appendChild(opt);
-        });
-      }
-    },
+    _handleError(err) {
+      this._resetLoading();
+      this._updateStatus("Error", "#ef4444");
+      console.error(err);
+    },
 
-    addColumnTag(col) {
-      const clean = formatColumnForDisplay(col);
-      if (!clean || this._selectedDropCols.has(clean)) return;
-      this._selectedDropCols.add(clean);
-      this._renderColumnTags();
-    },
+    _resetButtons(datasetId) {
+      const btn = document.getElementById("btn-dedupe");
+      if (btn) {
+        btn.disabled = false;
+        btn.className = "btn btn-primary d-flex align-items-center";
+        btn.textContent = "Add to Queue";
+      }
+    }
+  },
 
-    removeColumnTag(col) {
-      this._selectedDropCols.delete(col);
-      this._renderColumnTags();
-    },
+  _startPolling(datasetId, onComplete) {
+    this._clearPolling();
+    let retries = 0;
+    this._pollInterval = setInterval(async () => {
+      try {
+        const meta = await withTimeout(API.fetchMeta(datasetId), 5000);
+        if (meta?.status === "ready") {
+          this._clearPolling();
+          onComplete(meta);
+        } else if (meta?.status === "failed") {
+          this._clearPolling();
+          this.Dedupe._handleError(new Error(meta?.error || "Failed"));
+        }
+      } catch (err) {
+        if (++retries >= 10) { this._clearPolling(); this.Dedupe._handleError(new Error("Timeout")); }
+      }
+    }, 2000);
+  },
 
-    _renderColumnTags() {
-      const container = document.getElementById("drop-tags-container");
-      if (!container) return;
-      container.textContent = "";
-      if (!this._selectedDropCols.size) {
-        container.innerHTML = `<span class="text-muted small ps-1">No columns selected...</span>`;
-        return;
-      }
-      this._selectedDropCols.forEach((col) => {
-        const badge = document.createElement("span");
-        badge.className = "badge d-flex align-items-center gap-2 px-3 py-2";
-        badge.style.cssText = "background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.75rem;";
-        badge.innerHTML = `${col} <i data-lucide="x" class="cursor-pointer" style="width:14px; height:14px; color: #ef4444;" onclick="Actions.Dedupe.removeColumnTag('${col}')"></i>`;
-        container.appendChild(badge);
-      });
-      if (window.lucide) window.lucide.createIcons();
-    },
-
-    /* --- Shared UI Helpers --- */
-    _setAction(action) { Actions._currentAction = action; },
-    _setLoading(btnId, isLoading, text) {
-      const btn = document.getElementById(btnId);
-      if (!btn) return;
-      btn.disabled = isLoading;
-      if (isLoading) {
-        btn.dataset.original = btn.innerHTML;
-        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> ${text}`;
-      } else {
-        btn.innerHTML = btn.dataset.original || btn.innerHTML;
-      }
-    },
-    _resetLoading() {
-      ["btn-dedupe", "btn-drop-cols", "btn-apply-impute", "btn-apply-cast"].forEach(id => this._setLoading(id, false));
-    },
-    _updateStatus(text, color) {
-      const el = document.querySelector(".live-indicator .small");
-      const dot = document.querySelector(".live-indicator .dot");
-      if (el) el.textContent = text;
-      if (dot) dot.style.backgroundColor = color;
-    },
-    _updateDashboard(meta) {
-      const rows = document.getElementById("rows");
-      const score = document.getElementById("quality-score");
-      if (rows) rows.textContent = meta?.summary?.rows?.toLocaleString() ?? "-";
-      if (score) score.textContent = `${meta?.summary?.quality_score ?? 0}%`;
-    },
-    _handleError(err) {
-      this._resetLoading();
-      this._updateStatus("Error", "#ef4444");
-      alert(`Engine Error: ${err.message}`);
-    },
-    _resetButtons(datasetId) {
-      const btn = document.getElementById("btn-dedupe");
-      if (btn) {
-        btn.disabled = false;
-        btn.className = "btn btn-primary d-flex align-items-center";
-        btn.textContent = "Run Deduplication";
-      }
-    }
-  },
-
-  /* ---------- Polling Engine ---------- */
-
-  _startPolling(datasetId, onComplete) {
-    this._clearPolling();
-    let retries = 0;
-    this._pollInterval = setInterval(async () => {
-      try {
-        const meta = await withTimeout(API.fetchMeta(datasetId), 5000);
-        if (meta?.status === "ready") {
-          this._clearPolling();
-          onComplete(meta);
-        } else if (meta?.status === "failed") {
-          this._clearPolling();
-          this.Dedupe._handleError(new Error(meta?.error || "Processing failed"));
-        }
-      } catch (err) {
-        if (++retries >= 10) {
-          this._clearPolling();
-          this.Dedupe._handleError(new Error("Connection lost."));
-        }
-      }
-    }, 2000);
-  },
-
-  _clearPolling() {
-    if (this._pollInterval) {
-      clearInterval(this._pollInterval);
-      this._pollInterval = null;
-    }
-  }
+  _clearPolling() {
+    if (this._pollInterval) { clearInterval(this._pollInterval); this._pollInterval = null; }
+  }
 };

@@ -1,5 +1,4 @@
-from typing import Optional
-
+from typing import List, Optional, Any
 from pydantic import BaseModel, Field
 
 
@@ -12,7 +11,15 @@ class UploadResponse(BaseModel):
     status: str
 
 
+class CleaningStep(BaseModel):
+    action: str  # e.g., "remove_duplicates", "smart_impute", "drop_columns"
+    columns: Optional[List[str]] = None
+    method: Optional[str] = "auto"
+
 class CleanRequest(BaseModel):
-    action: str = "remove_duplicates"
-    columns: Optional[list] = None
+    # New Batch Field
+    pipeline: Optional[List[CleaningStep]] = None
+    # Maintain legacy fields for single-action compatibility
+    action: Optional[str] = "remove_duplicates"
+    columns: Optional[List[str]] = None
     method: Optional[str] = "auto"
