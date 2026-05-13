@@ -990,6 +990,15 @@
     to { transform: translateY(0); opacity: 1; }
 }
 
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 780px) {
+    .header { padding: 20px; }
+    .content-scroll { padding: 0 16px; }
+    .doctor-dialog { border-radius: 0; height: 100vh; }
+    .batch-bar { width: calc(100% - 24px); bottom: 12px; }
+}
+
 /* --- Floating Batch Pipeline --- */
 .batch-bar {
     position: absolute;
@@ -1028,16 +1037,6 @@
     font-weight: 800;
     font-size: 0.85rem;
 }
-
-
-
-/* --- Responsive Adjustments --- */
-@media (max-width: 780px) {
-    .header { padding: 20px; }
-    .content-scroll { padding: 0 16px; }
-    .doctor-dialog { border-radius: 0; height: 100vh; }
-    .batch-bar { width: calc(100% - 24px); bottom: 12px; }
-} 
  
  /* --- Optimized Floating Batch Bar --- */
 #batch-bar {
