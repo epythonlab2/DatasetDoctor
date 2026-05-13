@@ -170,9 +170,6 @@ async def get_preview_json(dataset_id: str):
 
     return await run_in_threadpool(process)
 
-# -------------------------
-# Cleaning
-# -------------------------
 @router.post("/clean/{dataset_id}")
 async def clean_dataset(
     request: Request,
@@ -181,31 +178,35 @@ async def clean_dataset(
     background_tasks: BackgroundTasks,
 ):
     upload_path = get_upload_path(dataset_id)
-
     if not upload_path.exists():
         raise HTTPException(404, "Dataset not found")
 
+    # Initial Status Update
     update_meta(
         dataset_id, {"status": "processing", "stage": "initializing", "error": None}
     )
 
-    # Log the cleaning request
+    # Determine if we are running a single action or a batch pipeline
+    # Use req.pipeline if provided, otherwise wrap the single action in a list
+    pipeline_to_run = req.pipeline if (hasattr(req, 'pipeline') and req.pipeline) else [
+        {"action": req.action, "columns": req.columns, "method": req.method}
+    ]
+
     log_audit_event(
         request,
         background_tasks,
         "CLEAN_START",
         dataset_id,
-        {"action": req.action, "method": req.method, "target_cols": req.columns},
+        {"pipeline_depth": len(pipeline_to_run), "preview": pipeline_to_run[0]}
     )
 
+    # Trigger the background worker with the pipeline
     background_tasks.add_task(
         run_cleaning,
         dataset_id,
         str(upload_path),
         str(get_clean_path(dataset_id)),
-        action=req.action,
-        target_columns=req.columns,
-        method=req.method,
+        pipeline=pipeline_to_run 
     )
 
     return {"status": "accepted"}
@@ -362,9 +363,13 @@ async def about_fragment(request: Request):
     return templates.TemplateResponse(request=request, name="about.html")
 
 
-@router.get("/clean-fragment", response_class=HTMLResponse)
-async def clean_fragment(request: Request):
-    return templates.TemplateResponse(request=request, name="clean.html")
+@router.get("/dashboard/clean/{dataset_id}", response_class=HTMLResponse)
+async def clean_fragment(request: Request, dataset_id: str):
+    return templates.TemplateResponse(
+        request=request,
+        name="clean.html",
+        context={"dataset_id": dataset_id},
+        )
 
 
 @router.get("/audit/logs")

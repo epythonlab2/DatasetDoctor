@@ -1,7 +1,7 @@
 /**
  * UI Module
  * Handles visual updates, metric synchronization, and DOM manipulation.
- * Leverages UIEngine and UIRenderer for low-level tasks.
+ * Enhanced with hydration guards to prevent flickering during polling.
  */
 import { state } from "../utils/state.js";
 import { Table } from "./table.js";
@@ -9,6 +9,27 @@ import { UIEngine } from "./ui.engine.js";
 import { UIRenderer } from "./ui.renderer.js";
 
 export const UI = {
+
+	/**
+	 * Updates the "Last Scanned" timestamp label.
+	 * Can be called independently after any successful data fetch.
+	 */
+	updateLastScanned() {
+	    const timeLabel = document.getElementById('scan-time-label');
+	    if (timeLabel) {
+		// Store the ISO string for potential "Time Ago" calculations later
+		timeLabel.dataset.timestamp = new Date().toISOString();
+		timeLabel.textContent = "Just now";
+		
+		// Optional: Add a brief flash effect to show the user it updated
+		timeLabel.style.transition = "none";
+		timeLabel.style.color = "var(--primary)";
+		setTimeout(() => {
+		    timeLabel.style.transition = "color 0.5s ease";
+		    timeLabel.style.color = ""; // Returns to CSS default
+		}, 100);
+	    }
+	},
 
     /* =========================================================
        1. BASIC UI SETTERS (NO LOGIC)
@@ -29,7 +50,6 @@ export const UI = {
             UIEngine.setStyle(id, { color: "var(--statIconColor)" });
         });
 
-        // Reset progress bars to 0% during loading for clean transition
         this._updateBar("quality-fill", 0);
         this._updateBar("ml-readiness-fill", 0);
 
@@ -38,21 +58,21 @@ export const UI = {
             Analyzing dataset patterns...
         `);
     },
+    
+    
 
     /* =========================================================
        2. STATE → UI RENDERERS (PURE VISUAL UPDATE)
     ========================================================= */
 
-    /**
-     * Updates numerical metrics and triggers progress bar animations.
-     * @param {Object} data - Dataset analysis results.
-     */
     updateMetrics(data) {
         const { summary = {} } = data;
 
         const applyMetric = (id, value, mode = 'score') => {
-            UIEngine.setText(id, value !== undefined ? value : "--");
+            // GUARD: Don't overwrite existing metrics with empty/null data during polling
+            if (value === undefined || value === null) return;
 
+            UIEngine.setText(id, value);
             const color = UIRenderer.metricColor(value, mode);
             UIEngine.setStyle(id, { color });
 
@@ -62,47 +82,59 @@ export const UI = {
         };
 
         // Standard Numerical Stats
-        applyMetric("rows", summary.rows?.toLocaleString(), 'neutral');
-        applyMetric("cols", summary.cols, 'neutral');
-        applyMetric("duplicates", (summary.duplicatesPercent ?? 0) + "%", 'error');
-        applyMetric("missing-stat", (summary.missingPercent ?? 0) + "%", 'error');
+        if (summary.rows) applyMetric("rows", summary.rows.toLocaleString(), 'neutral');
+        if (summary.cols) applyMetric("cols", summary.cols, 'neutral');
+        
+        // Percentages (Allow 0, but check for undefined)
+        if (summary.duplicatesPercent !== undefined) applyMetric("duplicates", summary.duplicatesPercent + "%", 'error');
+        if (summary.missingPercent !== undefined) applyMetric("missing-stat", summary.missingPercent + "%", 'error');
+        
+        
 
         // Scoring Logic
         const qScore = summary.quality_score ?? data.quality_score;
         const mlScore = summary.ml_readiness ?? data.ml_readiness;
 
-        applyMetric("quality-score", qScore, 'score');
-        applyMetric("ml-readiness", mlScore, 'score');
-
-        // Trigger Progress Bar Visuals
-        this._updateBar("quality-fill", qScore);
-        this._updateBar("ml-readiness-fill", mlScore);
-
+        if (qScore !== undefined) {
+            applyMetric("quality-score", qScore + "%", 'score');
+            this._updateBar("quality-fill", qScore);
+        }
+        
+        if (mlScore !== undefined) {
+            applyMetric("ml-readiness", mlScore + "%", 'score');
+            this._updateBar("ml-readiness-fill", mlScore);
+        }
+        
         const timeLabel = document.getElementById('scan-time-label');
         if (timeLabel) {
             timeLabel.dataset.timestamp = new Date().toISOString();
             timeLabel.textContent = "Just now";
         }
+        
+        
     },
 
     updateImbalance(imb) {
-        UIEngine.setDisplay("imbalance-alert", imb?.is_imbalanced ? "inline-block" : "none");
+        // GUARD: Only update if we actually have detection results to avoid "Detecting..." flicker
+        if (!imb) return;
 
         UIEngine.setText(
             "target-column-display",
-            imb?.target_column || (imb ? "Not Set" : "Detecting...")
+            imb.target_column || "Not Set"
         );
 
-        if (imb?.target_column) {
+        if (imb.target_column) {
             UIEngine.setStyle("target-column-display", { color: "var(--primary)" });
         }
     },
 
     updateSuggestions(list) {
+        if (!list || list.length === 0) return; // Prevent clearing UI with empty list
         UIEngine.setHTML("suggestions", UIRenderer.suggestions(list));
     },
 
     updateOutliers(outliers) {
+        if (!outliers) return;
         UIEngine.setHTML("outliers-list", UIRenderer.outliers(outliers));
     },
 
@@ -112,34 +144,40 @@ export const UI = {
         if (!tbody || !thead) return;
 
         if (data.status === "processing") {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="stats-loader-container">
-                        <div class="stats-loader-content">
-                            <div class="spinner-custom"></div>
-                            <div class="loader-text">Calculating statistical moments...</div>
-                            <div class="loader-subtext">This may take a moment for large datasets</div>
-                        </div>
-                    </td>
-                </tr>`;
+            // Only set loader if it's not already showing (prevents flicker)
+            if (!tbody.querySelector('.stats-loader-container')) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="stats-loader-container">
+                            <div class="stats-loader-content">
+                                <div class="spinner-custom"></div>
+                                <div class="loader-text">Calculating statistical moments...</div>
+                                <div class="loader-subtext">This may take a moment for large datasets</div>
+                            </div>
+                        </td>
+                    </tr>`;
+            }
             return;
         }
 
+        // Final hydration of state
         state.statistics = data.statistics || {};
         state.predictivePower = data.predictive_power || {};
 
         Table.renderGlobalStats(tbody, thead);
+        
+        
     },
 
     updateLeakage(leakage) {
         const el = document.getElementById("leakage-section");
-        if (!el) return;
+        if (!el || !leakage) return;
 
         const {
             perfect_predictors: perfect = [],
             high_correlation: highCorr = [],
             duplicate_columns: duplicates = []
-        } = leakage || {};
+        } = leakage;
 
         const hasIssues = perfect.length || highCorr.length || duplicates.length;
 
@@ -180,24 +218,10 @@ export const UI = {
        3. INTERNAL HELPERS (PURE)
     ========================================================= */
 
-    /**
-     * Smoothly updates a progress bar width.
-     * @param {string} id - The element ID.
-     * @param {number} val - The score value (0-100).
-     */
-   /**
-     * Smoothly updates a progress bar width.
-     * @param {string} id - The element ID (e.g., 'quality-fill').
-     * @param {number} val - The numeric score to represent as a percentage.
-     */
     _updateBar(id, val) {
         const el = document.getElementById(id);
         if (!el) return;
-
-        // Ensure the value is a number and clamped between 0 and 100
         const percentage = Math.min(Math.max(Number(val) || 0, 0), 100);
-
-        // Frame synchronization ensures the CSS transition triggers correctly
         requestAnimationFrame(() => {
             el.style.width = `${percentage}%`;
         });
