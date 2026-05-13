@@ -59,17 +59,14 @@ def run_cleaning(
     clean_path: str,
     action: str = None,
     target_columns: list = None,
-    pipeline: list = None,  # This will receive the list of CleaningStep objects
+    pipeline: list = None,
     **kwargs,
 ) -> None:
     try:
         # 1. INITIALIZE PIPELINE
-        # If pipeline exists, it contains Pydantic objects. 
-        # If not, we create a single-step list to maintain backward compatibility.
         if pipeline:
             steps = pipeline
         else:
-            # Manually create a simple namespace/object to mimic the Pydantic structure
             from dataclasses import dataclass
             @dataclass
             class SimpleStep:
@@ -84,20 +81,29 @@ def run_cleaning(
         if not schema_memory:
             schema_memory = {col["name"]: col["type"] for col in old_meta.get("columns", [])}
 
+        # Type Mapping for Schema Memory
+        ui_type_map = {
+            "date": "datetime64[ns]", "datetime": "datetime64[ns]",
+            "float": "float64", "int": "Int64", "bool": "boolean", "encode": "Int64",
+        }
+
         # 3. ITERATIVE PROCESSING
-        # We loop through steps. Each 'step' is a CleaningStep object.
         for i, step in enumerate(steps):
-            # FIX: Use dot notation for Pydantic objects, or .get() if it's a dict
             curr_action = step.action if hasattr(step, 'action') else step.get("action")
             curr_cols = step.columns if hasattr(step, 'columns') else step.get("columns")
             curr_method = getattr(step, 'method', "mean") if hasattr(step, 'method') else step.get("method", "mean")
+
+            # --- NEW: PERSIST EVERY CAST IN THE PIPELINE ---
+            if curr_action == "cast_schema" and curr_cols:
+                # Store the requested type in memory immediately
+                target_type = ui_type_map.get(curr_method, curr_method)
+                schema_memory[curr_cols[0]] = target_type
 
             update_meta(dataset_id, {
                 "status": "processing", 
                 "stage": f"Refining ({i+1}/{len(steps)}): {curr_action}..."
             })
 
-            # SOURCE SELECTION: First step uses raw, subsequent steps use the growing clean file
             current_source = clean_path if os.path.exists(clean_path) else raw_path
 
             # 4. PLUGIN PARAMS
@@ -109,10 +115,9 @@ def run_cleaning(
             elif curr_action == "cast_schema":
                 plugin_params["cast_schema"] = {"target_column": curr_cols[0] if curr_cols else None, "method": curr_method}
             else:
-                # Default for deduplicate or unknown registry keys
                 plugin_params[curr_action] = {}
 
-            # 5. EXECUTE ENGINE (Incremental Save)
+            # 5. EXECUTE ENGINE
             df_cleaned, cleaning_logs = clean_dataset(
                 raw_path=str(current_source),
                 clean_path=str(clean_path),
@@ -120,7 +125,7 @@ def run_cleaning(
                 plugin_params=plugin_params,
             )
 
-        # 6. RE-ANALYZE (Only once after the full pipeline is done)
+        # 6. RE-ANALYZE
         if callable(cleaning_logs):
             cleaning_logs = cleaning_logs()
 
@@ -134,22 +139,8 @@ def run_cleaning(
         for update in analysis_gen:
             results = update 
             
-            # 7. ENFORCE MEMORY
+            # 7. ENFORCE MEMORY (Now using the cumulative schema_memory)
             if "columns" in results:
-                ui_type_map = {
-                    "date": "datetime64[ns]", "datetime": "datetime64[ns]",
-                    "float": "float64", "int": "Int64", "bool": "boolean", "encode": "Int64",
-                }
-
-                # If the last action was casting, update schema memory
-                last_step = steps[-1]
-                l_action = last_step.action if hasattr(last_step, 'action') else last_step.get("action")
-                if l_action == "cast_schema":
-                    l_cols = last_step.columns if hasattr(last_step, 'columns') else last_step.get("columns")
-                    l_method = getattr(last_step, 'method', "auto") if hasattr(last_step, 'method') else last_step.get("method", "auto")
-                    if l_cols:
-                        schema_memory[l_cols[0]] = ui_type_map.get(l_method, l_method)
-
                 for col_info in results["columns"]:
                     name = col_info["name"]
                     if name in schema_memory:
@@ -173,7 +164,6 @@ def run_cleaning(
         }
 
         update_meta(dataset_id, final_payload)
-        logger.info(f"Pipeline complete: {len(steps)} steps processed.")
 
     except Exception as e:
         logger.exception(f"Pipeline crashed")
