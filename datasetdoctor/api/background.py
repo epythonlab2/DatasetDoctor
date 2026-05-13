@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
+from dataclasses import dataclass
 
 from datasetdoctor.analysis.cleaning import clean_dataset
 from datasetdoctor.analysis.inspector import analyze_dataset
