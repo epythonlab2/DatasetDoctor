@@ -53,7 +53,7 @@
                 </button>
                 <button class="btn btn-primary" id="launch-engine-btn">
                     <i data-lucide="zap" class="icon-sm"></i> 
-                    <span>Launch Engine</span>
+                    <span>Upload CSV</span>
                 </button>
             </div>
         </div>
@@ -62,44 +62,39 @@
     <!-- ==========================================
          HERO SECTION
          ========================================== -->
-    <header class="dashboard-container hero-header">
-        <!-- Visual Assets / Slideshow -->
-        <div class="mobile-frame-container">
-            <div class="mobile-frame">
-                <div class="mobile-notch"></div>
-                <div class="slideshow-bg">
-                    <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-35.jpg');"></div>
-                    <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-38.jpg');"></div>
-                    <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-39.jpg');"></div>
-                    <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-37.jpg');"></div>
-                </div>
-            </div>
+   <header class="hero-header">
+    <div class="hero-content">
+        <h1 class="display-title">
+            Detect Data Problems<br>
+            <span class="text-primary-span">Before Your Model Fails.</span>
+        </h1>
+        <p class="lead-text">
+            DatasetDoctor helps ML engineers and data scientists Detect leakage, 
+            missing values, outliers, and ML risks before training your model.
+        </p>
+        
+        <div class="hero-btn-group">
+            <button id="hero-launch-btn" class="btn-hero btn-hero-primary">
+                Analyze Dataset Free
+            </button>
+            <button class="btn-hero btn-hero-secondary">
+                Watch Live Demo
+            </button>
         </div>
+    </div>
 
-        <!-- Main Copy & CTAs -->
-        <div class="hero-content">
-            
-            <h1 class="display-title">
-                Intelligence <br><span class="text-primary-span">at the Source.</span>
-            </h1>
-            <p class="lead-text">
-                The industrial-grade engine built to audit, refine, and validate massive datasets for production AI and high-stakes analytics.
-            </p>
-            <div class="hero-btn-group">
-                <button id="hero-launch-btn" class="btn btn-primary btn-hero-launch">
-                    Launch Engine
-                </button>
-                <button onclick="document.getElementById('architecture').scrollIntoView()" class="btn btn-secondary btn-hero-specs">
-                    System Specs
-                </button>
-                <!--
-                <a href="https://www.youtube.com/channel/UCsFz0IGS9qFcwrh7a91juPg/join" target="_blank" class="link-support">
-                    <i data-lucide="server" class="icon-support"></i> 
-                    Support Cloud Deployment & Pipelining
-                </a> -->
+    <div class="mobile-frame-container">
+        <div class="mobile-frame">
+            <div class="mobile-notch"></div>
+            <div class="slideshow-bg">
+                <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-35.jpg');"></div>
+                <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-38.jpg');"></div>
+                <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-39.jpg');"></div>
+                <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-37.jpg');"></div>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 
     <!-- ==========================================
          DQS METRIC SECTION
@@ -141,12 +136,12 @@
                 <div class="feature-mini-card card-mini">
                     <div class="mini-icon icon-mini-wrapper" style="color: #10b981;"><i data-lucide="shield-check"></i></div>
                     <strong class="card-mini-title">ML Readiness</strong>
-                    <p class="card-mini-text">Validation of data structures for tensor compatibility.</p>
+                    <p class="card-mini-text">Checks whether your dataset is ready for ML training.</p>
                 </div>
                 <div class="feature-mini-card card-mini">
                     <div class="mini-icon icon-mini-wrapper" style="color: #8b5cf6;"><i data-lucide="copy"></i></div>
                     <strong class="card-mini-title">Duplication Check</strong>
-                    <p class="card-mini-text">Exhaustive row-level entropy analysis to find repeats.</p>
+                    <p class="card-mini-text">Detect duplicate and repeated records instantly.</p>
                 </div>
                 <div class="feature-mini-card card-mini">
                     <div class="mini-icon icon-mini-wrapper" style="color: #f59e0b;"><i data-lucide="scale"></i></div>

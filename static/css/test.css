@@ -1,165 +1,141 @@
-/* ==========================================================================
-   1. GLOBAL CORE LAYOUT
-   ========================================================================== */
-
-/* Modernized Section Spacing */
-section {
-    padding: 110px 0;
-    border-bottom: 1px solid var(--border);
-}
-
-.dashboard-container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-}
-
-/* Typography */
-.display-title {
-    font-size: clamp(2.5rem, 6vw, 4.25rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.04em;
-    color: #ffffff;
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.lead-text {
-    font-size: 1.25rem;
-    color: rgba(255, 255, 255, 0.9);
-    max-width: 650px;
-}
-
-.text-primary-span {
-    color: var(--primary);
-}
-
-/* ==========================================================================
-   2. NAVIGATION SYSTEM
-   ========================================================================== */
-
-/* Glassmorphic Navbar */
-.navbar {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    background: rgba(255, 255, 255, 0.8);
-    border-bottom: 1px solid var(--border);
-    padding: 1rem 0;
-}
-
-.nav-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.nav-logo-link {
-    cursor: pointer;
-    font-weight: 800;
-    font-size: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.nav-actions-wrapper {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.nav-flex {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.icon-nav {
-    width: 16px;
-    color: var(--primary);
-}
-
-/* ==========================================================================
+./* ==========================================================================
    3. HERO SECTION & VISUAL EFFECTS
    ========================================================================== */
+
+/* Essential Reset for Full Width */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+}
 
 .hero-header {
     position: relative;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: 90vh;
+    justify-content: space-between;
+    
+    /* Full-Width Logic */
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 4rem 8%;
+    
+    /* Elegant Dark Theme Background */
+    background-color: #020617;
+    background-image: 
+        radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 45%),
+        radial-gradient(circle at 85% 30%, rgba(74, 222, 128, 0.1) 0%, transparent 45%);
+    
     overflow: hidden;
-    padding: 2rem;
-}
-
-/* Dark Overlay for Readability */
-.hero-header::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        rgba(15, 23, 42, 0.7),
-        rgba(26, 95, 180, 0.4)
-    );
-    z-index: 2;
+    gap: 4rem;
 }
 
 .hero-content {
     position: relative;
-    z-index: 3;
-    max-width: 900px;
+    z-index: 10;
+    max-width: 650px;
+    text-align: left;
 }
 
-.hero-glow {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100vw;
-    height: 100vh;
-    background:
-        radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.12) 0%, transparent 60%),
-        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
-    z-index: -1;
-    pointer-events: none;
+/* TYPOGRAPHY */
+.display-title {
+    font-size: clamp(2.5rem, 5vw, 3.8rem); /* Fluid typography */
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.03em;
 }
 
-.hero-btn-group, .hero-actions {
+.text-primary-span {
+    color: #4ade80;
+    /* Adding a subtle glow to the green text */
+    text-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+}
+
+.lead-text {
+    font-size: 1.25rem;
+    color: #94a3b8;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+    max-width: 550px;
+}
+
+/* BUTTONS */
+.hero-btn-group {
     display: flex;
-    gap: 1rem;
-    margin-top: 2.5rem;
+    gap: 1.2rem;
+    justify-content: flex-start;
+    flex-wrap: wrap;
 }
 
-/* --- Mobile Frame Mockup --- */
+.btn-hero {
+    padding: 1rem 2.2rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-hero-primary {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+}
+
+.btn-hero-primary:hover {
+    background-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.5);
+}
+
+.btn-hero-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.btn-hero-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* MOBILE FRAME */
 .mobile-frame-container {
-    position: absolute;
-    inset: 0;
+    position: relative;
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1;
-    perspective: 1000px;
+    z-index: 5;
+    perspective: 2000px; /* Enhanced depth */
 }
 
 .mobile-frame {
     position: relative;
-    width: 320px;
-    height: 650px;
-    background: #111;
-    border: 12px solid #1e293b;
+    width: 300px;
+    height: 620px;
+    background: #000;
     border-radius: 40px;
-    box-shadow: 0 50px 100px -20px rgba(0,0,0,0.5);
+    outline: 12px solid #1e293b; /* Sleek titanium-style border */
+    box-shadow: 
+        0 50px 100px -20px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(255,255,255,0.1);
     overflow: hidden;
-    transform: rotateX(10deg) rotateY(-10deg);
-    transition: transform 0.5s ease;
+    transform: rotateY(-18deg) rotateX(8deg);
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.hero-header:hover .mobile-frame {
-    transform: rotateX(0deg) rotateY(0deg) scale(1.05);
+.mobile-frame:hover {
+    transform: rotateY(-5deg) rotateX(2deg);
 }
 
 .mobile-notch {
@@ -168,401 +144,77 @@ section {
     left: 50%;
     transform: translateX(-50%);
     width: 150px;
-    height: 25px;
+    height: 30px;
     background: #1e293b;
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-    z-index: 10;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    z-index: 20;
 }
 
-/* --- Slideshow Engine --- */
+/* SLIDESHOW ENGINE */
 .slideshow-bg {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     z-index: 1;
 }
 
 .slide {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background-size: cover;
     background-position: center;
     opacity: 0;
-    animation: slideShow 15s linear infinite;
+    animation: slideShow 15s infinite;
 }
 
 .slide:nth-child(2) { animation-delay: 5s; }
 .slide:nth-child(3) { animation-delay: 10s; }
+.slide:nth-child(4) { animation-delay: 15s; } /* Fixed delay for 4th image */
 
 @keyframes slideShow {
-    0% { opacity: 0; transform: scale(1); }
-    10% { opacity: 1; }
+    0% { opacity: 0; transform: scale(1.1); }
+    10% { opacity: 1; transform: scale(1); }
     33% { opacity: 1; }
-    43% { opacity: 0; transform: scale(1.1); }
+    43% { opacity: 0; transform: scale(0.95); }
     100% { opacity: 0; }
 }
 
-/* ==========================================================================
-   4. DATA QUALITY SCORE (DQS) SECTION
-   ========================================================================== */
-
-.section-alt {
-    background: var(--bg-alt);
-    padding: 2rem 0;
-}
-
-.dqs-card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-}
-
-.dqs-icon-box {
-    background: var(--primary);
-    color: white;
-    width: 72px;
-    height: 72px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.icon-dqs {
-    width: 36px;
-    height: 36px;
-}
-
-.dqs-content {
-    flex: 1;
-    min-width: 250px;
-}
-
-.dqs-title {
-    font-weight: 800;
-    margin-bottom: 0.75rem;
-    letter-spacing: -0.02em;
-}
-
-/* ==========================================================================
-   5. AUDIT SUITE / FEATURES GRID
-   ========================================================================== */
-
-.features-header {
-    text-align: center;
-    margin-bottom: 4rem;
-}
-
-.features-title {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin-bottom: 1rem;
-    letter-spacing: -0.02em;
-}
-
-.feature-card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-top: 3rem;
-}
-
-.card-mini {
-    padding: 2rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border);
-}
-
-/* ==========================================================================
-   6. AI INTELLIGENCE SYSTEM
-   ========================================================================== */
-
-.section-ai {
-    background: var(--bg-alt);
-    padding: 4rem 0;
-}
-
-.ai-grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 1.5rem;
-    margin-top: 3rem;
-}
-
-.card-ai-main {
-    padding: 2.5rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    background: white;
-}
-
-.ai-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.icon-check {
-    width: 16px;
-    color: #16a34a;
-}
-
-/* ==========================================================================
-   7. ARCHITECTURE & PIPELINING
-   ========================================================================== */
-
-.arch-header-stack {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.arch-icon-badge {
-    background: var(--primary-light);
-    color: var(--primary);
-    padding: 8px;
-    border-radius: 8px;
-}
-
-.arch-icon-box {
-    background: #eff6ff;
-    color: #3b82f6;
-}
-
-.arch-icon-box-engine {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.arch-icon-box-ui {
-    background: #ecfeff;
-    color: #0891b2;
-}
-
-/* ==========================================================================
-   8. UI COMPONENTS (BUTTONS, BADGES, ICONS)
-   ========================================================================== */
-
-.btn-hero-launch, .btn-lg {
-    padding: 1rem 2.5rem;
-    font-size: 1rem;
-    border-radius: 12px;
-    background: var(--primary);
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-.btn-hero-specs {
-    padding: 1rem 2.5rem;
-    font-size: 1rem;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: white;
-    cursor: pointer;
-}
-
-.badge-live {
-    display: inline-block;
-    background: var(--primary-light);
-    color: var(--primary);
-    padding: 6px 14px;
-    border-radius: 100px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    margin-bottom: 1.5rem;
-}
-
-.badge-proprietary, .badge-core {
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    color: var(--primary);
-}
-
-.badge-core { background: var(--primary); color: white; }
-
-.icon-sm, .icon-support { width: 16px; }
-.icon-primary { color: var(--primary); }
-
-/* ==========================================================================
-   9. FOOTER SYSTEM
-   ========================================================================== */
-
-.footer, .footer-main {
-    padding: 5rem 0;
-    background: white;
-    border-top: 1px solid var(--border);
-}
-
-.footer-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 2rem;
-}
-
-.footer-links {
-    display: flex;
-    gap: 2.5rem;
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-
-.footer-links a, .footer-link-item {
-    text-decoration: none;
-    color: var(--text-main);
-    transition: color 0.2s ease;
-}
-
-.footer-links a:hover { color: var(--primary); }
-
-.footer-bottom {
-    margin-top: 2rem;
-    border-top: 1px solid var(--border);
-    padding-top: 2rem;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.engine-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--text-muted);
-}
-
-.status-dot {
-    width: 8px;
-    height: 8px;
-    background: #10b981;
-    border-radius: 50%;
-}
-
-/* ==========================================================================
-   10. AD SLOTS
-   ========================================================================== */
-
-.ad-slot-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    padding: 2rem 0;
-    background: transparent;
-}
-
-.billboard-ad {
-    width: 100%;
-    max-width: 970px;
-    height: 250px;
-    background: #f1f5f9;
-    border: 1px dashed var(--border);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-muted);
-    font-size: 0.75rem;
-    font-family: monospace;
-    text-transform: uppercase;
-}
-
-/* ==========================================================================
-   11. RESPONSIVE QUERIES
-   ========================================================================== */
-
-@media (max-width: 768px) {
-    section { padding: 80px 0; }
-
-    .nav-actions span { display: none; }
-
-    .navbar {
-        padding: 1rem;
+/* RESPONSIVE DESIGN */
+@media (max-width: 1024px) {
+    .hero-header {
         flex-direction: column;
-        gap: 1rem;
-    }
-
-    .nav-content {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-start;
-    }
-
-    .hero-btn-group {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-    }
-
-    .hero-btn-group > :nth-child(3) {
-        grid-column: 1 / -1;
-    }
-}
-/* =========================
-   HERO BUTTON JUSTIFICATION
-========================= */
-
-/* Default layout for desktop */
-.hero-btn-group {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2.5rem;
-    justify-content: center; /* Center buttons horizontally */
-    align-items: center;    /* Align buttons vertically */
-}
-
-/* Specific logic for when they are inside the mobile-frame or on mobile screens */
-@media (max-width: 768px) {
-    .hero-btn-group {
-        display: grid;
-        grid-template-columns: 1fr 1fr; /* Split into two columns */
-        gap: 0.75rem;
-        width: 100%;
-        padding: 0 1rem; /* Prevent buttons from touching frame edges */
-    }
-
-    /* Make the primary CTA or the third link span both columns for prominence */
-    .hero-btn-group > :nth-child(1),
-    .hero-btn-group > :nth-child(3) {
-        grid-column: 1 / -1; 
-    }
-
-    /* Ensure buttons take full width of their grid cell */
-    .btn-hero-launch, 
-    .btn-hero-specs {
-        width: 100%;
-        padding: 0.8rem 1rem; /* Slightly smaller padding for mobile */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    /* Center the support link text within the grid */
-    .link-support {
-        justify-content: center;
         text-align: center;
+        padding: 8rem 5% 4rem;
+        gap: 3rem;
+    }
+
+    .hero-content {
+        text-align: center;
+        margin: 0 auto;
+    }
+
+    .hero-btn-group {
+        justify-content: center;
+    }
+
+    .mobile-frame {
+        width: 260px;
+        height: 540px;
+        transform: rotateY(0) rotateX(0) scale(0.9); /* Flatten for touch devices */
+    }
+}
+
+@media (max-width: 480px) {
+    .display-title {
+        font-size: 2.2rem;
+    }
+    
+    .hero-btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-hero {
+        width: 100%;
     }
 }
