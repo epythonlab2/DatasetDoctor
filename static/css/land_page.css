@@ -62,22 +62,10 @@ section {
     color: var(--primary);
 }
 
-/* ==========================================================================
-   3. HERO SECTION & VISUAL EFFECTS
-   ========================================================================== */
-
 
 /* ==========================================================================
    3. HERO SECTION & VISUAL EFFECTS
    ========================================================================== */
-
-/* Essential Reset for Full Width */
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    overflow-x: hidden;
-}
 
 .hero-header {
     position: relative;
@@ -138,22 +126,35 @@ html, body {
 .hero-btn-group {
     display: flex;
     gap: 1rem;
-    
     flex-wrap: wrap;
+    
+    /* 1. Centers the items horizontally along the flex axis */
+    justify-content: center; 
+    
+    /* 2. Centers the entire container itself if it has a max-width or block behavior */
+    margin-left: auto;
+    margin-right: auto;
+    
+    /* 3. Optional: Ensures it doesn't span past a good reading width */
+    max-width: 100%; 
 }
 
 .btn-hero {
-    padding: 1rem 2.2rem;
+    padding: 1rem 1.5rem;
     border-radius: 999px;
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: none;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
     text-decoration: none;
-    display: inline-block;
+    display: inline-flex;
+    align-items  : center;
+    gap          : 0.5rem;
    
 }
+
 
 .btn-hero-primary {
     background-color: var(--primary);
@@ -287,11 +288,17 @@ html, body {
     .hero-btn-group {
         flex-direction: column;
         width: 100%;
+        justify-content: center;
+        width: auto;
     }
     
     .btn-hero {
-        width: 100%;
+        width: auto;
+        padding: 0.5rem 1rem;
+        
+    
     }
+ 
 }
 /* ==========================================================================
    4. DATA QUALITY SCORE (DQS) SECTION
@@ -617,4 +624,3 @@ html, body {
         align-items: center;
     }
 }
-

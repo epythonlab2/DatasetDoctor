@@ -25,39 +25,8 @@
 </head>
 <body>
 
-    <!-- VISUAL EFFECTS -->
-    <div class="hero-glow"></div>
 
-    <!-- ==========================================
-         NAVIGATION BAR
-         ========================================== -->
-    <nav class="navbar">
-        <div class="dashboard-container nav-content">
-            <div class="logo nav-logo-link" onclick="window.location.href='/'">
-                <i data-lucide="activity" class="icon-primary"></i> DatasetDoctor
-            </div>
-            
-            <div class="nav-actions nav-actions-wrapper">
-                <a href="https://www.youtube.com/channel/UCsFz0IGS9qFcwrh7a91juPg/join" target="_blank" class="btn btn-secondary shadow-sm btn-sponsor">
-                    <i data-lucide="heart" class="icon-heart"></i>
-                    <span class="text-sponsor">Sponsor</span>
-                </a>
-                <button class="btn btn-secondary" onclick="document.getElementById('ai-intelligence').scrollIntoView()">
-                    <i data-lucide="brain-circuit" class="icon-nav"></i>
-                    <span>Intelligence</span>
-                </button>
-                
-                <button class="btn btn-secondary " onclick="document.getElementById('features').scrollIntoView()">
-                    <i data-lucide="shield-check" class="icon-nav"></i>
-                    <span>Audit Suite</span>
-                </button>
-                <button class="btn btn-primary" id="launch-engine-btn">
-                    <i data-lucide="zap" class="icon-sm"></i> 
-                    <span>Upload CSV</span>
-                </button>
-            </div>
-        </div>
-    </nav>
+    {% include 'includes/index_nav.html' %}
 
     <!-- ==========================================
          HERO SECTION
