@@ -1,0 +1,49 @@
+<div class="hero-glow"></div>
+<nav class="navbar">
+    <div class="dashboard-container nav-content">
+        <!-- Wrap logo and toggle button together -->
+        <div class="nav-header-brand">
+            <div class="logo nav-logo-link" onclick="window.location.href='/'">
+                <i data-lucide="activity" class="icon-primary"></i> DatasetDoctor
+            </div>
+            
+            <button class="nav-toggle" id="nav-menu-toggle" aria-label="Toggle navigation">
+                <i data-lucide="chevron-down" class="icon-toggle"></i>
+            </button>
+        </div>
+        
+        <div class="nav-actions nav-actions-wrapper" id="nav-menu-actions">
+            <a class="nav-link" onclick="window.location.href='/insights'">
+                <i data-lucide="sparkles" class="icon-nav"></i>
+                <span>Insights</span>
+            </a>
+            
+            <a class="nav-link" onclick="document.getElementById('features').scrollIntoView()">
+                <i data-lucide="shield-check" class="icon-nav"></i>
+                <span>Audit Suite</span>
+            </a>
+            <button class="btn btn-primary" id="launch-engine-btn">
+                <i data-lucide="zap" class="icon-sm"></i> 
+                <span>Upload CSV</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
+    const toggleBtn = document.getElementById('nav-menu-toggle');
+    const navMenu = document.getElementById('nav-menu-actions');
+
+    if (toggleBtn && navMenu) {
+        toggleBtn.addEventListener('click', () => {
+            toggleBtn.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+    }
+});
+</script>

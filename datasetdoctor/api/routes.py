@@ -371,7 +371,20 @@ async def clean_fragment(request: Request, dataset_id: str):
         context={"dataset_id": dataset_id},
         )
 
+@router.get("/insights", response_class=HTMLResponse)
+async def insight(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="insights.html",
+        )
 
+@router.get("/insights/detail", response_class=HTMLResponse)
+async def insights_detail(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="detail.html",
+        )
+        
 @router.get("/audit/logs")
 def get_logs(request: Request, limit: int = 100):
     """

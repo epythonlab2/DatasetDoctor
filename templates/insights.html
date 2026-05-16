@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DatasetDoctor | ML Insights Hub</title>
+    <!-- ==========================================
+         STYLESHEETS
+         ========================================== -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/custom_dialog.css">
+    <link rel="stylesheet" href="/static/css/land_page.css">
+     <link rel="stylesheet" href="/static/css/insights.css">
+    
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- ICONS -->
+    <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+ {% include 'includes/index_nav.html' %}
+ 
+   <main class="dashboard-container">
+        <header class="hero-section">
+           
+            <h1 class="hero-title">Insights for <span>Data-Centric AI</span></h1>
+            <p class="hero-subtitle">Master the methodologies for building high-fidelity datasets through validation, cleaning, and leakage detection.</p>
+            
+            <div class="search-container">
+                <i data-lucide="search" class="search-icon" size="20"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search patterns, leakage checks, validation guides...">
+            </div>
+
+            <div class="filter-row" id="filterContainer">
+                <button class="filter-btn active" data-category="all">All Topics</button>
+                <button class="filter-btn" data-category="Validation">Validation</button>
+                <button class="filter-btn" data-category="Cleaning">Cleaning</button>
+                <button class="filter-btn" data-category="Leakage">Leakage</button>
+                <button class="filter-btn" data-category="Detection">Detection</button>
+            </div>
+        </header>
+
+        <section class="featured-insight" id="featuredSection">
+            <img src="https://images.unsplash.com/photo-1551288049-bbbda536639a?auto=format&fit=crop&q=80&w=800" alt="Featured" class="featured-img">
+            <div class="featured-content">
+                <div class="badge" style="background: var(--bg-main);">Featured Guide</div>
+                <h2>How to Detect Target Leakage Before Training ML Models</h2>
+                <p style="color: var(--text-muted); margin-bottom: 2rem;">Hidden leakage can silently inflate model accuracy and destroy production performance. Learn practical detection strategies used in real-world ML systems.</p>
+                <a href="/insights/detail" class="btn btn-primary" style="align-self: flex-start;">
+                    Read Full Guide <i data-lucide="arrow-right" size="16"></i>
+                </a>
+            </div>
+        </section>
+
+        <div class="insights-grid" id="insightsGrid">
+            <!-- Dynamic content injected here -->
+        </div>
+
+        <div id="emptyState" style="display: none; text-align: center; padding: 4rem 0;">
+            <i data-lucide="search-x" size="48" style="color: var(--secondary); margin-bottom: 1rem;"></i>
+            <h3>No results found</h3>
+            <p style="color: var(--text-muted)">Try adjusting your search terms or filters.</p>
+        </div>
+    </main>
+
+    <footer class="footer-main">
+        <div class="dashboard-container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <i data-lucide="activity" class="icon-primary"></i> DatasetDoctor
+                    </div>
+                    <p class="footer-desc">Building high-performance data engineering tools for ML architects who demand precision at the source.</p>
+                </div>
+                <div>
+                    <h4 class="footer-heading">Platform</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Audit Suite</a></li>
+                        <li><a href="#">Validation Engine</a></li>
+                        <li><a href="#">Security Hub</a></li>
+                        <li><a href="#">Insights</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="footer-heading">Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">GitHub</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2026 <strong>DatasetDoctor</strong>. All rights reserved.</p>
+                <div class="status-badge">
+                    <span class="status-dot"></span>
+                    ENGINE V3.0 ONLINE
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const insightsData = [
+            {
+                id: 1,
+                title: "What is ML Readiness?",
+                category: "Validation",
+                desc: "The essential data quality checks every dataset needs before reaching the training pipeline.",
+                readTime: "6 min",
+                date: "May 2026",
+                image: "https://images.unsplash.com/photo-1518186239717-2e9b136a7403?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+                id: 2,
+                title: "Why Missing Values Break Models",
+                category: "Cleaning",
+                desc: "Strategic handling of sparse features to maintain model reliability in volatile production environments.",
+                readTime: "5 min",
+                date: "May 2026",
+                image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+                id: 3,
+                title: "Outlier Detection at Scale",
+                category: "Detection",
+                desc: "Robust methodologies for identifying anomalies in billion-row datasets using unsupervised techniques.",
+                readTime: "8 min",
+                date: "May 2026",
+                image: "https://images.unsplash.com/photo-1551288049-bbbda536639a?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+                id: 4,
+                title: "Detecting Target Leakage",
+                category: "Leakage",
+                desc: "Identifying features that give the model 'future' information during the validation phase.",
+                readTime: "10 min",
+                date: "Apr 2026",
+                image: "https://images.unsplash.com/photo-1543286386-713bdd548da4?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+                id: 5,
+                title: "Data Drift Monitoring",
+                category: "Detection",
+                desc: "Using statistical tests to detect distribution shifts in production data features.",
+                readTime: "12 min",
+                date: "Apr 2026",
+                image: "https://images.unsplash.com/photo-1504868584819-f8eec2421d50?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+                id: 6,
+                title: "Automated Label Sanity",
+                category: "Cleaning",
+                desc: "Building a cleaning pipeline that identifies and flags potentially mislabeled training instances.",
+                readTime: "7 min",
+                date: "Apr 2026",
+                image: "https://images.unsplash.com/photo-1516110833967-0b5716ca1387?auto=format&fit=crop&q=80&w=600"
+            }
+        ];
+
+        let activeCategory = 'all';
+        let searchQuery = '';
+
+        function renderInsights() {
+            const grid = document.getElementById('insightsGrid');
+            const emptyState = document.getElementById('emptyState');
+            const featured = document.getElementById('featuredSection');
+            
+            const filtered = insightsData.filter(item => {
+                const matchesCat = activeCategory === 'all' || item.category === activeCategory;
+                const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                     item.desc.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesCat && matchesSearch;
+            });
+
+            // Hide featured section if filtering or searching to clear space
+            featured.style.display = (activeCategory !== 'all' || searchQuery !== '') ? 'none' : 'grid';
+            emptyState.style.display = filtered.length === 0 ? 'block' : 'none';
+
+            grid.innerHTML = filtered.map(item => `
+                <a href="#" class="insight-card">
+                    <div class="card-img-box">
+                        <span class="card-tag">${item.category}</span>
+                        <img src="${item.image}" alt="${item.title}" onerror="this.src='https://placehold.co/600x400/4f46e5/ffffff?text=Data+Insight'">
+                    </div>
+                    <div class="card-body">
+                        <h3>${item.title}</h3>
+                        <p>${item.desc}</p>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--secondary); font-weight: 600; padding-top: 1rem; border-top: 1px solid var(--border);">
+                            <span>${item.date}</span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                <i data-lucide="clock" size="14"></i> ${item.readTime}
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderInsights();
+        });
+
+        document.getElementById('filterContainer').addEventListener('click', (e) => {
+            if (e.target.classList.contains('filter-btn')) {
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                activeCategory = e.target.dataset.category;
+                renderInsights();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderInsights();
+        });
+    </script>
+</body>
+</html>

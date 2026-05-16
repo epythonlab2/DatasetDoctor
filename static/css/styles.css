@@ -229,6 +229,7 @@ body {
     border-radius: var(--radius-md);
     transition: all 0.2s;
     margin-bottom: 0.25rem;
+    cursor: pointer;
 }
 
 .nav-link i {
@@ -298,6 +299,7 @@ body {
     color: var(--text-muted);
 }
 
+
 /* --- Mobile Toggle --- */
 .mobile-toggle {
     display: none; /* Hidden on Desktop */
@@ -314,6 +316,45 @@ body {
 .mobile-toggle i {
     width: 24px;
     height: 24px;
+}
+
+/* This outer branding container stretches full-width on desktop if necessary */
+.nav-header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Space between DatasetDoctor text and the toggle icon */
+}
+
+.logo.nav-logo-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+/* --- Mobile Toggle Button Base Style --- */
+.nav-toggle {
+    display: none; /* Hidden on Desktop */
+    background: transparent;
+    border: none;  /* Removed standard border so it sits natively next to text */
+    padding: 0.25rem;
+    cursor: pointer;
+    color: var(--text-light);
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-toggle {
+    width: 20px;
+    height: 20px;
+    transition: transform var(--transition-speed);
+}
+
+/* Rotates icon when active class is toggled */
+.nav-toggle.active .icon-toggle {
+    transform: rotate(180deg);
+    color: var(--primary-blue);
 }
 
 
@@ -1337,6 +1378,36 @@ tr:last-child td {
 }
 
 @media (max-width: 768px) {
+     
+    /* Brand block handles full container width on small screens */
+    .nav-header-brand {
+        display: flex;
+        align-items: center;
+        width: 100%; /* Allows it to span across the entire navbar space */
+        justify-content: space-between; /* Pushes logo to far left, toggle to far right */
+    }
+
+    /* Shows toggle immediately right next to text */
+    .nav-toggle {
+        display: inline-flex;
+        order: 2;
+        
+    }
+    /* 2. THE SHOW/HIDE SWITCH ENGINE */
+    /* Force-hides the nav container on mobile by default */
+    .nav-actions.nav-actions-wrapper {
+        display: none !important; 
+        width: 100%;
+        flex-direction: row; /* Keeps elements side-by-side inside the dropdown */
+        justify-content: space-between;
+       
+    }
+
+    /* Force-reveals the nav container when the active class is present */
+    .nav-actions.nav-actions-wrapper.active {
+         display: flex !important;
+    }
+     
     .navbar {
         padding: 0.6rem 0.8rem;
         flex-direction: column;
@@ -1373,6 +1444,27 @@ tr:last-child td {
         color: var(--text-secondary, #6B7280);
         white-space: nowrap;
     }
+    
+    .nav-actions .nav-link {
+        flex-direction: column;
+        align-items: center;
+            /* icon padding inside box */
+        margin-bottom: 18px;       /* space for the label below */
+        position: relative;
+    }
+
+    .nav-actions .nav-link span {
+        display: block !important;
+        position: absolute;
+        bottom: -18px;             /* sits just below the box */
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10.5px;
+        font-weight: 500;
+        color: var(--text-secondary, #6B7280);
+        white-space: nowrap;
+    }
+
 
     /* Primary button label matches brand color */
     .nav-actions .btn-primary span {

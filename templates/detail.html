@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DatasetDoctor | ML Insights Hub</title>
+    <!-- ==========================================
+         STYLESHEETS
+         ========================================== -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/custom_dialog.css">
+    <link rel="stylesheet" href="/static/css/land_page.css">
+     <link rel="stylesheet" href="/static/css/insights.css">
+    
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- ICONS -->
+    <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+ {% include 'includes/index_nav.html' %}
+<div class="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+
+    <main class="dashboard-container">
+        <header class="article-hero">
+            <div class="content-width">
+                <span class="category-badge">Data Leakage</span>
+                <h1 class="article-title">How to Detect Data Leakage Before Training ML Models</h1>
+                <div class="article-meta">
+                    <div class="meta-item"><i data-lucide="user" size="16"></i> Dr. Sarah Chen</div>
+                    <div class="meta-item"><i data-lucide="calendar" size="16"></i> May 12, 2026</div>
+                    <div class="meta-item"><i data-lucide="clock" size="16"></i> 12 min read</div>
+                </div>
+            </div>
+        </header>
+
+        <article class="article-body">
+            <div class="content-width prose">
+                <img src="https://images.unsplash.com/photo-1551288049-bbbda536639a?auto=format&fit=crop&q=80&w=1200" alt="Data Analytics Visualization" class="feature-image">
+                
+                <p>Data leakage is one of the most common and damaging issues in modern machine learning. It occurs when information from the target variable "leaks" into the features used for training, providing the model with unrealistic clues that won't be available in production.</p>
+
+                <h2>The Target Leakage Trap</h2>
+                <p>Target leakage happens when your predictors include data that wouldn't actually be available at the time of prediction. For example, predicting if a customer will default on a loan using a feature like "Collection Agency Contact Date"—which only exists *after* the default has occurred.</p>
+
+                <div class="takeaway-box">
+                    <h4>Pro Tip</h4>
+                    <p>Always verify the "Time of Generation" for every feature in your dataset. If a feature is generated at the same time or after the target, it's a high-risk candidate for leakage.</p>
+                </div>
+
+                <h2>Technical Detection: Correlation isn't enough</h2>
+                <p>While high correlation between a feature and the target is a warning sign, it's not definitive proof of leakage. We recommend using a <strong>Predictive Power Score (PPS)</strong> analysis. PPS can detect non-linear relationships that standard Pearson correlation misses.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>python / leakage_detector.py</span>
+                        <i data-lucide="copy" size="14" style="cursor: pointer;"></i>
+                    </div>
+                    <code># Detecting target leakage using feature importance
+from sklearn.ensemble import RandomForestClassifier
+
+def check_leakage(df, target):
+    X = df.drop(columns=[target])
+    y = df[target]
+    
+    model = RandomForestClassifier()
+    model.fit(X, y)
+    
+    # Flags features with suspicious 0.95+ importance
+    leakage_candidates = [f for f, s in zip(X.columns, model.feature_importances_) if s > 0.95]
+    return leakage_candidates</code>
+                </div>
+
+                <h2>Prevention Strategies</h2>
+                <p>Building a robust validation pipeline is your first line of defense. Use <strong>Time-Series Split</strong> for any data that has a temporal component. Random K-Fold cross-validation often masks leakage by allowing the model to look into the "future" relative to the training rows.</p>
+            </div>
+        </article>
+    </main>
+
+    <footer class="footer-main">
+        <div class="dashboard-container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <i data-lucide="activity" class="icon-primary"></i> DatasetDoctor
+                    </div>
+                    <p class="footer-desc">Building high-performance data engineering tools for ML architects who demand precision at the source.</p>
+                </div>
+                <div>
+                    <h4 class="footer-heading">Platform</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Audit Suite</a></li>
+                        <li><a href="#">Validation Engine</a></li>
+                        <li><a href="#">Security Hub</a></li>
+                        <li><a href="#">Insights</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="footer-heading">Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">GitHub</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2026 <strong>DatasetDoctor</strong>. All rights reserved.</p>
+                <div class="status-badge">
+                    <span class="status-dot"></span>
+                    ENGINE V3.0 ONLINE
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+
+            // Reading Progress Bar Logic
+            window.onscroll = function() {
+                let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                let scrolled = (winScroll / height) * 100;
+                document.getElementById("progress-bar").style.width = scrolled + "%";
+            };
+
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
