@@ -22,7 +22,7 @@
 <body>
  {% include 'includes/index_nav.html' %}
  
-   <main class="dashboard-container">
+   <main class="dashboard-wrapper">
         <header class="hero-section">
            
             <h1 class="hero-title">Insights for <span>Data-Centric AI</span></h1>
@@ -65,44 +65,10 @@
         </div>
     </main>
 
-    <footer class="footer-main">
-        <div class="dashboard-container">
-            <div class="footer-grid">
-                <div class="footer-brand">
-                    <div class="logo">
-                        <i data-lucide="activity" class="icon-primary"></i> DatasetDoctor
-                    </div>
-                    <p class="footer-desc">Building high-performance data engineering tools for ML architects who demand precision at the source.</p>
-                </div>
-                <div>
-                    <h4 class="footer-heading">Platform</h4>
-                    <ul class="footer-links">
-                        <li><a href="#">Audit Suite</a></li>
-                        <li><a href="#">Validation Engine</a></li>
-                        <li><a href="#">Security Hub</a></li>
-                        <li><a href="#">Insights</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="footer-heading">Company</h4>
-                    <ul class="footer-links">
-                        <li><a href="#">Documentation</a></li>
-                        <li><a href="#">GitHub</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Contact</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>© 2026 <strong>DatasetDoctor</strong>. All rights reserved.</p>
-                <div class="status-badge">
-                    <span class="status-dot"></span>
-                    ENGINE V3.0 ONLINE
-                </div>
-            </div>
-        </div>
-    </footer>
+     <!-- ==========================================
+         FOOTER
+         ========================================== -->
+       {% include 'includes/sticky_footer.html' %}
 
     <script>
         const insightsData = [

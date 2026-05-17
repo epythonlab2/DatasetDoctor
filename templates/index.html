@@ -69,7 +69,7 @@
          DQS METRIC SECTION
          ========================================== -->
     <section id="about" class="section-alt">
-        <div class="dashboard-container">
+        <div class="dashboard-wrapper">
             <div class="quality-score-hero responsive-hero dqs-card">
                 <div class="score-icon-container dqs-icon-box">
                     <i data-lucide="award" class="icon-dqs"></i>
@@ -88,7 +88,7 @@
          FEATURES / AUDIT SUITE
          ========================================== -->
     <section id="features">
-        <div class="dashboard-container">
+        <div class="dashboard-wrapper">
             <div class="features-header">
                 <i data-lucide="zap" class="text-warning"></i>
                 <h2 class="features-title">Core Audit Suite</h2>
@@ -135,7 +135,7 @@
          AI INTELLIGENCE SECTION
          ========================================== -->
     <section id="ai-intelligence" class="section-ai">
-        <div class="dashboard-container">
+        <div class="dashboard-wrapper">
             <!-- MI Signal Box -->
             <div class="feature-highlight" style="margin-bottom: 3rem;">
                 <div class="highlight-header">
@@ -245,26 +245,7 @@
     <!-- ==========================================
          FOOTER
          ========================================== -->
-    <footer class="footer-main">
-        <div class="dashboard-container footer-container">
-            <div class="logo footer-logo"><i data-lucide="activity" class="icon-primary"></i> DatasetDoctor</div>
-            <p class="footer-desc">Building high-performance data engineering tools for architects who demand precision at the source.</p>
-            
-            <div class="footer-links">
-                <a href="#" class="footer-link-item">Documentation</a>
-                <a href="#" class="footer-link-item">GitHub</a>
-                <a href="#" class="footer-link-item">Security</a>
-            </div>
-
-            <div class="footer-bottom">
-                <p class="footer-copy">© 2026 <strong>DatasetDoctor</strong> Intelligence System.</p>
-                <div class="engine-status">
-                    <span class="status-dot"></span> ENGINE V3.0
-                </div>
-            </div>
-        </div>
-    </footer>
-
+	{% include 'includes/sticky_footer.html' %}
     <!-- ==========================================
          SCRIPTS
          ========================================== -->

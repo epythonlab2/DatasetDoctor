@@ -123,11 +123,12 @@ body {
 }
 
 
+
 /* ==========================================================================
    3. NAVIGATION COMPONENTS (Navbar & Sidebar)
    ========================================================================== */
-
-/* --- Top Navbar --- */
+  
+  /* --- Top Navbar --- */
 .navbar {
     background     : var(--bg-card);
     border-bottom  : 1px solid var(--border);
@@ -140,6 +141,9 @@ body {
     z-index        : 1001;
     width: 100%;
     box-sizing: border-box; /* Includes the border in the 68px */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    
 }
 
 .nav-left-group {
@@ -170,6 +174,40 @@ body {
 
 .btn-clean{
     display: none !important;
+}
+
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-logo-link {
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-actions-wrapper {
+    display: flex;
+    gap: 0.75rem;
+}
+.nav-actions-wrapper .btn, 
+.nav-actions-wrapper a {
+    padding-top: 0.25rem;    /* Reduce top padding */
+    padding-bottom: 0.25rem; /* Reduce bottom padding */
+}
+.nav-flex {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.icon-nav {
+    width: 16px;
+    color: var(--primary);
 }
 
 
@@ -1366,6 +1404,9 @@ tr:last-child td {
     .dashboard-container {
         padding: 1rem;
     }
+    .dashboard-wrapper {
+        padding: 1rem;
+    }
     
     .btn span {
         display: none; /* Hide button text on very small screens to save space */
@@ -1376,6 +1417,7 @@ tr:last-child td {
     	width: 100%;
     }
 }
+
 
 @media (max-width: 768px) {
      
@@ -1406,6 +1448,21 @@ tr:last-child td {
     /* Force-reveals the nav container when the active class is present */
     .nav-actions.nav-actions-wrapper.active {
          display: flex !important;
+    }
+    
+     .nav-actions span { display: none; }
+
+    .navbar {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .nav-content {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
     }
      
     .navbar {
@@ -1505,6 +1562,12 @@ tr:last-child td {
         padding: 0 1rem;
         margin : 1rem auto;
     }
+    .dashboard-wrapper {
+        padding: 0 1rem;
+        margin : 1rem auto;
+    }
+    
+    
 
     .btn span {
         display: none;
