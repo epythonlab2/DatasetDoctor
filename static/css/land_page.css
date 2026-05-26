@@ -504,7 +504,7 @@ section {
 
 /* Color definition for Lucide icon layout */
 .footer-logo .icon-primary {
-    color: #1a5fb4; 
+    color: #3b82f6; 
     stroke-width: 2.5px;
 }
 
@@ -566,20 +566,20 @@ section {
     padding-top: 2.5rem;
     width: 100%;
     display: flex;
-    justify-content: center; /* Evenly aligned down center grid lines */
+    justify-content: center; 
     align-items: center;
 }
 
 .footer-copy {
     font-size: 0.8rem;
     font-weight: 400;
-    color: #64748b; 
+    color: #94a3b8;
     letter-spacing: 0.02em;
 }
 
 .footer-copy strong {
-    color: #94a3b8;
-    font-weight: 500;
+    color: #f8fafc;
+    font-weight: 600;
 }
 
 /* --- Responsive Media Queries --- */

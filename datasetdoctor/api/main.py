@@ -29,7 +29,12 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="DatasetDoctor API", lifespan=lifespan)
+app = FastAPI(
+    title="Dataset Doctor",
+    version="1.0.0",
+    # Paste your chosen 155-character SEO description here:
+    description="Diagnose ML readiness with Dataset Doctor. Automate data cleaning, outlier detection, data leakage checks, handle missing data, and fix mismatches fast.",
+    lifespan=lifespan)
 
 # Standard CORS setup
 app.add_middleware(
