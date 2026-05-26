@@ -58,7 +58,9 @@ body {
     height    : 100%;
     margin    : 0;
 }
-
+html {
+    scroll-behavior: smooth;
+}
 body {
     display       : flex;
     flex-direction: column;
