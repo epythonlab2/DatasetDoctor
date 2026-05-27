@@ -9,7 +9,12 @@
     <title>DatasetDoctor | Intelligence at the Source</title>
     <meta name="description" content="Diagnose ML readiness with Dataset Doctor. Automate data cleaning, outlier detection, data leakage checks, handle missing data, and fix mismatches fast.">
     
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M22 12h-4l-3 9L9 3l-3 9H2'></path></svg>" />
+    <link rel="preload" 
+          as="image" 
+          href="../static/images/photo_2026-05-02_08-20-35.jpg" 
+          fetchpriority="high">
+    
+   <link rel="icon" type="image/svg+xml" href="/static/icons/favicon.svg"/>
 
     <!-- ==========================================
          STYLESHEETS
@@ -20,10 +25,10 @@
     
     <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- ICONS -->
-    <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
+    <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js" defer></script>
 </head>
 <body>
 
@@ -54,17 +59,22 @@
         </div>
     </div>
 
-    <div class="mobile-frame-container">
-        <div class="mobile-frame">
-            <div class="mobile-notch"></div>
-            <div class="slideshow-bg">
-                <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-35.jpg');"></div>
-                <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-38.jpg');"></div>
-                <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-39.jpg');"></div>
-                <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-37.jpg');"></div>
-            </div>
-        </div>
-    </div>
+      <div class="mobile-frame-container">
+	    <div class="mobile-frame">
+		<div class="mobile-notch"></div>
+		<div class="slideshow-bg">
+		    <img class="slide" 
+		         src="../static/images/photo_2026-05-02_08-20-35.jpg" 
+		         alt="DatasetDoctor Mobile Interface Preview"
+		         fetchpriority="high"
+		         decoding="async">
+		         
+		    <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-38.jpg');" loading="lazy"></div>
+		    <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-39.jpg');" loading="lazy"></div>
+		    <div class="slide" style="background-image: url('../static/images/photo_2026-05-02_08-20-37.jpg');" loading="lazy"></div>
+		</div>
+	    </div>
+	</div>
 </header>
 <main id="main-content">
 
@@ -255,13 +265,18 @@
          ========================================== -->
     <script src="/static/js/modalUI/landing.js"></script>
     
-    <script type="module">
-        import { getOrCreateClientId } from './static/js/utils/identity.js';
+   <script type="module">
+    import { getOrCreateClientId } from './static/js/utils/identity.js';
 
-        // Initialize Session
-        const clientId = getOrCreateClientId();
-        console.log("DatasetDoctor Session Initialized:", clientId);
-    </script>
+    // Push execution to the end of the event loop to free up the critical rendering path
+    window.addEventListener('DOMContentLoaded', () => {
+        if (window.requestIdleCallback) {
+            requestIdleCallback(() => getOrCreateClientId());
+        } else {
+            setTimeout(() => getOrCreateClientId(), 1);
+        }
+    });
+</script>
 
 </body>
 </html>

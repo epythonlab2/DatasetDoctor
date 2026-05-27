@@ -1,7 +1,5 @@
 // static/js/utils/identity.js
 
-// static/js/utils/identity.js
-
 let cachedClientId = null;
 
 export const getOrCreateClientId = () => {
@@ -16,18 +14,28 @@ export const getOrCreateClientId = () => {
 
         console.log("🆕 New Client ID Generated:", clientId);
 
-        // Fire-and-forget (no dependency on API module → avoids circular import)
-        try {
-            fetch('/api/v3/system/ping', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Client-ID': clientId
-                },
-                body: JSON.stringify({ event: "NEW_USER_CREATED" }),
-                credentials: "same-origin"
-            }).catch(() => {});
-        } catch (_) {}
+        const url = '/api/v3/system/ping';
+        const payload = JSON.stringify({ 
+            event: "NEW_USER_CREATED",
+            clientId: clientId // Passed inside body since sendBeacon doesn't support custom headers
+        });
+
+        // Use sendBeacon to avoid chaining critical requests in Lighthouse
+        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+            const blob = new Blob([payload], { type: 'application/json' });
+            navigator.sendBeacon(url, blob);
+        } else {
+            // Fallback for older/non-standard environments
+            try {
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: payload,
+                    credentials: 'same-origin',
+                    priority: 'low'
+                }).catch(() => {});
+            } catch (_) {}
+        }
     }
 
     cachedClientId = clientId;

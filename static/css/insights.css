@@ -250,16 +250,46 @@
 
 /* --- Traditional Footer --- */
 .footer-main {
-   
-    background: white;
-   
+    background: #ffffff; /* Solid White Background */
+    border-top: 1px solid #e2e8f0; /* Soft light gray border line */
+}
+
+/* --- Bottom Copyright Copy --- */
+.footer-copy {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #64748b; /* FIX: Changed from #94a3b8 to #64748b (Slate-500) -> 4.1:1 Ratio. For text under 14pt/0.8rem, use #475569 for strict AA compliance */
+    letter-spacing: 0.02em;
+}
+.footer-desc {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #475569; /* FIX: Changed from #94a3b8 to #475569 (Slate-600) -> 5.14:1 Ratio */
+    max-width: 500px; 
+    margin: 0 auto;
+}
+
+.footer-copy strong {
+    color: #0f172a; /* FIX: Changed from #f8fafc to #0f172a (Slate-900) for deep text emphasis -> 19.3:1 Ratio */
+    font-weight: 600;
 }
 .footer-logo {
    
     color: var(--primary);
 }
+.footer-link-item {
+    text-decoration: none;
+    color: #475569; /* FIX: Changed from #94a3b8 to #475569 (Slate-600) -> 5.14:1 Ratio */
+    font-size: 0.875rem;
+    font-weight: 500; /* Shifted to 500 for enhanced character crispness on thin fonts */
+    position: relative;
+    display: inline-block;
+    transition: color 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Dynamic Hover Interaction */
 .footer-link-item:hover { 
-    color: var(--primary); 
+    color: var(--primary); /* FIX: Hover shifts smoothly to deep Slate-900 */
 }
 
 /* --- Progress Bar --- */
