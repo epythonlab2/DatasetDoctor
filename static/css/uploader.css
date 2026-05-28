@@ -18,7 +18,7 @@
 html,
 body {
     overflow-x: hidden;
-    
+
 }
 
 body {
@@ -239,10 +239,10 @@ body {
 }
 
 .footer-small {
-  font-size: 0.7rem;
+    font-size: 0.7rem;
 }
 
 .footer-tiny {
-  font-size: 0.65rem;
-  opacity: 0.7;
+    font-size: 0.65rem;
+    opacity  : 0.7;
 }

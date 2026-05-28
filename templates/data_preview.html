@@ -1,165 +1,194 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dataset Health Analysis | DatasetDoctor</title>
-    <meta name="description" content="Diagnose ML readiness with Dataset Doctor. Automate data cleaning, outlier detection, data leakage checks, handle missing data, and fix mismatches fast.">
+    <meta
+      name="description"
+      content="Diagnose ML readiness with Dataset Doctor. Automate data cleaning, outlier detection, data leakage checks, handle missing data, and fix mismatches fast."
+    />
     <!-- Favicon & Fonts -->
-    <link rel="icon" type="image/svg+xml" href="/static/icons/favicon.svg"/>
-    
+    <link rel="icon" type="image/svg+xml" href="/static/icons/favicon.svg" />
+
     <!-- External Assets -->
     <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="/static/css/styles.css" />
     <link rel="stylesheet" href="/static/css/preview.css" />
-</head>
+  </head>
 
-<body class="upload-page" data-dataset-id="{{ dataset_id }}">
+  <body class="upload-page" data-dataset-id="{{ dataset_id }}">
     <div class="app-layout">
-        {% include 'includes/sidebar.html' %}
+      {% include 'includes/sidebar.html' %}
 
-        <div class="main-wrapper">
-            {% include 'includes/navbar.html' %}
+      <div class="main-wrapper">
+        {% include 'includes/navbar.html' %}
 
-            <main class="dashboard-container">
-                <!-- Header -->
-                <header class="dashboard-header">
-                    <div class="dataset-header">
-  
-			  <div class="title-row">
-			    <h1>Dataset Analysis</h1>
-			    <span class="badge-live"> Live</span>
-			  </div>
+        <main class="dashboard-container">
+          <!-- Header -->
+          <header class="dashboard-header">
+            <div class="dataset-header">
+              <div class="title-row">
+                <h1>Dataset Analysis</h1>
+                <span class="badge-live"> Live</span>
+              </div>
 
-			  <p id="filename-display" class="dataset-meta">
-			    <span class="label">Analyzing</span>
-			    <span id="current-file" class="file-name">dataset...</span>
-			  </p>
+              <p id="filename-display" class="dataset-meta">
+                <span class="label">Analyzing</span>
+                <span id="current-file" class="file-name">dataset...</span>
+              </p>
+            </div>
+            <div>
+              <span class="text-muted">
+                <i
+                  data-lucide="clock"
+                  style="
+                    width: 12px;
+                    display: inline-block;
+                    vertical-align: middle;
+                  "
+                ></i>
+                Last Uploaded:
+                <span id="scan-time-label" data-timestamp="2026-04-03T10:30:00Z"
+                  >Just now</span
+                >
+              </span>
+            </div>
+          </header>
 
-			</div>
-                    <div>
-                        <span class="text-muted">
-                            <i data-lucide="clock" style="width: 12px; display: inline-block; vertical-align: middle"></i>
-                            Last Uploaded: <span id="scan-time-label" data-timestamp="2026-04-03T10:30:00Z">Just now</span>
-                        </span>
-                    </div>
-                </header>
-                
-                <!-- 80/20 Content Grid -->
-                <section class="preview-grid" id="loading-state">
-                    <!-- Left: Data Table (80%) -->
-                    <div class="card table-card">
-                        <div class="card-header">
-                            <div>
-                                <h3>Data Preview</h3>
-                                <p class="text-muted" style="font-size: 0.75rem">Exploring the data structure</p>
-                            </div>
-                            <i data-lucide="table-2" class="text-muted" style="color: var(--primary); width: 18px;"></i>
-                        </div>
+          <!-- 80/20 Content Grid -->
+          <section class="preview-grid" id="loading-state">
+            <!-- Left: Data Table (80%) -->
+            <div class="card table-card">
+              <div class="card-header">
+                <div>
+                  <h3>Data Preview</h3>
+                  <p class="text-muted" style="font-size: 0.75rem">
+                    Exploring the data structure
+                  </p>
+                </div>
+                <i
+                  data-lucide="table-2"
+                  class="text-muted"
+                  style="color: var(--primary); width: 18px"
+                ></i>
+              </div>
 
-                        <div id="preview-section" class="table-preview-wrapper">
-                            <table id="preview-table">
-                                <thead>
-                                    <tr>
-                                        <th data-col="id">ID</th>
-                                        <th data-col="name">Name</th>
-                                        <th data-col="email">Email Address</th>
-                                        <th data-col="status">Status</th>
-                                        <th data-col="last_login">Last Login</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                        		<td><div class="is-loading skeleton-text"></div></td>
-                        		<td><div class="is-loading skeleton-text"></div></td>
-                        		<td><div class="is-loading skeleton-text"></div></td>
-                        	</tr>
-                        	
-                        	<tr>
-                        		<td><div class="is-loading skeleton-text"></div></td>
-                        		<td><div class="is-loading skeleton-text"></div></td>
-                        		<td><div class="is-loading skeleton-text"></div></td>
-                        	</tr>
-                       		<tr>
-                       			<td><div class="is-loading skeleton-text"></div></td>
-                       			<td><div class="is-loading skeleton-text"></div></td>
-                       			<td><div class="is-loading skeleton-text"></div></td>
-                       		</tr>
-                                    <!-- Additional rows remain here -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+              <div id="preview-section" class="table-preview-wrapper">
+                <table id="preview-table">
+                  <thead>
+                    <tr>
+                      <th data-col="id">ID</th>
+                      <th data-col="name">Name</th>
+                      <th data-col="email">Email Address</th>
+                      <th data-col="status">Status</th>
+                      <th data-col="last_login">Last Login</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><div class="is-loading skeleton-text"></div></td>
+                      <td><div class="is-loading skeleton-text"></div></td>
+                      <td><div class="is-loading skeleton-text"></div></td>
+                    </tr>
 
-                    <!-- Right: Config Sidebar (20%) -->
-                    <aside class="config-sidebar">
-                        <div class="config-group">
-                            <label for="target-select">
-                                <i data-lucide="target" style="width: 18px; color: var(--primary)"></i>
-                                Target Variable
-                            </label>
-                            <p>Select the column you want to predict or analyze as your primary objective.</p>
-                            
-                            <div class="select-wrapper">
-                                <select id="target-select">
-                                    <option value="" disabled selected>Choose a column...</option>
-                                    <option value="status">Status (Classification)</option>
-                                    <option value="name">Name (Identifier)</option>
-                                    <option value="email">Email Address (Unique)</option>
-                                    <option value="last_login">Last Login (Temporal)</option>
-                                </select>
-                                <div class="select-icon">
-                                    <i data-lucide="chevron-down" style="width: 16px;"></i>
-                                </div>
-                            </div>
+                    <tr>
+                      <td><div class="is-loading skeleton-text"></div></td>
+                      <td><div class="is-loading skeleton-text"></div></td>
+                      <td><div class="is-loading skeleton-text"></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="is-loading skeleton-text"></div></td>
+                      <td><div class="is-loading skeleton-text"></div></td>
+                      <td><div class="is-loading skeleton-text"></div></td>
+                    </tr>
+                    <!-- Additional rows remain here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-                            <div id="focus-card" class="focus-card">
-                                <h4>Current Focus</h4>
-                                <p id="focus-text">Predicting based on ...</p>
-                            </div>
-                        </div>
+            <!-- Right: Config Sidebar (20%) -->
+            <aside class="config-sidebar">
+              <div class="config-group">
+                <label for="target-select">
+                  <i
+                    data-lucide="target"
+                    style="width: 18px; color: var(--primary)"
+                  ></i>
+                  Target Variable
+                </label>
+                <p>
+                  Select the column you want to predict or analyze as your
+                  primary objective.
+                </p>
 
-                        <button id="continue-btn" class="continue-btn">
-                            Continue
-                            <i data-lucide="arrow-right" style="width: 18px;"></i>
-                        </button>
-                    </aside>
-                </section>
-            </main>
+                <div class="select-wrapper">
+                  <select id="target-select">
+                    <option value="" disabled selected>
+                      Choose a column...
+                    </option>
+                    <option value="status">Status (Classification)</option>
+                    <option value="name">Name (Identifier)</option>
+                    <option value="email">Email Address (Unique)</option>
+                    <option value="last_login">Last Login (Temporal)</option>
+                  </select>
+                  <div class="select-icon">
+                    <i data-lucide="chevron-down" style="width: 16px"></i>
+                  </div>
+                </div>
 
-            {% include 'includes/footer.html' %}
-        </div>
+                <div id="focus-card" class="focus-card">
+                  <h4>Current Focus</h4>
+                  <p id="focus-text">Predicting based on ...</p>
+                </div>
+              </div>
+
+              <button id="continue-btn" class="continue-btn">
+                Continue
+                <i data-lucide="arrow-right" style="width: 18px"></i>
+              </button>
+            </aside>
+          </section>
+        </main>
+
+        {% include 'includes/footer.html' %}
+      </div>
     </div>
 
     <!-- Scripts -->
     <script type="module" src="/static/js/data_preview.js"></script>
     <script type="module" src="/static/js/main.js"></script>
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const select = document.getElementById('target-select');
-            const focusCard = document.getElementById('focus-card');
-            const focusText = document.getElementById('focus-text');
-            const continueBtn = document.getElementById('continue-btn');
-            const table = document.getElementById('preview-table'); // Fixed ID typo
+      document.addEventListener("DOMContentLoaded", () => {
+        const select = document.getElementById("target-select");
+        const focusCard = document.getElementById("focus-card");
+        const focusText = document.getElementById("focus-text");
+        const continueBtn = document.getElementById("continue-btn");
+        const table = document.getElementById("preview-table"); // Fixed ID typo
 
-            select.addEventListener('change', (e) => {
-                const selectedVal = e.target.value;
-                const selectedLabel = select.options[select.selectedIndex].text.split(' (')[0];
+        select.addEventListener("change", (e) => {
+          const selectedVal = e.target.value;
+          const selectedLabel =
+            select.options[select.selectedIndex].text.split(" (")[0];
 
-                // Update UI State
-                focusText.innerText = `Analyzing based on ${selectedLabel}`;
-                focusCard.style.display = 'block';
-                continueBtn.classList.add('active');
+          // Update UI State
+          focusText.innerText = `Analyzing based on ${selectedLabel}`;
+          focusCard.style.display = "block";
+          continueBtn.classList.add("active");
 
-                // Column Highlighting
-                const allCells = table.querySelectorAll('[data-col]');
-                allCells.forEach(cell => {
-                    cell.classList.toggle('active-col', cell.getAttribute('data-col') === selectedVal);
-                });
-            });
+          // Column Highlighting
+          const allCells = table.querySelectorAll("[data-col]");
+          allCells.forEach((cell) => {
+            cell.classList.toggle(
+              "active-col",
+              cell.getAttribute("data-col") === selectedVal,
+            );
+          });
         });
+      });
     </script>
-</body>
+  </body>
 </html>

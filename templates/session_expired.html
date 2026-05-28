@@ -1,190 +1,221 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Session Expired | DatasetDoctor</title>
-   <meta name="description" content="Diagnose ML readiness with Dataset Doctor. Automate data cleaning, outlier detection, data leakage checks, handle missing data, and fix mismatches fast.">
-  
+    <meta
+      name="description"
+      content="Diagnose ML readiness with Dataset Doctor. Automate data cleaning, outlier detection, data leakage checks, handle missing data, and fix mismatches fast."
+    />
+
     <style>
-        /* ================= MODERN DESIGN SYSTEM ================= */
-        :root {
-            --glass-bg: rgba(255, 255, 255, 0.95);
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-light: rgba(226, 232, 240, 0.8);
-            --radius-lg: 24px;
-            --shadow-soft: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      /* ================= MODERN DESIGN SYSTEM ================= */
+      :root {
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --primary: #4f46e5;
+        --primary-hover: #4338ca;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-light: rgba(226, 232, 240, 0.8);
+        --radius-lg: 24px;
+        --shadow-soft:
+          0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background-color: #f8fafc;
+        background-image:
+          radial-gradient(
+            at 0% 0%,
+            rgba(79, 70, 229, 0.05) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(79, 70, 229, 0.05) 0px,
+            transparent 50%
+          );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+        color: var(--text-main);
+      }
+
+      /* ================= CARD LAYOUT ================= */
+      .card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        width: 100%;
+        max-width: 440px;
+        padding: 40px 32px;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-soft);
+        text-align: center;
+        transition: transform 0.3s ease;
+      }
+
+      .icon-container {
+        width: 64px;
+        height: 64px;
+        background: rgba(79, 70, 229, 0.1);
+        color: var(--primary);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+        letter-spacing: -0.02em;
+      }
+
+      p {
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 32px;
+        font-size: 0.95rem;
+      }
+
+      /* ================= BUTTON STATES ================= */
+      .btn-reset {
+        width: 100%;
+        cursor: pointer;
+        border: none;
+        padding: 14px 28px;
+        background: var(--primary);
+        color: white;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border-radius: 14px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+      }
+
+      .btn-reset:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 15px rgba(79, 70, 229, 0.35);
+      }
+
+      .btn-reset:active {
+        transform: translateY(0);
+      }
+
+      .btn-reset:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .footer-brand {
+        margin-top: 32px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+
+      /* Loading Spinner */
+      .spinner {
+        display: none;
+        width: 18px;
+        height: 18px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: #f8fafc;
-            background-image: radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.05) 0px, transparent 50%), 
-                              radial-gradient(at 100% 100%, rgba(79, 70, 229, 0.05) 0px, transparent 50%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-            color: var(--text-main);
-        }
-
-        /* ================= CARD LAYOUT ================= */
-        .card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            width: 100%;
-            max-width: 440px;
-            padding: 40px 32px;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-light);
-            box-shadow: var(--shadow-soft);
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
-
-        .icon-container {
-            width: 64px;
-            height: 64px;
-            background: rgba(79, 70, 229, 0.1);
-            color: var(--primary);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 24px;
-        }
-
-        h2 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-bottom: 12px;
-            letter-spacing: -0.02em;
-        }
-
-        p {
-            color: var(--text-muted);
-            line-height: 1.6;
-            margin-bottom: 32px;
-            font-size: 0.95rem;
-        }
-
-        /* ================= BUTTON STATES ================= */
-        .btn-reset {
-            width: 100%;
-            cursor: pointer;
-            border: none;
-            padding: 14px 28px;
-            background: var(--primary);
-            color: white;
-            font-weight: 700;
-            font-size: 0.9rem;
-            border-radius: 14px;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
-        }
-
-        .btn-reset:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 15px rgba(79, 70, 229, 0.35);
-        }
-
-        .btn-reset:active { transform: translateY(0); }
-
-        .btn-reset:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        .footer-brand {
-            margin-top: 32px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        /* Loading Spinner */
-        .spinner {
-            display: none;
-            width: 18px;
-            height: 18px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <div class="card">
-        <div class="icon-container">
-            <i data-lucide="shield-alert" style="width: 32px; height: 32px;"></i>
-        </div>
-        
-        <h2>Session Expired</h2>
-        <p>Your analysis session has timed out or could not be found. To ensure data integrity, let's start over with a fresh environment.</p>
-        
-        <button id="reset-btn" class="btn-reset" onclick="performRecoveryReset()">
-            <span class="spinner" id="btn-spinner"></span>
-            <span id="btn-text">Reset & Start New Analysis</span>
-        </button>
+      <div class="icon-container">
+        <i data-lucide="shield-alert" style="width: 32px; height: 32px"></i>
+      </div>
 
-        <div class="footer-brand">
-            <i data-lucide="activity" style="width: 14px;"></i>
-            DatasetDoctor Engine V3.0
-        </div>
+      <h2>Session Expired</h2>
+      <p>
+        Your analysis session has timed out or could not be found. To ensure
+        data integrity, let's start over with a fresh environment.
+      </p>
+
+      <button id="reset-btn" class="btn-reset" onclick="performRecoveryReset()">
+        <span class="spinner" id="btn-spinner"></span>
+        <span id="btn-text">Reset & Start New Analysis</span>
+      </button>
+
+      <div class="footer-brand">
+        <i data-lucide="activity" style="width: 14px"></i>
+        DatasetDoctor Engine V3.0
+      </div>
     </div>
 
     <script type="module">
-   
-    import { API } from '/static/js/api.js';
+      import { API } from "/static/js/api.js";
 
-	(async () => {
-	    // 1. Immediately block the back button
-	    const blockBack = () => window.history.pushState(null, null, window.location.href);
-	    blockBack();
-	    window.onpopstate = blockBack;
+      (async () => {
+        // 1. Immediately block the back button
+        const blockBack = () =>
+          window.history.pushState(null, null, window.location.href);
+        blockBack();
+        window.onpopstate = blockBack;
 
-	    // 2. Clear navigation guards to allow automatic redirect
-	    window.onbeforeunload = null;
+        // 2. Clear navigation guards to allow automatic redirect
+        window.onbeforeunload = null;
 
-	    try {
-		const datasetId = localStorage.getItem("dataset_id");
+        try {
+          const datasetId = localStorage.getItem("dataset_id");
 
-		if (datasetId) {
-		    // Redirect to active analysis
-		    window.location.replace(`/dashboard/${encodeURIComponent(datasetId)}`);
-		} else {
-		    // No session found, send to start
-		    window.location.replace("/uploader");
-		}
-	    } catch (e) {
-		console.error("Routing error:", e);
-		// Emergency fallback to uploader if localStorage fails
-		window.location.replace("/uploader");
-	    }
-})();
-</script>
-</body>
+          if (datasetId) {
+            // Redirect to active analysis
+            window.location.replace(
+              `/dashboard/${encodeURIComponent(datasetId)}`,
+            );
+          } else {
+            // No session found, send to start
+            window.location.replace("/uploader");
+          }
+        } catch (e) {
+          console.error("Routing error:", e);
+          // Emergency fallback to uploader if localStorage fails
+          window.location.replace("/uploader");
+        }
+      })();
+    </script>
+  </body>
 </html>

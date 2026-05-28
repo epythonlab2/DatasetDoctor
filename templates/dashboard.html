@@ -1,244 +1,324 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <!-- [SECTION] HEAD & METADATA -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dataset Health Analysis | DatasetDoctor</title>
-    <meta name="description" content="Diagnose ML readiness with Dataset Doctor. Automate data cleaning, outlier detection, data leakage checks, handle missing data, and fix mismatches fast.">
-    
-    <link rel="icon" type="image/svg+xml" href="/static/icons/favicon.svg"/>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <meta
+      name="description"
+      content="Diagnose ML readiness with Dataset Doctor. Automate data cleaning, outlier detection, data leakage checks, handle missing data, and fix mismatches fast."
+    />
+
+    <link rel="icon" type="image/svg+xml" href="/static/icons/favicon.svg" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="/static/css/styles.css" />
-    
   </head>
   <body>
-  
-  <div class="app-layout">
-    <!-- [SECTION] SIDEBAR -->
+    <div class="app-layout">
+      <!-- [SECTION] SIDEBAR -->
       {% include 'includes/sidebar.html' %}
 
-    <!-- [SECTION] MAIN CONTENT WRAPPER -->
-    <div class="main-wrapper">
-      <!-- [SUB-SECTION] TOP NAVBAR -->
-      {% include 'includes/navbar.html' %}
+      <!-- [SECTION] MAIN CONTENT WRAPPER -->
+      <div class="main-wrapper">
+        <!-- [SUB-SECTION] TOP NAVBAR -->
+        {% include 'includes/navbar.html' %}
 
-      <!-- [SUB-SECTION] DASHBOARD MAIN CONTAINER -->
-      <main class="dashboard-container">
-        <header class="dashboard-header">
-          <div class="dataset-header">
-  
-		  <div class="title-row">
-		    <h1>Dataset Analysis</h1>
-		    <span class="badge-live"> Live</span>
-		  </div>
+        <!-- [SUB-SECTION] DASHBOARD MAIN CONTAINER -->
+        <main class="dashboard-container">
+          <header class="dashboard-header">
+            <div class="dataset-header">
+              <div class="title-row">
+                <h1>Dataset Analysis</h1>
+                <span class="badge-live"> Live</span>
+              </div>
 
-		  <p id="filename-display" class="dataset-meta">
-		    <span class="label">Analyzing</span>
-		    <span id="current-file" class="file-name">cleaned_17c47a0d-947a...</span>
-		  </p>
-
-		</div>
-          <div>
-            <span class="text-muted">
-              <i data-lucide="clock" style="width: 12px; display: inline-block; vertical-align: middle"></i>
-              Last scanned: <span id="scan-time-label" data-timestamp="2026-04-03T10:30:00Z">Just now</span>
-            </span>
-          </div>
-        </header>
-
-        <!-- STATS GRID -->
-        <section class="stats-grid">
-          <div class="card stat-card">
-            <div class="stat-icon"><i data-lucide="database"></i></div>
-            <div class="stat-content">
-              <span class="card-label">Total Rows</span>
-              <h2 id="rows">--</h2>
+              <p id="filename-display" class="dataset-meta">
+                <span class="label">Analyzing</span>
+                <span id="current-file" class="file-name"
+                  >cleaned_17c47a0d-947a...</span
+                >
+              </p>
             </div>
-          </div>
-          <div class="card stat-card">
-            <div class="stat-icon"><i data-lucide="columns"></i></div>
-            <div class="stat-content">
-              <span class="card-label">Total Columns</span>
-              <h2 id="cols">--</h2>
+            <div>
+              <span class="text-muted">
+                <i
+                  data-lucide="clock"
+                  style="
+                    width: 12px;
+                    display: inline-block;
+                    vertical-align: middle;
+                  "
+                ></i>
+                Last scanned:
+                <span id="scan-time-label" data-timestamp="2026-04-03T10:30:00Z"
+                  >Just now</span
+                >
+              </span>
             </div>
-          </div>
-          <div class="card stat-card">
-            <div class="stat-icon"><i data-lucide="droplets"></i></div>
-            <div class="stat-content">
-              <span class="card-label">Missing Data</span>
-              <h2 id="missing-stat">--</h2>
-            </div>
-          </div>
-          <div class="card stat-card">
-            <div class="stat-icon"><i data-lucide="copy"></i></div>
-            <div class="stat-content">
-              <span class="card-label">Redundancy</span>
-              <h2 id="duplicates">--</h2>
-            </div>
-          </div>
-        </section>
+          </header>
 
-        <!-- INSIGHTS GRID (Health & Distribution) -->
-        <section class="insights-grid">
+          <!-- STATS GRID -->
+          <section class="stats-grid">
+            <div class="card stat-card">
+              <div class="stat-icon"><i data-lucide="database"></i></div>
+              <div class="stat-content">
+                <span class="card-label">Total Rows</span>
+                <h2 id="rows">--</h2>
+              </div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-icon"><i data-lucide="columns"></i></div>
+              <div class="stat-content">
+                <span class="card-label">Total Columns</span>
+                <h2 id="cols">--</h2>
+              </div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-icon"><i data-lucide="droplets"></i></div>
+              <div class="stat-content">
+                <span class="card-label">Missing Data</span>
+                <h2 id="missing-stat">--</h2>
+              </div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-icon"><i data-lucide="copy"></i></div>
+              <div class="stat-content">
+                <span class="card-label">Redundancy</span>
+                <h2 id="duplicates">--</h2>
+              </div>
+            </div>
+          </section>
+
+          <!-- INSIGHTS GRID (Health & Distribution) -->
+          <section class="insights-grid">
             <div class="card scores-card">
-                <div class="card-header">
-                    <div>
-                        <h3>Dataset Health</h3>
-                        <p class="text-muted" style="font-size: 0.75rem">Quality & Readiness Metrics</p>
-                    </div>
-                    <i data-lucide="activity" class="text-muted" style="width: 18px;"></i>
+              <div class="card-header">
+                <div>
+                  <h3>Dataset Health</h3>
+                  <p class="text-muted" style="font-size: 0.75rem">
+                    Quality & Readiness Metrics
+                  </p>
                 </div>
-                
-                <div class="scores-stack">
-                    <div class="score-item">
-                        <div class="stat-icon icon-gold"><i data-lucide="star"></i></div>
-                        <div class="score-content">
-                            <span class="score-label">Quality Score</span>
-                            <div class="score-flex">
-                                <h2 id="quality-score">88</h2>
-                                <span class="score-total"></span>
-                            </div>
-                            <div class="score-bar-bg">
-                                <div id= "quality-fill" class="score-bar-fill gold" style="width: 88%"></div>
-                            </div>
-                        </div>
-                    </div>
+                <i
+                  data-lucide="activity"
+                  class="text-muted"
+                  style="width: 18px"
+                ></i>
+              </div>
 
-                    <div class="score-item">
-                        <div class="stat-icon icon-indigo"><i data-lucide="cpu"></i></div>
-                        <div class="score-content">
-                            <span class="score-label">ML Readiness</span>
-                            <div class="score-flex">
-                                <h2 id="ml-readiness">92</h2>
-                                <span class="score-total"></span>
-                            </div>
-                            <div class="score-bar-bg">
-               
-                                <div id="ml-readiness-fill" class="score-bar-fill indigo" style="color: var(--success); width: 18px;"></div>
-                            </div>
-                        </div>
+              <div class="scores-stack">
+                <div class="score-item">
+                  <div class="stat-icon icon-gold">
+                    <i data-lucide="star"></i>
+                  </div>
+                  <div class="score-content">
+                    <span class="score-label">Quality Score</span>
+                    <div class="score-flex">
+                      <h2 id="quality-score">88</h2>
+                      <span class="score-total"></span>
                     </div>
+                    <div class="score-bar-bg">
+                      <div
+                        id="quality-fill"
+                        class="score-bar-fill gold"
+                        style="width: 88%"
+                      ></div>
+                    </div>
+                  </div>
                 </div>
+
+                <div class="score-item">
+                  <div class="stat-icon icon-indigo">
+                    <i data-lucide="cpu"></i>
+                  </div>
+                  <div class="score-content">
+                    <span class="score-label">ML Readiness</span>
+                    <div class="score-flex">
+                      <h2 id="ml-readiness">92</h2>
+                      <span class="score-total"></span>
+                    </div>
+                    <div class="score-bar-bg">
+                      <div
+                        id="ml-readiness-fill"
+                        class="score-bar-fill indigo"
+                        style="color: var(--success); width: 18px"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="card chart-card">
-                <div class="card-header">
-                    <div>
-                        <h3>Class Distribution</h3>
-                        <p class="text-muted" style="font-size: 0.75rem">
-                            Target: <span id="target-column-display" style="color: var(--primary); font-weight: 600">Purchase</span>
-                        </p>
-                    </div>
-                     
-                    <i data-lucide="bar-chart-3" class="text-muted" style="color: var(--warning); width: 18px;"></i>
+              <div class="card-header">
+                <div>
+                  <h3>Class Distribution</h3>
+                  <p class="text-muted" style="font-size: 0.75rem">
+                    Target:
+                    <span
+                      id="target-column-display"
+                      style="color: var(--primary); font-weight: 600"
+                      >Purchase</span
+                    >
+                  </p>
                 </div>
-                <div class="chart-container">
-                    <canvas id="imbalanceChart"></canvas>
-                    
-                </div>
-                
-            </div>
-        </section>
 
-        <!-- STATISTICAL SUMMARY -->
-        <section class="insights-grid">
-          <div class="card table-card">
-            <div class="card-header-flex">
-              <div>
-                <h3>Statistical Summary</h3>
-                <p class="text-muted" style="font-size: 0.75rem">Global numerical distribution</p>
+                <i
+                  data-lucide="bar-chart-3"
+                  class="text-muted"
+                  style="color: var(--warning); width: 18px"
+                ></i>
               </div>
-               <i data-lucide="sigma" class="text-muted" style="color: var(--primary); width: 18px;"></i>
+              <div class="chart-container">
+                <canvas id="imbalanceChart"></canvas>
+              </div>
             </div>
+          </section>
 
-            <div id="stats-container" class="table-wrapper">
-              <!-- [NOTE] ID "analysis-table" repeated below; changed to "summary-table" for best practice -->
-              <table id="summary-table">
-                <thead>
+          <!-- STATISTICAL SUMMARY -->
+          <section class="insights-grid">
+            <div class="card table-card">
+              <div class="card-header-flex">
+                <div>
+                  <h3>Statistical Summary</h3>
+                  <p class="text-muted" style="font-size: 0.75rem">
+                    Global numerical distribution
+                  </p>
+                </div>
+                <i
+                  data-lucide="sigma"
+                  class="text-muted"
+                  style="color: var(--primary); width: 18px"
+                ></i>
+              </div>
+
+              <div id="stats-container" class="table-wrapper">
+                <!-- [NOTE] ID "analysis-table" repeated below; changed to "summary-table" for best practice -->
+                <table id="summary-table">
+                  <thead>
+                    <tr>
+                      <th>Feature</th>
+                      <th>Mean</th>
+                      <th>Std Dev</th>
+                      <th>Median</th>
+                    </tr>
+                  </thead>
+                  <tbody id="global-stats-body">
+                    <tr>
+                      <td colspan="5" class="stats-loader-container">
+                        <div class="stats-loader-content">
+                          <div class="spinner-custom"></div>
+                          <span class="loader-text"
+                            >Calculating statistical moments...</span
+                          >
+                          <span class="loader-subtext"
+                            >Performing high-precision distribution
+                            analysis</span
+                          >
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section id="leakage-section"></section>
+
+          <!-- DIAGNOSTIC BREAKDOWN -->
+          <section class="card table-card">
+            <div class="card-header-flex">
+              <h3>Diagnostic Breakdown</h3>
+              <div class="glass-tabs">
+                <button
+                  id="tab-health"
+                  class="tab-btn active"
+                  onclick="switchTableTab('health')"
+                >
+                  Missing Data
+                </button>
+                <button
+                  id="tab-outliers"
+                  class="tab-btn"
+                  onclick="switchTableTab('outliers')"
+                >
+                  Outliers
+                </button>
+                <button
+                  id="tab-categorical"
+                  class="tab-btn"
+                  onclick="switchTableTab('categorical')"
+                >
+                  Cardinality
+                </button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table id="analysis-table">
+                <thead id="table-head"></thead>
+                <tbody id="table-body">
                   <tr>
-                    <th>Feature</th>
-                    <th>Mean</th>
-                    <th>Std Dev</th>
-                    <th>Median</th>
-                  </tr>
-                </thead>
-                <tbody id="global-stats-body">
-                  <tr>
-                    <td colspan="5" class="stats-loader-container">
-                      <div class="stats-loader-content">
-                        <div class="spinner-custom"></div>
-                        <span class="loader-text">Calculating statistical moments...</span>
-                        <span class="loader-subtext">Performing high-precision distribution analysis</span>
-                      </div>
+                    <td
+                      colspan="4"
+                      style="
+                        text-align: center;
+                        padding: 4rem;
+                        color: var(--text-muted);
+                      "
+                    >
+                      <i data-lucide="loader-2" class="spin"></i> Initializing
+                      diagnostics...
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section id="leakage-section"></section>
-
-        <!-- DIAGNOSTIC BREAKDOWN -->
-        <section class="card table-card">
-          <div class="card-header-flex">
-            <h3>Diagnostic Breakdown</h3>
-            <div class="glass-tabs">
-              <button id="tab-health" class="tab-btn active" onclick="switchTableTab('health')">Missing Data</button>
-              <button id="tab-outliers" class="tab-btn" onclick="switchTableTab('outliers')">Outliers</button>
-              <button id="tab-categorical" class="tab-btn" onclick="switchTableTab('categorical')">Cardinality</button>
+          <!-- BOTTOM GRID (Suggestions & Anomalies) -->
+          <section class="insights-grid bottom-grid" style="margin-top: 2rem">
+            <div class="card suggestion-card">
+              <div class="card-header-simple">
+                <h3>AI Smart Suggestions</h3>
+                <i
+                  data-lucide="zap"
+                  style="color: var(--warning); width: 18px"
+                ></i>
+              </div>
+              <div id="suggestions" class="suggestion-list"></div>
             </div>
-          </div>
-          <div class="table-wrapper">
-            <table id="analysis-table">
-              <thead id="table-head"></thead>
-              <tbody id="table-body">
-                <tr>
-                  <td colspan="4" style="text-align: center; padding: 4rem; color: var(--text-muted);">
-                    <i data-lucide="loader-2" class="spin"></i> Initializing diagnostics...
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- BOTTOM GRID (Suggestions & Anomalies) -->
-        <section class="insights-grid bottom-grid" style="margin-top: 2rem">
-          <div class="card suggestion-card">
-            <div class="card-header-simple">
-              <h3>AI Smart Suggestions</h3>
-              <i data-lucide="zap" style="color: var(--warning); width: 18px"></i>
+            <div class="card issue-card">
+              <div class="card-header-simple">
+                <h3>Detected Anomalies</h3>
+                <i
+                  data-lucide="alert-triangle"
+                  style="color: var(--danger); width: 18px"
+                ></i>
+              </div>
+              <div id="outliers-list" class="issue-tags"></div>
             </div>
-            <div id="suggestions" class="suggestion-list"></div>
-          </div>
-          <div class="card issue-card">
-            <div class="card-header-simple">
-              <h3>Detected Anomalies</h3>
-              <i data-lucide="alert-triangle" style="color: var(--danger); width: 18px"></i>
-            </div>
-            <div id="outliers-list" class="issue-tags"></div>
-          </div>
-        </section>
-      </main>
+          </section>
+        </main>
 
-      <!-- [SUB-SECTION] FOOTER -->
-     {% include 'includes/footer.html' %}
-    </div> <!-- End main-wrapper -->
-  </div> <!-- End app-layout -->
+        <!-- [SUB-SECTION] FOOTER -->
+        {% include 'includes/footer.html' %}
+      </div>
+      <!-- End main-wrapper -->
+    </div>
+    <!-- End app-layout -->
 
- 
-  
-
-  <!-- [SECTION] SCRIPTS -->
-  <script type="module" src="/static/js/main.js"></script>
-  <script type="module" src="/static/js/utils/timeTicker.js"></script>
-  <script type="module" src="/static/js/modalUI/about.js"></script>
-  <script type="module" src="/static/js/modalUI/clean.js"></script>
+    <!-- [SECTION] SCRIPTS -->
+    <script type="module" src="/static/js/main.js"></script>
+    <script type="module" src="/static/js/utils/timeTicker.js"></script>
+    <script type="module" src="/static/js/modalUI/about.js"></script>
+    <script type="module" src="/static/js/modalUI/clean.js"></script>
   </body>
 </html>
