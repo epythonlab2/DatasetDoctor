@@ -39,7 +39,7 @@ class AuditLogger:
             self.reader = geoip2.database.Reader(str(self.db_path))
         except Exception as e:
             logger.warning(
-                f"AuditLogger: GeoIP Database not found at {self.db_path}. Geo-enrichment disabled."
+                f"AuditLogger: GeoIP Database not found at {self.db_path}. Geo-enrichment disabled. {e}"
             )
             self.reader = None
 

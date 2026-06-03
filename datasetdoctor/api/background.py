@@ -1,7 +1,7 @@
 import os
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from dataclasses import dataclass
 
 from datasetdoctor.analysis.cleaning import clean_dataset
 from datasetdoctor.analysis.inspector import analyze_dataset
@@ -30,12 +30,15 @@ def run_analysis(dataset_id: str, path: Path) -> None:
         analysis_gen = analyze_dataset(str(path), target=target, filename=filename)
 
         # 1. Catch the partial results (summary + columns + missing %)
-        partial_data = next(analysis_gen) # Gets rows, cols, missing, redundancy
-        update_meta(dataset_id, {
-            **partial_data, # CRITICAL: This sends the actual numbers to the DB
-            "status": "processing",
-            "stage": "Top metrics ready..."
-        })
+        partial_data = next(analysis_gen)  # Gets rows, cols, missing, redundancy
+        update_meta(
+            dataset_id,
+            {
+                **partial_data,  # CRITICAL: This sends the actual numbers to the DB
+                "status": "processing",
+                "stage": "Top metrics ready...",
+            },
+        )
 
         # 2. Catch final results (Plugins + Scores)
         final_results = next(analysis_gen)
@@ -52,8 +55,8 @@ def run_analysis(dataset_id: str, path: Path) -> None:
     except Exception as e:
         logger.exception(f"Analysis Pipeline Failed for {dataset_id}")
         _handle_failure(dataset_id, e, "Analysis")
-        
-        
+
+
 def run_cleaning(
     dataset_id: str,
     raw_path: str,
@@ -64,8 +67,8 @@ def run_cleaning(
     **kwargs,
 ) -> None:
     """
-    Executes a sequence of cleaning steps. 
-    Maintains 'schema_memory' to ensure user-defined types persist 
+    Executes a sequence of cleaning steps.
+    Maintains 'schema_memory' to ensure user-defined types persist
     through re-analysis cycles.
     """
     try:
@@ -74,42 +77,59 @@ def run_cleaning(
         if pipeline:
             steps = pipeline
         else:
+
             @dataclass
             class SimpleStep:
                 action: str
                 columns: list
                 method: str
-            steps = [SimpleStep(
-                action=action, 
-                columns=target_columns, 
-                method=kwargs.get("method")
-            )]
+
+            steps = [
+                SimpleStep(
+                    action=action, columns=target_columns, method=kwargs.get("method")
+                )
+            ]
 
         # 2. STATE PREPARATION
         old_meta = load_meta(dataset_id) or {}
         schema_memory = old_meta.get("schema_memory", {})
-        
+
         # If starting fresh, initialize memory from existing column types
         if not schema_memory:
-            schema_memory = {col["name"]: col["type"] for col in old_meta.get("columns", [])}
+            schema_memory = {
+                col["name"]: col["type"] for col in old_meta.get("columns", [])
+            }
 
         # Mapping UI keywords to Pandas-compatible dtypes
         ui_type_map = {
-            "date": "datetime64[ns]", "datetime": "datetime64[ns]",
-            "float": "float64", "int": "Int64", "bool": "boolean", "encode": "Int64",
+            "date": "datetime64[ns]",
+            "datetime": "datetime64[ns]",
+            "float": "float64",
+            "int": "Int64",
+            "bool": "boolean",
+            "encode": "Int64",
         }
 
         # 3. ITERATIVE PIPELINE EXECUTION
         for i, step in enumerate(steps):
             # Normalizing access (Object vs Dict)
-            curr_action = step.action if hasattr(step, 'action') else step.get("action")
-            curr_cols = step.columns if hasattr(step, 'columns') else step.get("columns")
-            curr_method = getattr(step, 'method', "mean") if hasattr(step, 'method') else step.get("method", "mean")
+            curr_action = step.action if hasattr(step, "action") else step.get("action")
+            curr_cols = (
+                step.columns if hasattr(step, "columns") else step.get("columns")
+            )
+            curr_method = (
+                getattr(step, "method", "mean")
+                if hasattr(step, "method")
+                else step.get("method", "mean")
+            )
 
-            update_meta(dataset_id, {
-                "status": "processing", 
-                "stage": f"Step {i+1}/{len(steps)}: {curr_action}..."
-            })
+            update_meta(
+                dataset_id,
+                {
+                    "status": "processing",
+                    "stage": f"Step {i+1}/{len(steps)}: {curr_action}...",
+                },
+            )
 
             # Select source: Use raw file for first step, otherwise use current working clean file
             current_source = clean_path if os.path.exists(clean_path) else raw_path
@@ -120,13 +140,13 @@ def run_cleaning(
                 plugin_params["drop_columns"] = {"columns_to_drop": curr_cols}
             elif curr_action == "smart_impute":
                 plugin_params["smart_impute"] = {
-                    "target_column": curr_cols[0] if curr_cols else None, 
-                    "method": curr_method
+                    "target_column": curr_cols[0] if curr_cols else None,
+                    "method": curr_method,
                 }
             elif curr_action == "cast_schema":
                 plugin_params["cast_schema"] = {
-                    "target_column": curr_cols[0] if curr_cols else None, 
-                    "method": curr_method
+                    "target_column": curr_cols[0] if curr_cols else None,
+                    "method": curr_method,
                 }
             else:
                 plugin_params[curr_action] = {}
@@ -144,19 +164,23 @@ def run_cleaning(
             # Only update memory if the cast was successful to avoid reporting false successes
             if curr_action == "cast_schema" and curr_cols:
                 logs = cleaning_logs() if callable(cleaning_logs) else cleaning_logs
-                
+
                 # Check for error signals in plugin logs
                 has_error = any(
-                    str(log.get('status', '')).lower() == 'error' 
+                    str(log.get("status", "")).lower() == "error"
                     for log in (logs if isinstance(logs, list) else [])
                 )
 
                 if not has_error:
                     target_type = ui_type_map.get(curr_method, curr_method)
                     schema_memory[curr_cols[0]] = target_type
-                    logger.info(f"Committed {curr_cols[0]} as {target_type} to schema memory.")
+                    logger.info(
+                        f"Committed {curr_cols[0]} as {target_type} to schema memory."
+                    )
                 else:
-                    logger.warning(f"Cast failed for {curr_cols[0]}. Memory not updated.")
+                    logger.warning(
+                        f"Cast failed for {curr_cols[0]}. Memory not updated."
+                    )
 
         # 7. FINAL ANALYSIS
         # We re-analyze the full file once after the entire batch is finished
@@ -168,8 +192,8 @@ def run_cleaning(
 
         results = {}
         for update in analysis_gen:
-            results = update 
-            
+            results = update
+
             # Apply schema memory to override Pandas' automated type detection
             if "columns" in results:
                 for col_info in results["columns"]:
@@ -177,11 +201,10 @@ def run_cleaning(
                     if name in schema_memory:
                         col_info["type"] = schema_memory[name]
 
-            update_meta(dataset_id, {
-                **results,
-                "status": "processing",
-                "stage": "Finalizing Metrics..."
-            })
+            update_meta(
+                dataset_id,
+                {**results, "status": "processing", "stage": "Finalizing Metrics..."},
+            )
 
         # 8. PUBLISH FINAL STATE
         final_payload = {
@@ -190,7 +213,11 @@ def run_cleaning(
             "cleaning": cleaning_logs() if callable(cleaning_logs) else cleaning_logs,
             "status": "ready",
             "stage": "complete",
-            "last_action": steps[-1].action if hasattr(steps[-1], 'action') else steps[-1].get("action"),
+            "last_action": (
+                steps[-1].action
+                if hasattr(steps[-1], "action")
+                else steps[-1].get("action")
+            ),
             "cleaned_file_path": str(clean_path),
         }
 

@@ -2,8 +2,6 @@ import os
 
 import uvicorn
 
-from datasetdoctor.api.main import app
-
 if __name__ == "__main__":
     uvicorn.run(
         "api.main:app",

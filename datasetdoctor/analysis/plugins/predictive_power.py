@@ -131,7 +131,6 @@ class PredictivePowerPlugin(AnalysisPlugin):
         col_names = X.columns.tolist()
         chunk_size = 20
         final_results = {}
-
         with ThreadPoolExecutor() as executor:
             futures = []
             for i in range(0, len(col_names), chunk_size):

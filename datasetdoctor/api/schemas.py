@@ -1,5 +1,20 @@
-from typing import List, Optional, Any
-from pydantic import BaseModel, Field
+from datetime import datetime
+from typing import List, Optional
+
+from pydantic import BaseModel, Field, field_serializer
+
+
+class Insight(BaseModel):
+    task_id: str
+    title: str
+    category: str
+    content: str
+    image_url: str
+    created_at: Optional[datetime] = None
+
+    @field_serializer("created_at")
+    def serialize_dt(self, dt: datetime, _info):
+        return dt.isoformat() if dt else None
 
 
 class TargetRequest(BaseModel):
@@ -15,6 +30,7 @@ class CleaningStep(BaseModel):
     action: str  # e.g., "remove_duplicates", "smart_impute", "drop_columns"
     columns: Optional[List[str]] = None
     method: Optional[str] = "auto"
+
 
 class CleanRequest(BaseModel):
     # New Batch Field

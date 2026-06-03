@@ -1,0 +1,75 @@
+/* ================= DESIGN TOKENS ================= */
+:root {
+    --primary:#4f46e5;
+    --primary-hover:#4338ca;
+    --secondary:#64748b;
+
+    --success:#10b981;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+
+    --bg-card:#fff;
+    --bg-main:#f8fafc;
+
+    --text-main:#1e293b;
+    --text-muted:#64748b;
+
+    --border:#e2e8f0;
+
+    --radius-md:12px;
+    --radius-lg:16px;
+    --radius-xl:24px;
+
+    --shadow:0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+/* ================= BUTTON SYSTEM ================= */
+.btn {
+    display:inline-flex;
+    align-items:center;
+    gap:0.5rem;
+    padding:0.5rem 1rem;
+    border-radius:12px;
+    font-size:0.875rem;
+    font-weight:500;
+    cursor:pointer;
+    border:1px solid transparent;
+}
+
+.btn-primary {
+    background:var(--primary);
+    color:#fff;
+}
+
+.btn-primary:hover {
+    background:var(--primary-hover);
+}
+
+/* ================= GRID SYSTEM ================= */
+.stats-grid,
+.insights-grid {
+    display:grid;
+    gap:1.5rem;
+}
+
+.stats-grid {
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+}
+
+.insights-grid {
+    grid-template-columns:repeat(auto-fit,minmax(400px,1fr));
+}
+
+/* ================= TABLE BASE ================= */
+table {
+    width:100%;
+    border-collapse:collapse;
+}
+
+/* ================= UTILITIES ================= */
+.text-muted { color: var(--text-muted); }
+.text-primary { color: var(--primary); }
+
+.flex { display:flex; }
+.items-center { align-items:center; }
+.justify-between { justify-content:space-between; }
