@@ -100,7 +100,6 @@ class ImbalancePlugin(AnalysisPlugin):
 
             is_imbalanced = severity in {"HIGH", "EXTREME"}
 
-
             # -------------------------
             # Output
             # -------------------------

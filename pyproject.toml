@@ -21,7 +21,8 @@ dependencies = [
     "user-agents",
     "requests",
     "supabase",
-    "geoip2"
+    "geoip2",
+    "pytest"
 
 ]
 
@@ -36,3 +37,9 @@ entrypoint = "datasetdoctor.api.main:app"
 min_instances = 1
 max_instances = 1
 replicas=1
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning:supabase.*",
+    "ignore::pydantic.warnings.PydanticDeprecatedSince20"
+]

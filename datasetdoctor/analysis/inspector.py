@@ -1,5 +1,5 @@
 # analysis/inspect.py
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import pandas as pd
 
@@ -16,7 +16,7 @@ def analyze_dataset(
 ):
     CHUNK_SIZE = 200_000
     MAX_SAMPLE_ROWS = 100_000
-    
+
     reader = pd.read_csv(file_path, chunksize=CHUNK_SIZE, engine="c", low_memory=False)
 
     total_rows = 0
@@ -27,9 +27,10 @@ def analyze_dataset(
 
     # --- PHASE 1: Streaming Scan (Fast) ---
     for i, chunk in enumerate(reader):
-        if chunk.empty: continue
+        if chunk.empty:
+            continue
         total_rows += len(chunk)
-        
+
         # Track Missing Values
         if missing_counts is None:
             missing_counts = chunk.isna().sum()
@@ -37,7 +38,7 @@ def analyze_dataset(
             missing_counts += chunk.isna().sum()
 
         # Quick check for duplicates in the first few chunks
-        if not any_duplicates and i < 5: 
+        if not any_duplicates and i < 5:
             any_duplicates = chunk.duplicated().any()
 
         # Build the sample for plugins and redundancy check
@@ -47,15 +48,21 @@ def analyze_dataset(
             rows_collected += take_n
 
     df_sample = pd.concat(sample_collection, ignore_index=True)
-    
+
     # --- PHASE 1 CALCULATIONS (For Top UI Row) ---
     num_cols = len(df_sample.columns)
     total_cells = total_rows * num_cols
-    global_missing_pct = round((sum(missing_counts.values) / total_cells * 100), 2) if total_cells > 0 else 0
-    
+    global_missing_pct = (
+        round((sum(missing_counts.values) / total_cells * 100), 2)
+        if total_cells > 0
+        else 0
+    )
+
     # Calculate Redundancy (Duplicates) from the sample immediately
     sample_dupes = df_sample.duplicated().sum()
-    redundancy_pct = round((sample_dupes / len(df_sample)) * 100, 2) if len(df_sample) > 0 else 0
+    redundancy_pct = (
+        round((sample_dupes / len(df_sample)) * 100, 2) if len(df_sample) > 0 else 0
+    )
 
     partial_output = {
         "filename": filename,
@@ -63,16 +70,19 @@ def analyze_dataset(
             "rows": total_rows,
             "cols": num_cols,
             "missingPercent": global_missing_pct,
-            "duplicatesPercent": redundancy_pct, # Shows Redundancy immediately
+            "duplicatesPercent": redundancy_pct,  # Shows Redundancy immediately
             "target_column": target,
         },
         "columns": [
             {
                 "name": col,
                 "type": str(df_sample[col].dtype),
-                "missingPercent": round((missing_counts.get(col, 0) / total_rows) * 100, 2),
+                "missingPercent": round(
+                    (missing_counts.get(col, 0) / total_rows) * 100, 2
+                ),
                 "unique": int(df_sample[col].nunique()),
-            } for col in df_sample.columns
+            }
+            for col in df_sample.columns
         ],
     }
 
@@ -90,10 +100,19 @@ def analyze_dataset(
     }
 
     executor = PluginExecutor(df_sample, profile=profile)
-    plugin_results = executor.run([
-        "data_quality", "ml_readiness", "data_leakage", 
-        "outliers", "imbalance", "suggestions", "stats", "predictive_power"
-    ], target=target)
+    plugin_results = executor.run(
+        [
+            "data_quality",
+            "ml_readiness",
+            "data_leakage",
+            "outliers",
+            "imbalance",
+            "suggestions",
+            "stats",
+            "predictive_power",
+        ],
+        target=target,
+    )
 
     # FINAL ASSEMBLY
     full_output = {
@@ -108,7 +127,7 @@ def analyze_dataset(
             **partial_output["summary"],
             "quality_score": plugin_results.get("data_quality", {}).get("score", 0),
             "ml_readiness": plugin_results.get("ml_readiness", {}).get("value", 0),
-        }
+        },
     }
 
     # YIELD 2: UI updates Health Metrics and AI Insights

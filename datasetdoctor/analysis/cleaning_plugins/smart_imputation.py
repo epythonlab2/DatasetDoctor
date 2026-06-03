@@ -1,5 +1,5 @@
 # analysis/cleaning_plugins/smart_imputation.py
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 
 import pandas as pd
 

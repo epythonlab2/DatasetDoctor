@@ -1,5 +1,5 @@
 # analysis/cleaning_plugins/smart_casting.py
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 
 import numpy as np
 import pandas as pd

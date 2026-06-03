@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
@@ -9,6 +9,7 @@ from starlette.concurrency import run_in_threadpool
 from datasetdoctor.admincp.audit_engine import AuditLogger
 from datasetdoctor.core import config
 
+from .insight_routes import insight_router
 from .routes import router
 
 
@@ -34,7 +35,8 @@ app = FastAPI(
     version="1.0.0",
     # Paste your chosen 155-character SEO description here:
     description="Diagnose ML readiness with Dataset Doctor. Automate data cleaning, outlier detection, data leakage checks, handle missing data, and fix mismatches fast.",
-    lifespan=lifespan)
+    lifespan=lifespan,
+)
 
 # Standard CORS setup
 app.add_middleware(
@@ -46,4 +48,19 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory=config.STATIC_DIR), name="static")
 app.mount("/images", StaticFiles(directory=config.STATIC_DIR), name="images")
+
+
+@app.middleware("http")
+async def cache_control(request: Request, call_next):
+    response = await call_next(request)
+
+    if request.url.path.endswith(
+        (".css", ".js", ".jpg", ".jpeg", ".png", ".webp", ".svg")
+    ):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+
+    return response
+
+
 app.include_router(router)
+app.include_router(insight_router)
