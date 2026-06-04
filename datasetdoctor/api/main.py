@@ -7,6 +7,7 @@ from starlette.concurrency import run_in_threadpool
 
 # 1. Import the updated AuditLogger (the Supabase version)
 from datasetdoctor.admincp.audit_engine import AuditLogger
+from datasetdoctor.services.insight_logger import InsightLogger
 from datasetdoctor.core import config
 
 from .insight_routes import insight_router
@@ -25,6 +26,8 @@ async def lifespan(app: FastAPI):
     app.state.audit_logger = AuditLogger(
         supabase_url=config.SUPABASE_URL, supabase_key=config.SUPABASE_KEY
     )
+    
+    app.state.insight_logger = InsightLogger()
 
     await run_in_threadpool(init_dirs)
     yield
@@ -41,7 +44,8 @@ app = FastAPI(
 # Standard CORS setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"], # Change "*" to your specific frontend URL in production
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
