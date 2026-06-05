@@ -22,10 +22,17 @@ section {
    2. NAVIGATION SYSTEM
    ========================================================================== */
 
-/* Glassmorphic Navbar */
+/* ==========================================================
+   LANDING NAVBAR (INDEX ONLY)
+   ========================================================== */
 
-
-
+.navbar-landing {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+}
 /* ==========================================================================
    3. HERO SECTION & VISUAL EFFECTS
    ========================================================================== */
@@ -36,7 +43,6 @@ section {
     flex-direction : row;
     align-items    : center;
     justify-content: space-between;
-
     /* Full-Width Logic */
     width     : 100%;
     min-height: 100vh;
@@ -52,6 +58,64 @@ section {
     overflow: hidden;
     gap     : 3rem;
 }
+/* Adjust Glow for side-by-side layout */
+.hero-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 80% 40%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
+    z-index: -1;
+}
+.nav-content {
+    display        : flex;
+    justify-content: space-between;
+    align-items    : center;
+}
+/* This outer branding container stretches full-width on desktop if necessary */
+.nav-header-brand {
+    display    : flex;
+    align-items: center;
+    gap        : 0.5rem;
+    /* Space between DatasetDoctor text and the toggle icon */
+}
+
+.logo.nav-logo-link {
+    display    : flex;
+    align-items: center;
+    gap        : 0.5rem;
+    cursor     : pointer;
+    font-weight: 700;
+}
+
+/* --- Mobile Toggle Button Base Style --- */
+.nav-toggle {
+    display        : none;
+    /* Hidden on Desktop */
+    background     : transparent;
+    border         : none;
+    /* Removed standard border so it sits natively next to text */
+    padding        : 0.25rem;
+    cursor         : pointer;
+    color          : var(--text-light);
+    align-items    : center;
+    justify-content: center;
+}
+
+.icon-toggle {
+    width     : 20px;
+    height    : 20px;
+    transition: transform var(--transition-speed);
+    color     : var(--primary);
+}
+
+/* Rotates icon when active class is toggled */
+.nav-toggle.active .icon-toggle {
+    transform: rotate(180deg);
+    color    : var(--primary-blue);
+}
+
 
 .hero-content {
     position  : relative;
@@ -713,5 +777,72 @@ section {
         justify-content: center;
         align-items    : center;
     }
+    
+     /* Brand block handles full container width on small screens */
+    .nav-header-brand {
+        display        : flex;
+        align-items    : center;
+        width          : 100%;
+        /* Allows it to span across the entire navbar space */
+        justify-content: space-between;
+        /* Pushes logo to far left, toggle to far right */
+    }
 
+    /* Shows toggle immediately right next to text */
+    .nav-toggle {
+        display: inline-flex;
+        order  : 2;
+
+    }
+    .nav-content {
+        display       : flex;
+        flex-direction: column;
+        align-items   : flex-start;
+        width  	      : 100%;
+    }
+    .navbar .dashboard-wrapper {
+        padding: 0 0.5rem; /* Use a smaller, safer padding than 1.5rem */
+ 
+    }
+  .navbar .nav-actions {
+       
+        padding  : 0 1.5rem;
+    }
+    
+    .nav-toggle i {
+   	 display: flex;
+    	transition: all 0.3s ease;
+	}
+
+	/* Optional: Rotate effect when switching to X */
+	.nav-toggle.active i {
+	    transform: rotate(90deg);
+	}
+	/* Container for the icon */
+	.nav-toggle {
+	    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	    display: flex !important;
+	    align-items: center;
+	    justify-content: center;
+	    padding: 8px;
+	    border-radius: 8px;
+	}
+
+	/* Add a hover effect to make it feel interactive */
+	.nav-toggle:hover {
+	    background: rgba(255, 255, 255, 0.1);
+	}
+
+	/* The Icon animation */
+	.nav-toggle i, .nav-toggle svg {
+	    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+	}
+
+	.nav-toggle.active i, .nav-toggle.active svg {
+	    transform: rotate(180deg);
+	}
+	.hero-content {
+	    
+	    padding-top: 1.2rem; /* Added padding for better vertical spacing */
+	}
 }

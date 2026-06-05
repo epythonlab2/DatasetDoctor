@@ -129,6 +129,7 @@ body {
 
 
 
+
 /* ==========================================================================
    3. NAVIGATION COMPONENTS (Navbar & Sidebar)
    ========================================================================== */
@@ -149,7 +150,12 @@ body {
     /* Includes the border in the 68px */
     backdrop-filter        : blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    transition: box-shadow 0.3s ease;
 
+}
+
+.navbar.is-stuck {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .nav-left-group {
@@ -183,20 +189,8 @@ body {
     display: none !important;
 }
 
-.nav-content {
-    display        : flex;
-    justify-content: space-between;
-    align-items    : center;
-}
 
-.nav-logo-link {
-    cursor     : pointer;
-    font-weight: 800;
-    font-size  : 1.25rem;
-    display    : flex;
-    align-items: center;
-    gap        : 8px;
-}
+
 
 .nav-actions-wrapper {
     display: flex;
@@ -368,47 +362,6 @@ body {
     height: 24px;
 }
 
-/* This outer branding container stretches full-width on desktop if necessary */
-.nav-header-brand {
-    display    : flex;
-    align-items: center;
-    gap        : 0.5rem;
-    /* Space between DatasetDoctor text and the toggle icon */
-}
-
-.logo.nav-logo-link {
-    display    : flex;
-    align-items: center;
-    gap        : 0.5rem;
-    cursor     : pointer;
-    font-weight: 700;
-}
-
-/* --- Mobile Toggle Button Base Style --- */
-.nav-toggle {
-    display        : none;
-    /* Hidden on Desktop */
-    background     : transparent;
-    border         : none;
-    /* Removed standard border so it sits natively next to text */
-    padding        : 0.25rem;
-    cursor         : pointer;
-    color          : var(--text-light);
-    align-items    : center;
-    justify-content: center;
-}
-
-.icon-toggle {
-    width     : 20px;
-    height    : 20px;
-    transition: transform var(--transition-speed);
-}
-
-/* Rotates icon when active class is toggled */
-.nav-toggle.active .icon-toggle {
-    transform: rotate(180deg);
-    color    : var(--primary-blue);
-}
 
 
 /* ==========================================================================
@@ -1519,22 +1472,7 @@ tr:last-child td {
 
 @media (max-width: 768px) {
 
-    /* Brand block handles full container width on small screens */
-    .nav-header-brand {
-        display        : flex;
-        align-items    : center;
-        width          : 100%;
-        /* Allows it to span across the entire navbar space */
-        justify-content: space-between;
-        /* Pushes logo to far left, toggle to far right */
-    }
-
-    /* Shows toggle immediately right next to text */
-    .nav-toggle {
-        display: inline-flex;
-        order  : 2;
-
-    }
+   
 
     /* 2. THE SHOW/HIDE SWITCH ENGINE */
     /* Force-hides the nav container on mobile by default */
@@ -1556,12 +1494,7 @@ tr:last-child td {
         display: none;
     }
 
-    .nav-content {
-        display       : flex;
-        flex-direction: column;
-        gap           : 10px;
-        align-items   : flex-start;
-    }
+    
 
     .navbar {
         padding       : 0.6rem 0.8rem;

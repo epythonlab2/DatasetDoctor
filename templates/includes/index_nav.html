@@ -1,5 +1,5 @@
 <div class="hero-glow"></div>
-<nav class="navbar">
+<nav class="navbar navbar-landing">
     <div class="dashboard-wrapper nav-content">
         <!-- Brand identity block -->
         <div class="nav-header-brand">
@@ -8,7 +8,7 @@
             </div>
             
             <button class="nav-toggle" id="nav-menu-toggle" aria-label="Toggle navigation">
-                <i data-lucide="chevron-down" class="icon-toggle"></i>
+                <i data-lucide="menu" class="icon-toggle"></i>
             </button>
         </div>
         
@@ -35,6 +35,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    // Initial icon render
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
@@ -46,6 +47,22 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleBtn.addEventListener('click', () => {
             toggleBtn.classList.toggle('active');
             navMenu.classList.toggle('active');
+
+            // Find the element inside the button. 
+            // It might be an <i> OR an <svg> depending on the state.
+            const icon = toggleBtn.querySelector('i') || toggleBtn.querySelector('svg');
+            
+            if (icon) {
+                const isMenuActive = toggleBtn.classList.contains('active');
+                
+                // If it's an <svg>, we need to remove it and put an <i> back 
+                // so Lucide can re-initialize it, OR just swap the data-lucide attribute.
+                // The cleanest way is to reset the icon to an <i> tag:
+                toggleBtn.innerHTML = `<i data-lucide="${isMenuActive ? 'x' : 'menu'}"></i>`;
+                
+                // Re-run Lucide
+                lucide.createIcons();
+            }
         });
     }
 });
