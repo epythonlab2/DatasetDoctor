@@ -69,48 +69,48 @@
         </div>
       </header>
 
-      <section class="featured-insight" id="featuredSection">
+      	<section class="featured-insight" id="featuredSection">
     
-    <div class="featured-img-wrapper">
-        <img
-            src="https://images.unsplash.com/photo-1551288049-bbbda536639a?auto=format&fit=crop&q=80&w=800"
-            alt="How to Detect Target Leakage Before Training ML Models"
-            class="featured-img"
-        />
-    </div>
+	    <div class="featured-img-wrapper">
+		<img
+		    src="https://images.unsplash.com/photo-1551288049-bbbda536639a?auto=format&fit=crop&q=80&w=800"
+		    alt="How to Detect Target Leakage Before Training ML Models"
+		    class="featured-img"
+		/>
+	    </div>
 
-    <div class="featured-content">
+	    <div class="featured-content">
 
-        <h2>
-            How to Detect Target Leakage Before Training ML Models
-        </h2>
+		<h2>
+		    How to Detect Target Leakage Before Training ML Models
+		</h2>
 
-        <p>
-            Hidden leakage can silently inflate model accuracy and destroy
-            production performance. Learn practical detection strategies used in
-            real-world ML systems.
-        </p>
+		<p>
+		    Hidden leakage can silently inflate model accuracy and destroy
+		    production performance. Learn practical detection strategies used in
+		    real-world ML systems.
+		</p>
 
-        <div class="featured-meta">
-            <span>
-                <i data-lucide="clock" size="14"></i>
-                8 min read
-            </span>
+		<div class="featured-meta">
+		    <span>
+		        <i data-lucide="clock" size="14"></i>
+		        8 min read
+		    </span>
 
-            <span>
-                <i data-lucide="brain-circuit" size="14"></i>
-                Machine Learning
-            </span>
-        </div>
+		    <span>
+		        <i data-lucide="brain-circuit" size="14"></i>
+		        Machine Learning
+		    </span>
+		</div>
 
-        <a href="/insights/detail" class="btn btn-primary">
-            Read Full Guide
-            <i data-lucide="arrow-right" size="16"></i>
-        </a>
+		<a href="/insights/detail" class="btn btn-primary">
+		    Read Full Guide
+		    <i data-lucide="arrow-right" size="16"></i>
+		</a>
 
-    </div>
+	    </div>
 
-</section>
+	</section>
 
       <div class="insights-grid" id="insightsGrid">
         <!-- Dynamic content injected here -->
@@ -138,58 +138,63 @@
     {% include 'includes/sticky_footer.html' %}
 
     <script>
-      let insightsData = []; // Store fetched data here
-let activeCategory = "all";
-let searchQuery = "";
+     	 let insightsData = []; // Store fetched data here
+	let activeCategory = "all";
+	let searchQuery = "";
 
-// New function to fetch from FastAPI
-async function fetchInsights() {
-    try {
-        const response = await fetch('http://localhost:8000/api/v1/insights'); // Ensure this matches your route
-        if (!response.ok) throw new Error("Failed to fetch");
-        insightsData = await response.json();
-        
-        renderInsights();
-    } catch (err) {
-        console.error("Error fetching insights:", err);
-    }
-}
+	// New function to fetch from FastAPI
+	async function fetchInsights() {
+	    try {
+		const response = await fetch('http://localhost:8000/api/v1/insights'); // Ensure this matches your route
+		if (!response.ok) throw new Error("Failed to fetch");
+		insightsData = await response.json();
+		
+		renderInsights();
+	    } catch (err) {
+		console.error("Error fetching insights:", err);
+	    }
+	}
 
-// Update the renderInsights function to handle empty states better
-function renderInsights() {
-    const grid = document.getElementById("insightsGrid");
-    const emptyState = document.getElementById("emptyState");
-    const featured = document.getElementById("featuredSection");
+	// Update the renderInsights function to handle empty states better
+	function renderInsights() {
+	    const grid = document.getElementById("insightsGrid");
+	    const emptyState = document.getElementById("emptyState");
+	    const featured = document.getElementById("featuredSection");
 
-    const filtered = insightsData.filter((item) => {
-        const matchesCat = activeCategory === "all" || item.category === activeCategory;
-        const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCat && matchesSearch;
-    });
+	    const filtered = insightsData.filter((item) => {
+		const matchesCat = activeCategory === "all" || item.category === activeCategory;
+		const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+		return matchesCat && matchesSearch;
+	    });
 
-    featured.style.display = (activeCategory !== "all" || searchQuery !== "") ? "none" : "grid";
-    emptyState.style.display = filtered.length === 0 ? "block" : "none";
+	    featured.style.display = (activeCategory !== "all" || searchQuery !== "") ? "none" : "grid";
+	    emptyState.style.display = filtered.length === 0 ? "block" : "none";
+	    
+	    grid.innerHTML = filtered.map(item => {
+	    // Generate the slug for EACH specific item
+	    const titleSlug = encodeURIComponent(item.title.toLowerCase().replace(/\s+/g, '-'));
+	    
+	    return `
+		<a href="/api/v1/insights/${titleSlug}" class="insight-card">
+		    <div class="card-img-box">
+		        <span class="card-tag">${item.category}</span>
+		        <img src="${item.image_url}" alt="${item.title}">
+		    </div>
+		    <div class="card-body">
+		        <h3>${item.title}</h3>
+		        <p>${item.content.substring(0, 100)}...</p>
+		    </div>
+		</a>
+	    `;
+	}).join("");
 
-    grid.innerHTML = filtered.map(item => `
-        <a href="/insights/${item.task_id}" class="insight-card">
-            <div class="card-img-box">
-                <span class="card-tag">${item.category}</span>
-                <img src="${item.image_url}" alt="${item.title}">
-            </div>
-            <div class="card-body">
-                <h3>${item.title}</h3>
-                <p>${item.content.substring(0, 100)}...</p>
-            </div>
-        </a>
-    `).join("");
+	    lucide.createIcons();
+	}
 
-    lucide.createIcons();
-}
-
-// Initialize on load
-window.addEventListener("DOMContentLoaded", () => {
-    fetchInsights();
-});
+	// Initialize on load
+	window.addEventListener("DOMContentLoaded", () => {
+	    fetchInsights();
+	});
     </script>
   </body>
 </html>
