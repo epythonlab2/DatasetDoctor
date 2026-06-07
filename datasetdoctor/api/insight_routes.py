@@ -4,28 +4,34 @@ from fastapi import APIRouter, HTTPException, Request
 
 # Assuming you have initialized your supabase client
 from datasetdoctor.core.db import supabase
-
+from fastapi.templating import Jinja2Templates
+from datasetdoctor.core.logger import logger
+from datasetdoctor.core import config
 from .schemas import Insight
+from cachetools import TTLCache
 
 insight_router = APIRouter(prefix="/api/v1", tags=["Insights"])
 
+# Initialize templates (assuming TEMPLATES_DIR is a Path object from your config)
+templates = Jinja2Templates(directory=str(config.TEMPLATES_DIR))
+
+# Create a cache: 100 items max, expires after 60 seconds
+insights_cache = TTLCache(maxsize=100, ttl=60)
 
 @insight_router.get("/insights")
 def get_insights(request: Request, limit: int = 100):
-    """
-    Retrieves engineering insights from Supabase.
-    """
-    # 1. Match the key name used in your lifespan (app.state.insight_logger)
-    insight_sys = getattr(request.app.state, "insight_logger", None)
+    # Create a unique key based on the limit
+    cache_key = f"insights_limit_{limit}"
+    
+    # Check if data exists in cache
+    if cache_key in insights_cache:
+        return insights_cache[cache_key]
 
+    insight_sys = getattr(request.app.state, "insight_logger", None)
     if not insight_sys:
-        print("[INSIGHT ERROR] insight_logger not initialized in app.state")
         return []
 
     try:
-        # 2. Query Supabase
-        # Note: Ensure table name is 'insights' (plural) and column is 'created_at' 
-        # to match your SQL schema
         response = (
             insight_sys.supabase.table("insights")
             .select("*")
@@ -33,13 +39,48 @@ def get_insights(request: Request, limit: int = 100):
             .limit(limit)
             .execute()
         )
-
-        # 3. Return the full data list (response.data), not just index [0]
+        
+        # Save to cache
+        insights_cache[cache_key] = response.data
         return response.data
 
     except Exception as e:
-        print(f"[INSIGHT ERROR] Supabase fetch failed: {e}")
+        logger.error(f"[INSIGHT ERROR] Supabase fetch failed: {e}")
         return []
+        
+@insight_router.get("/insights/{title_slug}")
+async def get_insight_detail(request: Request, title_slug: str):
+    insight_sys = getattr(request.app.state, "insight_logger", None)
+    
+    try:
+        # Use .execute() without .single() to be safer and match the data structure
+        response = (
+            insight_sys.supabase.table("insights")
+            .select("*")
+            .eq("slug", title_slug)
+            .execute()
+        )
+        
+        # Check if data exists in the list
+        if not response.data:
+            return {"error": "Insight not found"}
+            
+        # If using .execute() (no .single()), the object is in response.data[0]
+        insight_item = response.data[0]
+        logger.info(insight_item)
+        
+        return templates.TemplateResponse(
+            name="detail.html", 
+            request=request, 
+            context={"insight": insight_item}
+        )
+        
+    except Exception as e:
+        # Don't return a JSON dict here if the template expects an HTML page
+        # It will break your UI. Print to terminal instead.
+        print(f"Error: {e}")
+        return {"error": str(e)}
+        
 '''        
 @insight_router.get("/insights")
 async def get_insight(task_id: str):

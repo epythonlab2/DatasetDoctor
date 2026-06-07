@@ -9,6 +9,7 @@ class Insight(BaseModel):
     title: str
     category: str
     content: str
+    slug: str
     image_url: str
     created_at: Optional[datetime] = None
 

@@ -531,7 +531,6 @@ a {
     font-size     : 0.8rem;
     font-weight   : 400;
     color         : #64748b;
-    /* FIX        : Changed from #94a3b8 to #64748b (Slate-500) -> 4.1:1 Ratio. For text under 14pt/0.8rem, use #475569 for strict AA compliance */
     letter-spacing: 0.02em;
 }
 
@@ -539,14 +538,12 @@ a {
     font-size  : 0.9rem;
     line-height: 1.6;
     color      : #475569;
-    /* FIX     : Changed from #94a3b8 to #475569 (Slate-600) -> 5.14:1 Ratio */
     max-width  : 500px;
     margin     : 0 auto;
 }
 
 .footer-copy strong {
     color      : #0f172a;
-    /* FIX     : Changed from #f8fafc to #0f172a (Slate-900) for deep text emphasis -> 19.3:1 Ratio */
     font-weight: 600;
 }
 
@@ -558,10 +555,8 @@ a {
 .footer-link-item {
     text-decoration: none;
     color          : #475569;
-    /* FIX         : Changed from #94a3b8 to #475569 (Slate-600) -> 5.14:1 Ratio */
     font-size      : 0.875rem;
     font-weight    : 500;
-    /* Shifted to 500 for enhanced character crispness on thin fonts */
     position       : relative;
     display        : inline-block;
     transition     : color 0.3s cubic-bezier(0.25, 1, 0.5, 1);
@@ -570,144 +565,9 @@ a {
 /* Dynamic Hover Interaction */
 .footer-link-item:hover {
     color : var(--primary);
-    /* FIX: Hover shifts smoothly to deep Slate-900 */
 }
 
-/* --- Progress Bar --- */
-.progress-container {
-    position  : fixed;
-    top       : 0;
-    left      : 0;
-    width     : 100%;
-    height    : 4px;
-    background: transparent;
-    z-index   : 1001;
-}
 
-#progress-bar {
-    height    : 100%;
-    background: var(--primary);
-    width     : 0%;
-    transition: width 0.1s ease;
-}
-
-/* --- Article Specific Classes --- */
-.article-hero {
-    padding      : clamp(2rem, 6vw, 4rem) 0 3rem;
-    background   : white;
-    border-bottom: 1px solid var(--border);
-}
-
-.content-width {
-    max-width: var(--max-width-content);
-    margin   : 0 auto;
-    padding  : 0 var(--gutter);
-}
-
-.category-badge {
-    display       : inline-flex;
-    padding       : 0.4rem 1rem;
-    background    : var(--primary-light);
-    color         : var(--primary);
-    border-radius : 999px;
-    font-size     : 0.75rem;
-    font-weight   : 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom : 1.5rem;
-}
-
-.article-title {
-    font-size     : clamp(2rem, 5vw, 3.5rem);
-    font-weight   : 900;
-    line-height   : 1.15;
-    letter-spacing: -0.04em;
-    margin-bottom : 2rem;
-}
-
-.article-meta {
-    display    : flex;
-    flex-wrap  : wrap;
-    align-items: center;
-    gap        : 1rem 2rem;
-    color      : var(--text-muted);
-    font-size  : 0.9rem;
-    font-weight: 500;
-}
-
-.meta-item {
-    display    : inline-flex;
-    align-items: center;
-    gap        : 0.5rem;
-}
-
-.article-body {
-    padding   : clamp(2rem, 6vw, 4rem) 0;
-    background: var(--bg-main);
-}
-
-.feature-image {
-    width        : 100%;
-    height       : auto;
-    border-radius: var(--radius-lg);
-    margin-bottom: 3rem;
-    box-shadow   : 0 20px 40px rgba(0, 0, 0, 0.05);
-}
-
-.prose p {
-    font-size    : clamp(1rem, 2.5vw, 1.125rem);
-    line-height  : 1.7;
-    margin-bottom: 2rem;
-    color        : #334155;
-}
-
-.prose h2 {
-    font-size     : clamp(1.4rem, 4vw, 1.875rem);
-    font-weight   : 800;
-    margin        : 3.5rem 0 1.5rem;
-    letter-spacing: -0.02em;
-}
-
-.takeaway-box {
-    background   : white;
-    border-left  : 4px solid var(--primary);
-    padding      : clamp(1.25rem, 4vw, 2rem);
-    border-radius: 1rem;
-    margin       : 3rem 0;
-    box-shadow   : 0 4px 12px rgba(0, 0, 0, 0.03);
-}
-
-.takeaway-box h4 {
-    color         : var(--primary);
-    text-transform: uppercase;
-    font-size     : 0.75rem;
-    font-weight   : 800;
-    margin-bottom : 0.5rem;
-}
-
-.code-block {
-    background   : #0f172a;
-    color        : #e2e8f0;
-    padding      : 1.25rem;
-    border-radius: 1rem;
-    font-family  : 'JetBrains Mono', monospace;
-    font-size    : 0.875rem;
-    overflow-x   : auto;
-    margin       : 2.5rem 0;
-    border       : 1px solid rgba(255, 255, 255, 0.1);
-    white-space  : pre;
-}
-
-.code-header {
-    display        : flex;
-    justify-content: space-between;
-    align-items    : center;
-    margin-bottom  : 1rem;
-    padding-bottom : 0.75rem;
-    border-bottom  : 1px solid rgba(255, 255, 255, 0.1);
-    font-size      : 0.75rem;
-    color          : #94a3b8;
-}
 /* ==========================================================================
    HERO SECTION & SEARCH
    ========================================================================== */
@@ -1104,25 +964,33 @@ a { text-decoration: none; }
    UTILITIES & ARTICLE COMPONENTS
    ========================================================================== */
 
+/* ==========================================================================
+   PROGRESS BAR
+   ========================================================================== */
+
 .progress-container {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 4px;
+    z-index: 9999; /* Higher than your header */
     background: transparent;
-    z-index: 1001;
 }
 
 #progress-bar {
     height: 100%;
-    background: var(--primary);
+    background: var(--primary); /* Ensure this variable is defined */
     width: 0%;
-    transition: width 0.1s ease;
+    transition: width 0.1s ease-out;
 }
 
+/* ==========================================================================
+   ARTICLE HERO
+   ========================================================================== */
+
 .article-hero {
-    padding: clamp(2rem, 6vw, 4rem) 0 3rem;
+    padding: 4rem 0 3rem;
     background: white;
     border-bottom: 1px solid var(--border);
 }
@@ -1133,9 +1001,11 @@ a { text-decoration: none; }
     padding: 0 var(--gutter);
 }
 
+
 .category-badge {
     display: inline-flex;
     padding: 0.4rem 1rem;
+    margin-bottom: 1.5rem;
     background: var(--primary-light);
     color: var(--primary);
     border-radius: 999px;
@@ -1143,21 +1013,19 @@ a { text-decoration: none; }
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: 1.5rem;
 }
 
 .article-title {
+    margin-bottom: 2rem;
     font-size: clamp(2rem, 5vw, 3.5rem);
     font-weight: 900;
     line-height: 1.15;
     letter-spacing: -0.04em;
-    margin-bottom: 2rem;
 }
 
 .article-meta {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
     gap: 1rem 2rem;
     color: var(--text-muted);
     font-size: 0.9rem;
@@ -1170,61 +1038,89 @@ a { text-decoration: none; }
     gap: 0.5rem;
 }
 
+/* ==========================================================================
+   ARTICLE BODY & PROSE
+   ========================================================================== */
+
 .article-body {
-    padding: clamp(2rem, 6vw, 4rem) 0;
-    background: var(--bg-main);
+    padding: 4rem 0;
 }
 
 .feature-image {
     width: 100%;
     height: auto;
-    border-radius: var(--radius-lg);
     margin-bottom: 3rem;
+    border-radius: var(--radius-lg);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
 }
 
 .prose p {
-    font-size: clamp(1rem, 2.5vw, 1.125rem);
-    line-height: 1.7;
     margin-bottom: 2rem;
     color: #334155;
+    font-size: 1.125rem;
+    line-height: 1.7;
 }
 
 .prose h2 {
-    font-size: clamp(1.4rem, 4vw, 1.875rem);
-    font-weight: 800;
     margin: 3.5rem 0 1.5rem;
-    letter-spacing: -0.02em;
+    font-size: 1.875rem;
+    font-weight: 800;
 }
 
 .takeaway-box {
-    background: white;
-    border-left: 4px solid var(--primary);
-    padding: clamp(1.25rem, 4vw, 2rem);
-    border-radius: 1rem;
+    padding: 1.5rem 2rem;
     margin: 3rem 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    background: #fff !important;
+    border-left: 4px solid var(--primary);
+    border-radius: 0 12px 12px 0;
 }
 
 .takeaway-box h4 {
+    margin-bottom: 0.5rem;
     color: var(--primary);
-    text-transform: uppercase;
     font-size: 0.75rem;
     font-weight: 800;
-    margin-bottom: 0.5rem;
+    text-transform: uppercase;
 }
 
+.related-articles {
+    padding: 1rem 0 4rem;
+    margin-top:0 !important;
+}
+
+.related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.related-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: white;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.related-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+/* ==========================================================================
+   CODE BLOCKS
+   ========================================================================== */
+
 .code-block {
+    position: relative;
+    padding: 1rem 0;
     background: #0f172a;
     color: #e2e8f0;
-    padding: 1.25rem;
-    border-radius: 1rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.875rem;
+    border-radius: 12px;
+    font-family: 'Courier New', Courier, monospace;
     overflow-x: auto;
-    margin: 2.5rem 0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    white-space: pre;
 }
 
 .code-header {
@@ -1232,11 +1128,35 @@ a { text-decoration: none; }
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.75rem;
+    padding: 0 1rem; /* Keeps header aligned */
     color: #94a3b8;
+    font-size: 0.75rem;
 }
+
+/* This is the critical block to strip all default spacing */
+.code-block code {
+    display: block;
+    margin: 0 !important;   /* Force override */
+    padding: 0 !important;  /* Force override */
+    padding-left: 0.5rem !important; /* Tiny gap so text doesn't touch the edge */
+    white-space: pre;       /* Keeps your code formatting */
+}
+
+.copy-btn {
+    padding: 0.25rem 0.5rem;
+    background: none;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.copy-btn:hover {
+    background: #334155;
+    color: #fff;
+}
+
 
 /* ==========================================================================
    RESPONSIVE OVERRIDES
