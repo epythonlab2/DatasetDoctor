@@ -39,63 +39,19 @@
    
     <main >
      <div class="progress-container"><div id="progress-bar"></div></div>
-      <header class="article-hero">
-	  <div class="content-width">
-	    <span class="category-badge">{{ insight.category }}</span>
-	    <h1 class="article-title">
-	      {{ insight.title }}
-	    </h1>
-	    <div class="article-meta">
-	      <div class="meta-item">
-		<i data-lucide="user" size="16"></i> Epython Lab
-	      </div>
-	      <div class="meta-item">
-		<i data-lucide="calendar" size="16"></i> {{ insight.created_at }}
-	      </div>
-	      <div class="meta-item">
-		<i data-lucide="clock" size="16"></i> 10 min read
-	      </div>
-	    </div>
-	  </div>
-	</header>
+    <header class="article-hero" id="article-hero">
+    </header>
 
-	<article class="article-body">
-	  <div class="content-width prose">
-	    <img
-	      src="{{ insight.image_url }}"
-	      alt="{{ insight.title }}"
-	      class="feature-image"
-	    />
-
-	    {{ insight.content | safe }}
-	  </div>
-</article>
+	<article class="article-body" id="article-body">
+  	
+  	  </article>
       
     	 <section class="related-articles">
 	    <div class="content-width">
 		<h2 style="font-size: 1.5rem; margin-bottom: 2rem; color: #0f172a;">Related Insights</h2>
 		
-		<div class="related-grid">
-		    <article class="related-card">
-		        <span class="category-badge">Data Cleaning</span>
-		        <h3 style="font-size: 1.1rem; margin: 0.5rem 0;">Handling Outliers in Financial Data</h3>
-		        <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">Techniques to identify and manage anomalies that skew your models.</p>
-		        <a href="#" style="color: var(--primary); font-weight: 600; font-size: 0.85rem; text-decoration: none;">Read more &rarr;</a>
-		    </article>
-
-		    <article class="related-card">
-		        <span class="category-badge">Feature Engineering</span>
-		        <h3 style="font-size: 1.1rem; margin: 0.5rem 0;">The Art of Feature Scaling</h3>
-		        <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">Why normalizing your inputs is the silent hero of model accuracy.</p>
-		        <a href="#" style="color: var(--primary); font-weight: 600; font-size: 0.85rem; text-decoration: none;">Read more &rarr;</a>
-		    </article>
-
-		    <article class="related-card">
-		        <span class="category-badge">Model Validation</span>
-		        <h3 style="font-size: 1.1rem; margin: 0.5rem 0;">Cross-Validation vs. Holdout Sets</h3>
-		        <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">Choosing the right strategy to ensure your model generalizes well.</p>
-		        <a href="#" style="color: var(--primary); font-weight: 600; font-size: 0.85rem; text-decoration: none;">Read more &rarr;</a>
-		    </article>
+		<div class="related-grid" id="related-grid">
+		    <p>Loading related insights...</p>
 		</div>
 	    </div>
 	</section>
@@ -106,26 +62,23 @@
          ========================================== -->
     {% include 'includes/sticky_footer.html' %}
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            lucide.createIcons();
+    <script type="module">
+    import { loadArticleDetail, fetchRelatedInsights } from '/static/js/insight/insight_detail.js';
 
-            window.addEventListener('scroll', () => {
-                const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-                document.getElementById("progress-bar").style.width = scrolled + "%";
-            });
+    document.addEventListener("DOMContentLoaded", () => {
+        const currentSlug = "{{ slug }}";
+        
+        // Initialize everything
+        lucide.createIcons();
+        loadArticleDetail(currentSlug);
+        fetchRelatedInsights(currentSlug);
 
-            document.querySelectorAll('.copy-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const code = e.target.closest('.code-block').querySelector('code').innerText;
-                    navigator.clipboard.writeText(code).then(() => {
-                        const originalText = e.target.innerText;
-                        e.target.innerText = 'Copied!';
-                        setTimeout(() => e.target.innerText = originalText, 2000);
-                    });
-                });
-            });
+        // Progress bar logic remains here if it's page-specific
+        window.addEventListener('scroll', () => {
+            const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            document.getElementById("progress-bar").style.width = scrolled + "%";
         });
-    </script>
+    });
+</script>
   </body>
 </html>
