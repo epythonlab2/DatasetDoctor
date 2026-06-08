@@ -963,28 +963,20 @@ a { text-decoration: none; }
 /* ==========================================================================
    UTILITIES & ARTICLE COMPONENTS
    ========================================================================== */
-
-/* ==========================================================================
-   PROGRESS BAR
-   ========================================================================== */
-
-.progress-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    z-index: 9999; /* Higher than your header */
-    background: transparent;
+/* Loading */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-pulse 1.5s infinite;
+    border-radius: 8px;
 }
 
-#progress-bar {
-    height: 100%;
-    background: var(--primary); /* Ensure this variable is defined */
-    width: 0%;
-    transition: width 0.1s ease-out;
+@keyframes skeleton-pulse {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
+.insight-card.skeleton { height: 300px; }
 /* ==========================================================================
    ARTICLE HERO
    ========================================================================== */
@@ -1005,6 +997,7 @@ a { text-decoration: none; }
 .category-badge {
     display: inline-flex;
     padding: 0.4rem 1rem;
+    margin-top:0.5rem;
     margin-bottom: 1.5rem;
     background: var(--primary-light);
     color: var(--primary);

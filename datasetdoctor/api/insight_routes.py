@@ -1,29 +1,38 @@
 from datetime import datetime
-
 from fastapi import APIRouter, HTTPException, Request
-
-# Assuming you have initialized your supabase client
-from datasetdoctor.core.db import supabase
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from cachetools import TTLCache
+
+from datasetdoctor.core.db import supabase
 from datasetdoctor.core.logger import logger
 from datasetdoctor.core import config
 from .schemas import Insight
-from cachetools import TTLCache
 
-insight_router = APIRouter(prefix="/api/v1", tags=["Insights"])
+# 1. Router Setup
+insight_router = APIRouter(prefix="/api/v1", tags=["Insights API"])
+web_router = APIRouter(tags=["Web Pages"])
 
-# Initialize templates (assuming TEMPLATES_DIR is a Path object from your config)
 templates = Jinja2Templates(directory=str(config.TEMPLATES_DIR))
+insights_cache = TTLCache(maxsize=100, ttl=60*60)
 
-# Create a cache: 100 items max, expires after 60 seconds
-insights_cache = TTLCache(maxsize=100, ttl=60)
+# --- WEB ROUTES ---
+
+@web_router.get("/insights/{slug}", response_class=HTMLResponse)
+async def get_detail_page(request: Request, slug: str):
+    """Renders the insight detail page shell."""
+    return templates.TemplateResponse(
+        request=request, 
+        name="detail.html", 
+        context={"slug": slug}
+    )
+
+# --- API ROUTES ---
 
 @insight_router.get("/insights")
 def get_insights(request: Request, limit: int = 100):
-    # Create a unique key based on the limit
+    """Fetch all insights with simple TTL caching."""
     cache_key = f"insights_limit_{limit}"
-    
-    # Check if data exists in cache
     if cache_key in insights_cache:
         return insights_cache[cache_key]
 
@@ -32,94 +41,90 @@ def get_insights(request: Request, limit: int = 100):
         return []
 
     try:
-        response = (
-            insight_sys.supabase.table("insights")
-            .select("*")
-            .order("created_at", desc=True)
-            .limit(limit)
+        response = insight_sys.supabase.table("insights")\
+            .select("*")\
+            .order("created_at", desc=True)\
+            .limit(limit)\
             .execute()
-        )
         
-        # Save to cache
         insights_cache[cache_key] = response.data
         return response.data
-
     except Exception as e:
-        logger.error(f"[INSIGHT ERROR] Supabase fetch failed: {e}")
+        logger.error(f"Failed to fetch insights: {e}")
         return []
         
-@insight_router.get("/insights/{title_slug}")
-async def get_insight_detail(request: Request, title_slug: str):
+
+@insight_router.get("/insights/{slug}")
+async def get_insight_detail(request: Request, slug: str):
+    # 1. Use the slug as a unique cache key
+    cache_key = f"insight_detail_{slug}"
+    if cache_key in insights_cache:
+        return insights_cache[cache_key]
+
+    insight_sys = getattr(request.app.state, "insight_logger", None)
+    if not insight_sys:
+        raise HTTPException(status_code=500, detail="Service unavailable")
+
+    try:
+        response = insight_sys.supabase.table("insights")\
+            .select("*").eq("slug", slug).execute()
+
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Insight not found")
+        
+        item = response.data[0]
+        
+        # Formatting
+        raw_date = item.get("created_at", "2026-01-01T00:00:00+00:00")
+        try:
+            dt = datetime.fromisoformat(raw_date.replace("Z", "+00:00"))
+            item["date_formatted"] = dt.strftime("%B %d, %Y")
+        except ValueError:
+            item["date_formatted"] = "Date Unknown"
+
+        # 2. Store specific result in cache
+        insights_cache[cache_key] = item
+        return item
+    except Exception as e:
+        logger.error(f"API Error fetching insight {slug}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+        
+
+@insight_router.get("/insights/{slug}/related")
+async def get_related_insights(request: Request, slug: str):
+    # 1. Use unique key for related articles
+    cache_key = f"related_{slug}"
+    if cache_key in insights_cache:
+        return insights_cache[cache_key]
+        
     insight_sys = getattr(request.app.state, "insight_logger", None)
     
-    try:
-        # Use .execute() without .single() to be safer and match the data structure
-        response = (
-            insight_sys.supabase.table("insights")
-            .select("*")
-            .eq("slug", title_slug)
-            .execute()
-        )
+    current = insight_sys.supabase.table("insights")\
+        .select("category, id").eq("slug", slug).single().execute()
+    
+    if not current.data:
+        return []
         
-        # Check if data exists in the list
-        if not response.data:
-            return {"error": "Insight not found"}
-            
-        # If using .execute() (no .single()), the object is in response.data[0]
-        insight_item = response.data[0]
-        logger.info(insight_item)
+    related = insight_sys.supabase.table("insights")\
+        .select("*")\
+        .eq("category", current.data['category'])\
+        .neq("id", current.data['id'])\
+        .limit(3).execute()
         
-        return templates.TemplateResponse(
-            name="detail.html", 
-            request=request, 
-            context={"insight": insight_item}
-        )
-        
-    except Exception as e:
-        # Don't return a JSON dict here if the template expects an HTML page
-        # It will break your UI. Print to terminal instead.
-        print(f"Error: {e}")
-        return {"error": str(e)}
-        
-'''        
-@insight_router.get("/insights")
-async def get_insight(task_id: str):
-    # Remove .single() and use .execute()
-    response = supabase.table("insights").select("*").execute()
-
-    # Check if the data list is empty
-    if not response.data:
-        raise HTTPException(status_code=404, detail="Insight not found")
-
-    # Return the first item from the list
-    return response.data[0]
-'''
+    # 2. Store specific related result
+    insights_cache[cache_key] = related.data
+    return related.data
+    
 
 @insight_router.post("/insights")
 async def create_insight(insight: Insight):
+    """Create a new insight record."""
     data = insight.model_dump(exclude_unset=True)
-
-    # Handle datetime serialization
     if isinstance(data.get("created_at"), datetime):
         data["created_at"] = data["created_at"].isoformat()
 
-    # Capture the response and return it to the caller
     response = supabase.table("insights").insert(data).execute()
-
-    # Return the first row of the inserted data
-    # This provides the client with the full record including the DB-generated ID
     return {
-        "message": f"Insight for {insight.task_id} saved.",
+        "message": "Insight saved.",
         "insight": response.data[0] if response.data else None,
     }
-
-
-# FastAPI search logic
-@insight_router.get("/insights/search/{query}")
-async def search_insights(query: str):
-    # PostgreSQL websearch_to_tsquery handles natural language better than plain to_tsquery
-    response = supabase.rpc(
-        "search_insights_function",  # You would create this helper function in SQL
-        {"query_text": query},
-    ).execute()
-    return response.data

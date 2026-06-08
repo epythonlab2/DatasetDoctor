@@ -1,146 +1,107 @@
 /**
- * API Module (CSP-safe + Deterministic Identity Injection)
+ * API Module
+ * Centralized interface for all backend communication.
+ * All requests are automatically protected with X-Client-ID and include retry logic.
  */
 
 import { getOrCreateClientId } from './utils/identity.js';
 
-/* ---------- URL Builder ---------- */
+const BASE_URL = '/api/v1';
 
-const getUrl = (path) => {
-    const origin = window.location.origin;
-    return origin + (path.startsWith('/') ? '' : '/') + path;
-};
-
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-/* ---------- Identity Guard ---------- */
-
+/**
+ * Ensures a valid client identity exists before making requests.
+ */
 function safeClientId() {
     const id = getOrCreateClientId();
-
-    //console.log("[IDENTITY] Client ID:", id);
-
     if (!id || id === "null" || id === "undefined") {
-        throw new Error("[CRITICAL] Client identity missing or invalid.");
+        throw new Error("[CRITICAL] Client identity missing.");
     }
-
     return id;
 }
 
-/* ---------- Core API ---------- */
+/**
+ * Builds a full URL from a relative path.
+ */
+const getUrl = (path) => `${window.location.origin}${path.startsWith('/') ? '' : '/'}${path}`;
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const API = {
-
     getUrl,
 
-      /* ---------- Core Request Handler ---------- */
+    /**
+     * Core Request Handler: Unified logic for all network requests.
+     */
+    async fetchWithRetry(url, options = {}, retries = 3) {
+        const headers = {
+            "Content-Type": "application/json",
+            "X-Client-ID": safeClientId(),
+            ...(options.headers || {})
+        };
 
-	async fetchWithRetry(url, options = {}, retries = 30) {
-	    const headers = {
-		...(options.headers || {}),
-		"X-Client-ID": safeClientId()
-	    };
+        for (let i = 0; i < retries; i++) {
+            try {
+                const res = await fetch(url, { ...options, headers, credentials: "same-origin" });
 
-	    for (let i = 0; i < retries; i++) {
-		try {
-		    const res = await fetch(url, { 
-		        ...options, 
-		        headers,
-		        credentials: "same-origin"
-		    });
+                if (res.status === 425) return null; // Server not ready
+                if ((res.status === 404 || res.status === 504) && i < retries - 1) {
+                    await sleep(500 * (i + 1));
+                    continue;
+                }
 
-		    // ✅ Handle NOT READY explicitly
-		    if (res.status === 425) {
-		        return null; // Don't throw
-		    }
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ detail: `Error ${res.status}` }));
+                    throw new Error(err.detail || "Server Error");
+                }
 
-		    // ✅ Retry infra issues only
-		    if ((res.status === 404 || res.status === 504) && i < retries - 1) {
-		        await sleep(500 * (i + 1));
-		        continue;
-		    }
+                return await res.json();
+            } catch (err) {
+                if (i === retries - 1) throw err;
+                await sleep(300);
+            }
+        }
+    },
 
-		    if (!res.ok) {
-		        const errBody = await res.json().catch(() => ({ detail: `Error ${res.status}` }));
-		        throw new Error(errBody.detail || `Server Error: ${res.status}`);
-		    }
+    /* ---------- Upload (XHR for progress tracking) ---------- */
 
-		    return await res.json();
-
-		} catch (err) {
-		    if (i === retries - 1) throw err;
-		    await sleep(300);
-		}
-	    }
-	},
-
-    /* ---------- Upload (XHR for progress) ---------- */
-
-    uploadFile(file, onProgress) {
+    async uploadFile(file, onProgress) {
         return new Promise((resolve, reject) => {
-
             const xhr = new XMLHttpRequest();
             const formData = new FormData();
             formData.append("file", file);
 
             xhr.upload.onprogress = (e) => {
                 if (e.lengthComputable && onProgress) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    onProgress(percent);
+                    onProgress(Math.round((e.loaded / e.total) * 100));
                 }
             };
 
             xhr.onload = () => {
-                if (xhr.status === 200) {
-                    try {
-                        resolve(JSON.parse(xhr.responseText));
-                    } catch {
-                        reject(new Error("Malformed server response."));
-                    }
-                } else {
-                    reject(new Error(`Upload failed: ${xhr.status}`));
-                }
+                if (xhr.status === 200) resolve(JSON.parse(xhr.responseText));
+                else reject(new Error(`Upload failed: ${xhr.status}`));
             };
 
             xhr.onerror = () => reject(new Error("Network error during upload."));
-
             xhr.open("POST", getUrl("/upload"));
-
-            // ✅ Inject identity consistently
             xhr.setRequestHeader("X-Client-ID", safeClientId());
-
             xhr.send(formData);
         });
     },
 
-    /* ---------- Data Retrieval ---------- */
+    /* ---------- Data Retrieval & Actions ---------- */
 
-    async fetchAnalysis(id) {
-        
-        return this.fetchWithRetry(getUrl(`/analysis/${id}`));
-    },
-
-    async fetchMeta(id) {
-        // This hits @router.get("/get_meta/{dataset_id}")
-        // fetchWithRetry will handle the JSON parsing automatically
-        return this.fetchWithRetry(getUrl(`/get_meta/${encodeURIComponent(id)}`));
-    },
-
-    /* ---------- api.js ---------- */
+    async fetchAnalysis(id) { return this.fetchWithRetry(getUrl(`/analysis/${id}`)); },
+    
+    async fetchMeta(id) { return this.fetchWithRetry(getUrl(`/get_meta/${encodeURIComponent(id)}`)); },
+    
     async fetchPreview(id) {
-	  // Crucial: Point to /api/ to get JSON, not /dashboard/ to get HTML
-	  localStorage.setItem("dataset_id", id);
-	  return this.fetchWithRetry(getUrl(`/api/v1/preview/${encodeURIComponent(id)}`));
+        localStorage.setItem("dataset_id", id);
+        return this.fetchWithRetry(getUrl(`${BASE_URL}/preview/${encodeURIComponent(id)}`));
     },
-
-    /* ---------- Data Actions ---------- */
 
     async setTarget(id, target) {
         return this.fetchWithRetry(getUrl(`/set-target/${encodeURIComponent(id)}`), {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
             body: JSON.stringify({ target })
         });
     },
@@ -148,66 +109,40 @@ export const API = {
     async cleanDataset(id, payload = { action: 'remove_duplicates' }) {
         return this.fetchWithRetry(getUrl(`/clean/${id}`), {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
             body: JSON.stringify(payload)
         });
     },
 
-    /* ---------- Export ---------- */
-    async verifyExport(id) {
-	    const response = await fetch(getUrl(`/export/${encodeURIComponent(id)}`), {
-		method: "GET"
-	    });
-
-	    if (!response.ok) {
-		// Try to parse the {"detail": "..."} from the backend
-		const errorData = await response.json().catch(() => ({}));
-		
-		// Create an error object and attach the detail
-		const error = new Error(errorData.detail || "Export verification failed");
-		error.detail = errorData.detail; 
-		error.status = response.status;
-		throw error;
-	    }
-
-	    return response; // Success
-	},
-   
-
-    /* ---------- System ---------- */
-
     async reset(datasetId) {
-        return this.fetchWithRetry(getUrl(`/reset/${encodeURIComponent(datasetId)}`), {
-            method: "POST"
-        });
+        return this.fetchWithRetry(getUrl(`/reset/${encodeURIComponent(datasetId)}`), { method: "POST" });
     },
-    
-    /* ---------- System Audit ---------- */
 
-    /**
-     * Fetches system audit logs from the backend.
-     * @param {number} limit - Number of logs to retrieve.
-     */
+    /* ---------- Audit & Insights ---------- */
+
     async fetchAuditLogs(limit = 100) {
-        // Use a relative path from the root or absolute to be safe in cloud
-        const url = `/audit/logs?limit=${limit}`;
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'x-client-id': localStorage.getItem('ds_doctor_client_id') || 'anonymous',
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`Server responded with ${response.status}`);
-        }
-
-        return await response.json();
+        return this.fetchWithRetry(getUrl(`/audit/logs?limit=${limit}`));
     },
+
+    async getInsights() {
+        return this.fetchWithRetry(getUrl(`${BASE_URL}/insights`));
+    },
+
+    async getRelatedInsights(slug) {
+        return this.fetchWithRetry(getUrl(`${BASE_URL}/insights/${slug}/related`));
+    },
+
+    async getArticle(slug) {
+        return this.fetchWithRetry(getUrl(`${BASE_URL}/data/insights/${slug}`));
+    },
+
+    async verifyExport(id) {
+        const response = await fetch(getUrl(`/export/${encodeURIComponent(id)}`));
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            const e = new Error(err.detail || "Export verification failed");
+            e.status = response.status;
+            throw e;
+        }
+        return response;
+    }
 };
-
-

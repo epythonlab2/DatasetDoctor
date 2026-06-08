@@ -37,6 +37,9 @@
     {% include 'includes/index_nav.html' %}
 
     <main class="dashboard-wrapper">
+      
+      <div class="progress-container"><div id="progress-bar"></div></div>
+      
       <header class="hero-section">
         <h1 class="hero-title">Insights for <span>Data-Centric AI</span></h1>
         <p class="hero-subtitle">
@@ -137,64 +140,44 @@
          ========================================== -->
     {% include 'includes/sticky_footer.html' %}
 
-    <script>
-     	 let insightsData = []; // Store fetched data here
-	let activeCategory = "all";
-	let searchQuery = "";
+   <script type="module">
+    // Import all necessary functions from your module
+    import { 
+        fetchAndRender, 
+        setSearchQuery, 
+        setActiveCategory 
+    } from '/static/js/insight/insights_gallery.js';
 
-	// New function to fetch from FastAPI
-	async function fetchInsights() {
-	    try {
-		const response = await fetch('http://localhost:8000/api/v1/insights'); // Ensure this matches your route
-		if (!response.ok) throw new Error("Failed to fetch");
-		insightsData = await response.json();
-		
-		renderInsights();
-	    } catch (err) {
-		console.error("Error fetching insights:", err);
-	    }
-	}
+    document.addEventListener("DOMContentLoaded", () => {
+        // 1. Initialize Icons
+        lucide.createIcons();
 
-	// Update the renderInsights function to handle empty states better
-	function renderInsights() {
-	    const grid = document.getElementById("insightsGrid");
-	    const emptyState = document.getElementById("emptyState");
-	    const featured = document.getElementById("featuredSection");
+        // 2. Fetch and render the initial state
+        fetchAndRender();
 
-	    const filtered = insightsData.filter((item) => {
-		const matchesCat = activeCategory === "all" || item.category === activeCategory;
-		const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
-		return matchesCat && matchesSearch;
-	    });
+        // 3. Search Input Listener
+        document.getElementById("searchInput").addEventListener("input", (e) => {
+            setSearchQuery(e.target.value);
+        });
 
-	    featured.style.display = (activeCategory !== "all" || searchQuery !== "") ? "none" : "grid";
-	    emptyState.style.display = filtered.length === 0 ? "block" : "none";
-	    
-	    grid.innerHTML = filtered.map(item => {
-	    // Generate the slug for EACH specific item
-	    const titleSlug = encodeURIComponent(item.title.toLowerCase().replace(/\s+/g, '-'));
-	    
-	    return `
-		<a href="/api/v1/insights/${titleSlug}" class="insight-card">
-		    <div class="card-img-box">
-		        <span class="card-tag">${item.category}</span>
-		        <img src="${item.image_url}" alt="${item.title}">
-		    </div>
-		    <div class="card-body">
-		        <h3>${item.title}</h3>
-		        <p>${item.content.substring(0, 100)}...</p>
-		    </div>
-		</a>
-	    `;
-	}).join("");
-
-	    lucide.createIcons();
-	}
-
-	// Initialize on load
-	window.addEventListener("DOMContentLoaded", () => {
-	    fetchInsights();
-	});
-    </script>
+        // 4. Filter Button Listeners
+        document.querySelectorAll(".filter-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                // Update UI state (active class)
+                document.querySelector(".filter-btn.active")?.classList.remove("active");
+                e.target.classList.add("active");
+                
+                // Update Logic state
+                setActiveCategory(e.target.dataset.category);
+            });
+        });
+        
+        // Progress bar logic remains here if it's page-specific
+        window.addEventListener('scroll', () => {
+            const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            document.getElementById("progress-bar").style.width = scrolled + "%";
+        });
+    });
+</script>
   </body>
 </html>

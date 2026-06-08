@@ -48,6 +48,8 @@
     <!-- ==========================================
          HERO SECTION
          ========================================== -->
+     
+     
     <header class="hero-header">
       <div class="hero-content">
         <h1 class="display-title">
@@ -104,7 +106,10 @@
         </div>
       </div>
     </header>
+    
     <main id="main-content">
+     
+      <div class="progress-container"><div id="progress-bar"></div></div>
       <!-- ==========================================
          DQS METRIC SECTION
          ========================================== -->
@@ -349,12 +354,21 @@
 
       // Push execution to the end of the event loop to free up the critical rendering path
       window.addEventListener("DOMContentLoaded", () => {
+      
         if (window.requestIdleCallback) {
           requestIdleCallback(() => getOrCreateClientId());
         } else {
           setTimeout(() => getOrCreateClientId(), 1);
         }
+        
+        // Progress bar logic remains here if it's page-specific
+        window.addEventListener('scroll', () => {
+            const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            document.getElementById("progress-bar").style.width = scrolled + "%";
+        });
+        
       });
+      
     </script>
   </body>
 </html>
