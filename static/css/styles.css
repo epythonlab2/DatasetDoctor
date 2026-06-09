@@ -2,6 +2,9 @@
    1. GLOBAL DESIGN SYSTEM & VARIABLES
    ========================================================================== */
 :root {
+    /* Font Family Setup */
+   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+   
     /* --- Core Brand Palette --- */
     --primary      : #4f46e5;
     --primary-hover: #4338ca;
@@ -46,6 +49,15 @@
 
     --shadow          : 0 4px 6px -1px rgb(0 0 0 / 0.1);
     --transition-speed: 0.2s;
+     /* Typography Scale */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-md: 1.125rem;    /* 18px */
+  --text-lg: 1.25rem;     /* 20px */
+  --text-xl: 1.5rem;      /* 24px */
+  --text-2xl: 2rem;       /* 32px */
+  --text-4xl: 3.5rem;     /* 56px */
 }
 
 /* ==========================================================================
@@ -69,12 +81,14 @@ body {
     flex-direction         : column;
     min-height             : 100vh;
     overflow-x             : hidden;
-    font-family            : 'Inter', sans-serif;
+    font-family: var(--font-family);
     background-color       : var(--bg-main);
     color                  : var(--text-main);
-    line-height            : 1.5;
+    font-size: var(--text-base);
+    line-height            : 1.6;
     -webkit-font-smoothing : antialiased;
     -moz-osx-font-smoothing: grayscale;
+
 }
 
 /* ==========================================================================
@@ -92,6 +106,11 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #cbd5e1;
+}
+/* 1. Prevent long words from breaking the mobile layout */
+h1, h2, h3, p {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
 }
 
 /* ==========================================================================
@@ -1617,7 +1636,7 @@ tr:last-child td {
 }
 
 /* ==========================================================================
-   PROGRESS BAR
+   HEADER PROGRESS BAR
    ========================================================================== */
 
 .progress-container {
@@ -1637,3 +1656,63 @@ tr:last-child td {
     transition: width 0.1s ease-out;
 }
 
+/* Loading State Skeleton */
+.fullscreen-loader {
+    position: fixed;
+    inset: 0;
+    background: #ffffff;
+    z-index: 99999;
+    
+    /* ADD THESE TWO LINES */
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+    visibility: visible; 
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fullscreen-loader.hidden {
+    opacity: 0;
+    visibility: hidden; /* This removes it from the layout flow */
+    pointer-events: none; /* This allows clicks to pass through to the page */
+}
+
+.loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem; /* Controls distance between logo, bar, and text */
+}
+
+.brand-logo img {
+    width: 64px; /* Adjust size to match your icon preference */
+    height: 64px;
+}
+
+.loader-progress-track {
+    width: 150px; /* Matches the width of the bar in your reference */
+    height: 3px;
+    background: #e5e7eb; /* Light grey track background */
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.loader-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--primary); /* Dark bar to match your reference */
+    transition: width 0.4s ease-out;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+.loader-content h2 {
+    font-size: 1.1rem;
+    color: #374151;
+    font-weight: 500;
+    margin: 0;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}

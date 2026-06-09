@@ -4,180 +4,106 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DatasetDoctor | ML Insights Hub</title>
-    <meta
-      name="description"
-      content="Data Engineering Insights, ML insights. Automate data cleaning, outlier detection, data leakage checks, handle missing data, and fix mismatches fast."
-    />
-
+    <meta name="description" content="Data Engineering Insights, ML insights. Automate data cleaning, outlier detection, data leakage checks, handle missing data, and fix mismatches fast." />
+    
     <link rel="icon" type="image/svg+xml" href="/static/icons/favicon.svg" />
 
-    <!-- ==========================================
-         STYLESHEETS
-         ========================================== -->
     <link rel="stylesheet" href="/static/css/styles.css" />
     <link rel="stylesheet" href="/static/css/custom_dialog.css" />
     <link rel="stylesheet" href="/static/css/land_page.css" />
     <link rel="stylesheet" href="/static/css/insights.css" />
 
-    <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-    <!-- ICONS -->
-    <script
-      src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"
-      defer
-    ></script>
+    <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js" defer></script>
   </head>
   <body>
+   
+    <!-- Loading State -->
+    <div id="fullscreen-loader" class="fullscreen-loader">
+      <div class="loader-content">
+        <div class="brand-logo">
+          <img src="/static/icons/favicon.svg" alt="Logo" />
+        </div>
+        <div class="loader-progress-track">
+          <div id="loader-progress-bar" class="loader-progress-bar"></div>
+        </div>
+      </div>
+    </div>
+  
     {% include 'includes/index_nav.html' %}
 
     <main class="dashboard-wrapper">
-      
-      <div class="progress-container"><div id="progress-bar"></div></div>
+      <div class="progress-container">
+        <div id="progress-bar"></div>
+      </div>
       
       <header class="hero-section">
         <h1 class="hero-title">Insights for <span>Data-Centric AI</span></h1>
-        <p class="hero-subtitle">
-          Master the methodologies for building high-fidelity datasets through
-          validation, cleaning, and leakage detection.
-        </p>
+        <p class="hero-subtitle">Master the methodologies for building high-fidelity datasets.</p>
 
         <div class="search-container">
           <i data-lucide="search" class="search-icon" size="20"></i>
-          <input
-            type="text"
-            id="searchInput"
-            class="search-input"
-            placeholder="Search patterns, leakage checks, validation guides..."
-          />
+          <input type="text" id="searchInput" class="search-input" placeholder="Search patterns..." />
         </div>
 
         <div class="filter-row" id="filterContainer">
-          <button class="filter-btn active" data-category="all">
-            All Topics
-          </button>
-          <button class="filter-btn" data-category="Validation">
-            Validation
-          </button>
+          <button class="filter-btn active" data-category="all">All Topics</button>
+          <button class="filter-btn" data-category="Validation">Validation</button>
           <button class="filter-btn" data-category="Cleaning">Cleaning</button>
           <button class="filter-btn" data-category="Leakage">Leakage</button>
-          <button class="filter-btn" data-category="Detection">
-            Detection
-          </button>
+          <button class="filter-btn" data-category="Detection">Detection</button>
         </div>
       </header>
 
-      	<section class="featured-insight" id="featuredSection">
-    
-	    <div class="featured-img-wrapper">
-		<img
-		    src="https://images.unsplash.com/photo-1551288049-bbbda536639a?auto=format&fit=crop&q=80&w=800"
-		    alt="How to Detect Target Leakage Before Training ML Models"
-		    class="featured-img"
-		/>
-	    </div>
+      <section class="featured-insight" id="featuredSection"></section>
 
-	    <div class="featured-content">
+      <div class="insights-grid" id="insightsGrid"></div>
 
-		<h2>
-		    How to Detect Target Leakage Before Training ML Models
-		</h2>
-
-		<p>
-		    Hidden leakage can silently inflate model accuracy and destroy
-		    production performance. Learn practical detection strategies used in
-		    real-world ML systems.
-		</p>
-
-		<div class="featured-meta">
-		    <span>
-		        <i data-lucide="clock" size="14"></i>
-		        8 min read
-		    </span>
-
-		    <span>
-		        <i data-lucide="brain-circuit" size="14"></i>
-		        Machine Learning
-		    </span>
-		</div>
-
-		<a href="/insights/detail" class="btn btn-primary">
-		    Read Full Guide
-		    <i data-lucide="arrow-right" size="16"></i>
-		</a>
-
-	    </div>
-
-	</section>
-
-      <div class="insights-grid" id="insightsGrid">
-        <!-- Dynamic content injected here -->
-      </div>
-
-      <div
-        id="emptyState"
-        style="display: none; text-align: center; padding: 4rem 0"
-      >
-        <i
-          data-lucide="search-x"
-          size="48"
-          style="color: var(--secondary); margin-bottom: 1rem"
-        ></i>
+      <div id="emptyState" style="display: none; text-align: center; padding: 4rem 0">
+        <i data-lucide="search-x" size="48" style="color: var(--secondary); margin-bottom: 1rem"></i>
         <h3>No results found</h3>
-        <p style="color: var(--text-muted)">
-          Try adjusting your search terms or filters.
-        </p>
+        <p style="color: var(--text-muted)">Try adjusting your search terms or filters.</p>
       </div>
     </main>
 
-    <!-- ==========================================
-         FOOTER
-         ========================================== -->
     {% include 'includes/sticky_footer.html' %}
 
-   <script type="module">
-    // Import all necessary functions from your module
-    import { 
-        fetchAndRender, 
-        setSearchQuery, 
-        setActiveCategory 
-    } from '/static/js/insight/insights_gallery.js';
+    <script type="module">
+      import { fetchAndRender, setSearchQuery, setActiveCategory } from '/static/js/insight/insights_gallery.js';
+      import { initLoader, withLoader, initScrollProgress, showErrorState } from "/static/js/insight/load_state.js";
 
-    document.addEventListener("DOMContentLoaded", () => {
-        // 1. Initialize Icons
+      // Initialize UI and Data
+      document.addEventListener("DOMContentLoaded", async () => {
         lucide.createIcons();
+        initLoader();
+        bindEvents();
+        initScrollProgress();
 
-        // 2. Fetch and render the initial state
-        fetchAndRender();
+        try {
+          // Fetch initial data with loader overlay
+          await withLoader(fetchAndRender(), "Loading insights...");
+        } catch (err) {
+          console.error("Failed to load insights:", err);
+          showErrorState();
+        }
+      });
 
-        // 3. Search Input Listener
-        document.getElementById("searchInput").addEventListener("input", (e) => {
-            setSearchQuery(e.target.value);
-        });
-
-        // 4. Filter Button Listeners
+      // Event Listeners for UI interaction
+      function bindEvents() {
+        document.getElementById("searchInput")?.addEventListener("input", (e) => setSearchQuery(e.target.value));
         document.querySelectorAll(".filter-btn").forEach(btn => {
-            btn.addEventListener("click", (e) => {
-                // Update UI state (active class)
-                document.querySelector(".filter-btn.active")?.classList.remove("active");
-                e.target.classList.add("active");
-                
-                // Update Logic state
-                setActiveCategory(e.target.dataset.category);
-            });
+          btn.addEventListener("click", (e) => {
+            document.querySelector(".filter-btn.active")?.classList.remove("active");
+            e.currentTarget.classList.add("active");
+            setActiveCategory(e.currentTarget.dataset.category);
+          });
         });
-        
-        // Progress bar logic remains here if it's page-specific
-        window.addEventListener('scroll', () => {
-            const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-            document.getElementById("progress-bar").style.width = scrolled + "%";
-        });
-    });
-</script>
+      }
+
+     
+    </script>
   </body>
 </html>

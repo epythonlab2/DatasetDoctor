@@ -131,9 +131,10 @@ export const API = {
         return this.fetchWithRetry(getUrl(`${BASE_URL}/insights/${slug}/related`));
     },
 
-    async getArticle(slug) {
-        return this.fetchWithRetry(getUrl(`${BASE_URL}/data/insights/${slug}`));
+    async getInsightBySlug(slug) {
+        return this.fetchWithRetry(getUrl(`${BASE_URL}/insights/${slug}`));
     },
+   
 
     async verifyExport(id) {
         const response = await fetch(getUrl(`/export/${encodeURIComponent(id)}`));
