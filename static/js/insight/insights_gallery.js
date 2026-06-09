@@ -1,99 +1,173 @@
 /**
- * Insights Gallery Module
- * Manages the state and UI rendering for the insights dashboard.
+ * Insights Gallery Module (Upgraded Architecture)
+ * - State-driven rendering
+ * - Race-safe API calls
+ * - Debounced search
+ * - Clean separation of concerns
  */
+
 import { API } from '../api.js';
+import { escapeHtml } from '../utils/utils.js';
 
-let insightsData = [];
-let activeCategory = "all";
-let searchQuery = "";
+// =========================
+// STATE
+// =========================
+let state = {
+    data: [],
+    category: "all",
+    search: ""
+};
 
-/**
- * Renders loading placeholders while waiting for the API.
- */
-function showLoadingState() {
-    const grid = document.getElementById("insightsGrid");
-    if (!grid) return;
-    
-    // Create 6 skeleton cards
-    grid.innerHTML = Array(6).fill(0).map(() => `
-        <div class="insight-card skeleton"></div>
-    `).join("");
-}
+// Request control (prevents stale renders)
+let controller = null;
 
-/**
- * Fetches the complete list of insights from the API and initializes the view.
- */
+// Debounce control
+let searchTimer = null;
+
+
+const getEl = (id) => document.getElementById(id);
+
+// =========================
+// TEMPLATES
+// =========================
+const createInsightCard = (item, index) => `
+<a href="/insights/${escapeHtml(item.slug)}"
+   class="insight-card"
+   style="animation-delay:${index * 0.06}s">
+    <div class="card-img-box">
+        <span class="card-tag">${escapeHtml(item.category || 'General')}</span>
+        <img src="${escapeHtml(item.image_url || '/static/placeholder.png')}" 
+             alt="${escapeHtml(item.title)}"
+             loading="lazy">
+    </div>
+    <div class="card-body">
+        <h3>${escapeHtml(item.title)}</h3>
+        <p>${escapeHtml((item.content || "").slice(0, 110))}...</p>
+    </div>
+</a>
+`;
+
+const createFeaturedTemplate = (item) => `
+<div class="featured-img-wrapper">
+    <img src="${escapeHtml(item.image_url)}"
+         alt="${escapeHtml(item.title)}"
+         class="featured-img"
+         loading="lazy">
+</div>
+
+<div class="featured-content">
+    <h2>${escapeHtml(item.title)}</h2>
+    <p>${escapeHtml((item.content || "").slice(0, 160))}...</p>
+
+    <a href="/insights/${escapeHtml(item.slug)}" class="btn btn-primary">
+        Read Full Guide <i data-lucide="arrow-right" size="16"></i>
+    </a>
+</div>
+`;
+
+// =========================
+// CORE LOGIC
+// =========================
 export async function fetchAndRender() {
-    showLoadingState(); // Show skeletons immediately
+    const grid = getEl("insightsGrid");
+
+    // cancel previous request (important fix)
+    if (controller) controller.abort();
+    controller = new AbortController();
+
     try {
-        insightsData = await API.getInsights();
-        renderInsights();
+        const data = await API.getInsights({ signal: controller.signal });
+
+        state.data = Array.isArray(data) ? data : [];
+
+        render();
     } catch (err) {
-        console.error("Gallery Error:", err);
-        const grid = document.getElementById("insightsGrid");
-        if (grid) grid.innerHTML = "<p>Failed to load insights. Please try again later.</p>";
+        if (err.name === "AbortError") return;
+
+        console.error("Fetch failed:", err);
+        renderError();
     }
 }
 
-/**
- * Filters the internal dataset based on search/category and updates the DOM.
- */
-export function renderInsights() {
-    const grid = document.getElementById("insightsGrid");
-    const emptyState = document.getElementById("emptyState");
-    const featured = document.getElementById("featuredSection");
+// =========================
+// RENDER ENGINE
+// =========================
+export function render() {
+    const grid = getEl("insightsGrid");
+    const featuredSection = getEl("featuredSection");
+    const emptyState = getEl("emptyState");
 
-    const filtered = insightsData.filter((item) => {
-        const matchesCat = activeCategory === "all" || item.category === activeCategory;
-        const matchesSearch = item.title?.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCat && matchesSearch;
+    if (!grid) return;
+
+    const { data, category, search } = state;
+
+    const query = search.toLowerCase();
+
+    const featured = data.find(i => i.featured);
+
+    const isDefault = category === "all" && !search;
+
+    const filtered = data.filter(item => {
+        const matchCategory = category === "all" || item.category === category;
+        const matchSearch = !query || item.title?.toLowerCase().includes(query);
+        const excludeFeatured = isDefault ? item.id !== featured?.id : true;
+
+        return matchCategory && matchSearch && excludeFeatured;
     });
 
-    // Toggle visibility of featured section and empty state
-    if (featured) {
-        featured.style.display = (activeCategory !== "all" || searchQuery !== "") ? "none" : "grid";
+    // FEATURED
+    if (featuredSection) {
+        if (featured && isDefault) {
+            featuredSection.style.display = "grid";
+            featuredSection.innerHTML = createFeaturedTemplate(featured);
+        } else {
+            featuredSection.style.display = "none";
+        }
     }
-    
+
+    // EMPTY STATE
     if (emptyState) {
-        emptyState.style.display = filtered.length === 0 ? "block" : "none";
-    }
-    
-    if (grid) {
-        grid.innerHTML = filtered.map(item => `
-            <a href="/insights/${item.slug}" class="insight-card">
-                <div class="card-img-box">
-                    <span class="card-tag">${item.category || 'General'}</span>
-                    <img src="${item.image_url || '/static/placeholder.png'}" alt="${item.title}">
-                </div>
-                <div class="card-body">
-                    <h3>${item.title}</h3>
-                    <p>${(item.content || "").substring(0, 100)}...</p>
-                </div>
-            </a>
-        `).join("");
+        emptyState.style.display = filtered.length ? "none" : "block";
     }
 
-    // Refresh icons (Lucide library)
-    if (window.lucide) {
-        lucide.createIcons();
-    }
+    // GRID
+    grid.innerHTML = filtered.length
+        ? filtered.map(createInsightCard).join("")
+        : "";
+
+    // icons re-init (safe)
+    requestAnimationFrame(() => {
+        lucide?.createIcons();
+    });
 }
 
-/**
- * Updates the search query and triggers a UI re-render.
- * @param {string} query - The search term.
- */
-export function setSearchQuery(query) {
-    searchQuery = query;
-    renderInsights();
+// =========================
+// ERROR STATE
+// =========================
+function renderError() {
+    const grid = getEl("insightsGrid");
+
+    if (!grid) return;
+
+    grid.innerHTML = `
+        <div style="text-align:center;padding:3rem;color:var(--text-muted)">
+            <h3>Failed to load insights</h3>
+            <p>Please refresh the page or try again later.</p>
+        </div>
+    `;
 }
 
-/**
- * Updates the active category filter and triggers a UI re-render.
- * @param {string} cat - The selected category filter.
- */
-export function setActiveCategory(cat) {
-    activeCategory = cat;
-    renderInsights();
-}
+// =========================
+// STATE UPDATES
+// =========================
+export const setSearchQuery = (value) => {
+    state.search = value;
+
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(render, 150); // performance optimization
+};
+
+export const setActiveCategory = (cat) => {
+    state.category = cat;
+    render();
+};

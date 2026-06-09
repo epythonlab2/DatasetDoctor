@@ -43,6 +43,17 @@
     ></script>
   </head>
   <body>
+    <!-- Loading State -->
+    <div id="fullscreen-loader" class="fullscreen-loader">
+      <div class="loader-content">
+        <div class="brand-logo">
+          <img src="/static/icons/favicon.svg" alt="Logo" />
+        </div>
+        <div class="loader-progress-track">
+          <div id="loader-progress-bar" class="loader-progress-bar"></div>
+        </div>
+      </div>
+    </div>
     {% include 'includes/index_nav.html' %}
 
     <!-- ==========================================
@@ -347,28 +358,33 @@
     <!-- ==========================================
          SCRIPTS
          ========================================== -->
-    <script src="/static/js/modalUI/landing.js"></script>
+     <script src="/static/js/modalUI/landing.js"></script>
 
-    <script type="module">
-      import { getOrCreateClientId } from "./static/js/utils/identity.js";
+      <script type="module">
+	    import { getOrCreateClientId } from "./static/js/utils/identity.js";
+	    import { 
+		initLoader, 
+		withLoader, 
+		initScrollProgress 
+	    } from "/static/js/insight/load_state.js";
 
-      // Push execution to the end of the event loop to free up the critical rendering path
-      window.addEventListener("DOMContentLoaded", () => {
-      
-        if (window.requestIdleCallback) {
-          requestIdleCallback(() => getOrCreateClientId());
-        } else {
-          setTimeout(() => getOrCreateClientId(), 1);
-        }
-        
-        // Progress bar logic remains here if it's page-specific
-        window.addEventListener('scroll', () => {
-            const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-            document.getElementById("progress-bar").style.width = scrolled + "%";
-        });
-        
-      });
-      
-    </script>
+	    window.addEventListener("DOMContentLoaded", () => {
+		// 1. Non-critical initialization (Identity)
+		if (window.requestIdleCallback) {
+		    requestIdleCallback(() => getOrCreateClientId());
+		} else {
+		    setTimeout(() => getOrCreateClientId(), 1);
+		}
+		
+		// 2. UI Initialization
+		initLoader();
+		initScrollProgress();
+		
+		// 3. Handle Loader
+		// If this page does not fetch data, you can hide the loader immediately
+		// or wrap a mock promise if you want to keep the "fade out" animation.
+		withLoader(Promise.resolve(), "Preparing Page...");
+	    });
+     </script>
   </body>
 </html>

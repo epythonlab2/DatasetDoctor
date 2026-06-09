@@ -24,3 +24,17 @@ export const withTimeout = (promise, ms = 10000) =>
       setTimeout(() => reject(new Error("Request timeout")), ms)
     ),
   ]);
+
+
+/**
+ * Utility to prevent XSS by escaping HTML special characters.
+ */
+export const escapeHtml = (unsafe) => {
+    if (unsafe == null) return "";
+    return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+};

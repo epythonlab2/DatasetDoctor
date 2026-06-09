@@ -34,27 +34,49 @@
     ></script>
   </head>
   <body>
+      <!-- Loading State -->
+    <div id="fullscreen-loader" class="fullscreen-loader">
+      <div class="loader-content">
+        <div class="brand-logo">
+          <img src="/static/icons/favicon.svg" alt="Logo" />
+        </div>
+        <div class="loader-progress-track">
+          <div id="loader-progress-bar" class="loader-progress-bar"></div>
+        </div>
+      </div>
+    </div>
   
     {% include 'includes/index_nav.html' %}
    
     <main >
-     <div class="progress-container"><div id="progress-bar"></div></div>
-    <header class="article-hero" id="article-hero">
-    </header>
-
-	<article class="article-body" id="article-body">
-  	
-  	  </article>
-      
-    	 <section class="related-articles">
-	    <div class="content-width">
-		<h2 style="font-size: 1.5rem; margin-bottom: 2rem; color: #0f172a;">Related Insights</h2>
+     	<div class="progress-container"><div id="progress-bar"></div></div>
+	    <header class="article-hero" id="article-hero">
+	    	
+	    </header>
+	    <div class="dashboard-wrapper article-page-wrapper">
+		<article class="article-body" id="article-body">
 		
-		<div class="related-grid" id="related-grid">
-		    <p>Loading related insights...</p>
-		</div>
+		</article>
+
+		<aside class="article-sidebar">
+		    <div class="sidebar-widget">
+		        <h4 class="sidebar-title">Key Takeaways</h4>
+		        <ul id="takeaways-list" class="takeaways-list"></ul>
+		    </div>
+		    <div class="sidebar-widget">
+		        <h4 class="sidebar-title">Quick Actions</h4>
+		        <button id="btn-save" class="sidebar-btn">Save to Favorites</button>
+		        <button id="btn-share" class="sidebar-btn">Share Insight</button>
+		    </div>
+		</aside>
 	    </div>
-	</section>
+
+	    <section class="related-articles">
+		<div class="content-width">
+		    <h2 id="header_text"></h2>
+		    <div class="related-grid" id="related-grid"></div>
+		</div>
+	    </section>
     </main>
 
     <!-- ==========================================
@@ -63,22 +85,33 @@
     {% include 'includes/sticky_footer.html' %}
 
     <script type="module">
-    import { loadArticleDetail, fetchRelatedInsights } from '/static/js/insight/insight_detail.js';
+	    import { loadArticleDetail, fetchRelatedInsights } from '/static/js/insight/insight_detail.js';
+	    import { initLoader, withLoader, initScrollProgress, showErrorState } from "/static/js/insight/load_state.js";
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const currentSlug = "{{ slug }}";
-        
-        // Initialize everything
-        lucide.createIcons();
-        loadArticleDetail(currentSlug);
-        fetchRelatedInsights(currentSlug);
+	    document.addEventListener("DOMContentLoaded", async () => {
+		const currentSlug = "{{ slug }}";
+		
+		// Initialize UI components
+		lucide.createIcons();
+		initLoader();
+		initScrollProgress();
 
-        // Progress bar logic remains here if it's page-specific
-        window.addEventListener('scroll', () => {
-            const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-            document.getElementById("progress-bar").style.width = scrolled + "%";
-        });
-    });
-</script>
+		try {
+		    // Combine both fetches into a single promise using Promise.all
+		    await withLoader(
+		        Promise.all([
+		            loadArticleDetail(currentSlug),
+		            fetchRelatedInsights(currentSlug)
+		        ]), 
+		        "Loading insights..."
+		    );
+		} catch (err) {
+		    console.error("Failed to load insights:", err);
+		    showErrorState();
+		}
+	    });
+
+	     
+      </script>
   </body>
 </html>

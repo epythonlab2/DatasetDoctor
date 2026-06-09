@@ -14,7 +14,7 @@ insight_router = APIRouter(prefix="/api/v1", tags=["Insights API"])
 web_router = APIRouter(tags=["Web Pages"])
 
 templates = Jinja2Templates(directory=str(config.TEMPLATES_DIR))
-insights_cache = TTLCache(maxsize=100, ttl=60*60)
+insights_cache = TTLCache(maxsize=100, ttl=60)
 
 # --- WEB ROUTES ---
 
