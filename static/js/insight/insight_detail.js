@@ -1,6 +1,6 @@
 import { API } from '../api.js';
 import { escapeHtml } from '../utils/utils.js';
-
+import { initAdSense, injectAdIntoContainer } from '../utils/ads.js';
 
 /**
  * Fetches the main article content and renders it.
@@ -12,12 +12,9 @@ export async function loadArticleDetail(slug) {
 
     try {
         const insight = await API.getInsightBySlug(slug);
-        
-        
         if (!insight) throw new Error("Article not found");
-        
-        // 1. Render Hero
 
+        // 1. Render Hero
         hero.innerHTML = `
             <div class="content-width">
                 <span class="category-badge">${escapeHtml(insight.category || 'General')}</span>
@@ -29,8 +26,8 @@ export async function loadArticleDetail(slug) {
                 </div>
             </div>
         `;
-        
-	// 2. Render Body FIRST
+
+        // 2. Render Body
         body.innerHTML = `
             <div class="content-width prose">
                 <img src="${escapeHtml(insight.image_url || '/static/placeholder.png')}" 
@@ -39,12 +36,9 @@ export async function loadArticleDetail(slug) {
                 ${insight.content}
             </div>
         `;
-        
-        // 3. Generate Sidebar after the next browser paint
-       // NEW: Render Dynamic Takeaways
+
+        // 3. Render Dynamic Takeaways
         if (sidebarList) {
-            // Assume insight.takeaways is an Array. 
-            // If it's a string, use .split('\n')
             const takeaways = Array.isArray(insight.takeaways) 
                 ? insight.takeaways 
                 : (insight.takeaways || "").split('\n').filter(t => t.trim() !== "");
@@ -52,90 +46,72 @@ export async function loadArticleDetail(slug) {
             if (takeaways.length > 0) {
                 sidebarList.innerHTML = takeaways.map(point => `
                     <li>
-                        <i data-lucide="check-circle-2" class="takeaway-icon"></i>
+                        <i data-lucide="check-circle-2" class="takeaway-icon" style="color:var(--primary);"></i>
                         <span>${escapeHtml(point)}</span>
                     </li>
                 `).join("");
             } else {
-                // Hide widget if no takeaways exist
-                sidebarList.closest('.sidebar-widget').style.display = 'none';
+                const widget = sidebarList.closest('.sidebar-widget');
+                if (widget) widget.style.display = 'none';
             }
         }
 
-        requestAnimationFrame(() => generateSidebarNavigation());
+        // 4. Handle AdSense Integration
+        initAdSense();
+        const prose = body.querySelector('.prose');
+        const paragraphs = prose.querySelectorAll('p');
+        
+        // Insert Ad after the 2nd paragraph if available
+        if (paragraphs.length >= 2) {
+            const adContainer = document.createElement('div');
+            adContainer.className = 'ad-container';
+            paragraphs[1].after(adContainer);
+            injectAdIntoContainer(adContainer, 'YOUR_SPECIFIC_SLOT_ID');
+        }
 
+        // Final UI Updates
         if (window.lucide) lucide.createIcons();
+
     } catch (err) {
         console.error("Error loading article:", err);
-        body.innerHTML = `<div class="error-state">Failed to load article content.</div>`;
+        body.innerHTML = `<div class="content-width error-state">Failed to load article content.</div>`;
     }
-    
-    
 }
 
 /**
- * Fetches and renders related insights grid.
+ * Fetches and renders related insights as an editorial list.
  */
 export async function fetchRelatedInsights(slug) {
-    const grid = document.getElementById("related-grid");
+    const listContainer = document.getElementById("related-list");
     const header = document.getElementById("header_text");
+    const section = listContainer.closest('.related-articles');
     
-    if (!grid) return;
+    if (!listContainer) return;
 
     try {
         const related = await API.getRelatedInsights(slug);
         
+        // Hide the entire section if no related items are found
         if (!related || related.length === 0) {
-            grid.parentElement.style.display = 'none'; // Hide section if empty
+            if (section) section.style.display = 'none';
             return;
         }
         
+        // Ensure section is visible
+        if (section) section.style.display = 'block';
         if (header) header.textContent = "Related Insights";
 
-        grid.innerHTML = related.map(item => `
-            <article class="related-card">
-                <span class="category-badge">${escapeHtml(item.category || 'General')}</span>
+        // Map the items to the new editorial list structure
+        listContainer.innerHTML = related.map(item => `
+            <a href="/insights/${escapeHtml(item.slug)}" class="related-item">
                 <h3>${escapeHtml(item.title)}</h3>
-                <p>${escapeHtml(item.content?.replace(/<[^>]*>?/gm, '').substring(0, 100) || '')}...</p>
-                <a href="/insights/${escapeHtml(item.slug)}">Read more &rarr;</a>
-            </article>
+                <span>${escapeHtml(item.category || 'General')} &rarr;</span>
+            </a>
         `).join("");
         
-        if (window.lucide) lucide.createIcons();
     } catch (err) {
         console.error("Related Error:", err);
-        grid.innerHTML = "<p>Could not load related insights.</p>";
+        if (section) section.style.display = 'none';
     }
 }
 
-function generateSidebarNavigation() {
-    const articleBody = document.getElementById('article-body');
-    const sidebarList = document.getElementById('takeaways-list');
-    const sidebarWidget = sidebarList.closest('.sidebar-widget');
-    
-    // Select H2s inside the injected .prose container
-    const headings = articleBody.querySelectorAll('.prose h2');
-    
-    if (headings.length === 0) {
-        if (sidebarWidget) sidebarWidget.style.display = 'none';
-        return;
-    }
-
-    // Clear existing list to prevent duplicates
-    sidebarList.innerHTML = '';
-
-    headings.forEach((h2, index) => {
-        const id = `heading-${index}`;
-        h2.id = id;
-
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        
-        a.textContent = h2.textContent;
-        a.href = `#${id}`;
-        a.className = 'takeaway-link'; 
-
-        li.appendChild(a);
-        sidebarList.appendChild(li);
-    });
-}
