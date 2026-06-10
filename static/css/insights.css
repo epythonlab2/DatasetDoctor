@@ -40,7 +40,13 @@
 }
 
 
-
+/* Layout Wrapper */
+.dashboard-wrapper {
+    max-width: var(--max-width); /* 1100px */
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 var(--gutter);
+}
 
 /* Ensure the hero-section respects the fixed header */
 .hero-section {
@@ -980,14 +986,6 @@ a { text-decoration: none; }
     border-bottom: 1px solid var(--border);
 }
 
-.content-width {
-    max-width: var(--max-width-content);
-    margin: 0 auto;
-    padding: 0 var(--gutter);
-    transition: opacity 0.3s ease-in-out;
-}
-
-
 .category-badge {
     display: inline-flex;
     padding: 0.4rem 1rem;
@@ -1037,10 +1035,19 @@ a { text-decoration: none; }
     margin: 0;
     padding: 0;
     padding-top: 3rem;
+    width: 100%;
+    max-width: var(--max-width-content);
 }
 .article-body > * {
     max-width: var(--max-width-content); /* Limits text line length for readability */
 }
+
+.content-width {
+    max-width: var(--max-width-content); /* Usually 800px */
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+}
+
 /* Force standard reading typography */
 .article-body p {
     font-size: 1.125rem;
@@ -1057,6 +1064,14 @@ a { text-decoration: none; }
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
 }
 
+.prose p, 
+.prose h2, 
+.prose img {
+    /* Reset horizontal margins to prevent shifting */
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
 .prose p {
     margin-bottom: 2rem;
     color: #334155;
@@ -1065,7 +1080,8 @@ a { text-decoration: none; }
 }
 
 .prose h2 {
-    margin: 3.5rem 0 1.5rem;
+    margin-top: 3.5rem;
+    margin-bottom: 1.5rem;
     font-size: 1.875rem;
     font-weight: 800;
 }
@@ -1091,26 +1107,108 @@ a { text-decoration: none; }
     margin-top:0 !important;
 }
 
-.related-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-}
-
-.related-card {
+.related-list {
     display: flex;
     flex-direction: column;
-    padding: 1.5rem;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    background: white;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    max-width: 800px; /* Aligns with your article width */
+    margin: 0 auto;
+}
+.related-list::-webkit-scrollbar {
+    display: none;
 }
 
-.related-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+.related-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border);
+    transition: color 0.2s ease;
+    text-decoration: none;
+    color: var(--text-main);
 }
+
+.related-item:hover {
+    color: var(--primary);
+}
+
+.related-item h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.related-item span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.article-page-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 300px; /* 70% content, 30% sidebar */
+    gap: 4rem;
+    align-items: start;
+    width: 100%;
+}
+
+.article-sidebar {
+   position: sticky;
+    top: calc(var(--nav-height) + 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding-top: 3rem;
+    width: 100%;
+}
+
+
+.sidebar-widget {
+    background: #ffffff;
+    padding: 1.25rem;
+    border-radius: 12px;
+    /* Soft, subtle shadow instead of a harsh border */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b; /* Slate-500 */
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+    padding-left: 0.25rem;
+}
+
+.sidebar-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* Space between icon and text */
+    width: 100%;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #334155;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sidebar-btn:hover {
+    background: #f1f5f9; /* Slate-100 */
+    color: var(--primary);
+}
+.takeaways-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    
+}
+
 
 /* ==========================================================================
    CODE BLOCKS
@@ -1160,72 +1258,44 @@ a { text-decoration: none; }
     color: #fff;
 }
 
-.article-page-wrapper {
-    display: grid;
-    grid-template-columns: 1fr 300px; /* 70% content, 30% sidebar */
-    gap: 4rem;
-    margin: 0 auto;
-    padding: 0 var(--gutter);
-    align-items: start;
-}
-
-.article-sidebar {
-    position: sticky;
-    top: calc(var(--nav-height) + 2rem);
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    padding-top: 3rem;
-}
-
-.sidebar-widget {
-    background: white;
-    padding: 1.5rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-}
-
-.sidebar-title {
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    color: var(--secondary);
-    margin-bottom: 1rem;
-    letter-spacing: 0.05em;
-}
-.sidebar-btn {
-    display: block;
-    width: 100%;
-    padding: 0.75rem 1rem;
-    margin-bottom: 0.5rem;
-    background: var(--bg-main);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    color: var(--text-main);
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    text-align: left;
-}
-
-.sidebar-btn:hover {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-}
-.takeaways-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
 
 /* Responsive: Stack on small screens */
 @media (max-width: 1024px) {
-    .article-page-wrapper {
+    .article-page-wrapper{
         grid-template-columns: 1fr;
+        gap: 2rem;
     }
+    
     .article-sidebar {
         position: static;
         order: -1; /* Optionally move sidebar to top on mobile */
+    }
+}
+@media (max-width: 768px) {
+    /* 1. Synchronize the horizontal space */
+    .article-body, 
+    .related-articles {
+        padding-left: var(--gutter, 1.5rem);
+        padding-right: var(--gutter, 1.5rem);
+    }
+
+    /* 2. Fix the prose 'nudge' that was causing misalignment */
+    .prose, .prose p, .prose h2 {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    /* 3. Keep vertical spacing consistent */
+    .related-articles {
+        padding-top: 3rem;
+        padding-bottom: 2rem;
+    }
+}
+@media (max-width: 480px) {
+    :root {
+        --gutter: 1rem; /* Smaller margins for small phone screens */
     }
 }
 

@@ -10,6 +10,8 @@ class Insight(BaseModel):
     category: str
     content: str
     slug: str
+    featured: bool
+    takeaways: str
     image_url: str
     created_at: Optional[datetime] = None
 
