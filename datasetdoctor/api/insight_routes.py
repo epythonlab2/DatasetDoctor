@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from cachetools import TTLCache
+import nh3
 
 from datasetdoctor.core.db import supabase
 from datasetdoctor.core.logger import logger
@@ -26,7 +27,22 @@ async def get_detail_page(request: Request, slug: str):
         name="detail.html", 
         context={"slug": slug}
     )
-
+    
+@web_router.get("/admin/insights", response_class=HTMLResponse)
+async def manage_insight(request: Request):
+    """Renders the insight detail page shell."""
+    return templates.TemplateResponse(
+        request=request, 
+        name="manage_insight.html", 
+    )
+    
+@web_router.get("/admin/dashboard", response_class=HTMLResponse)
+async def manage_insight(request: Request):
+    """Renders the insight detail page shell."""
+    return templates.TemplateResponse(
+        request=request, 
+        name="admin_dashboard.html", 
+    )
 # --- API ROUTES ---
 
 @insight_router.get("/insights")
@@ -118,13 +134,27 @@ async def get_related_insights(request: Request, slug: str):
 
 @insight_router.post("/insights")
 async def create_insight(insight: Insight):
-    """Create a new insight record."""
-    data = insight.model_dump(exclude_unset=True)
-    if isinstance(data.get("created_at"), datetime):
-        data["created_at"] = data["created_at"].isoformat()
+    """Create a new insight record with sanitized content."""
+    try:
+        # 1. Sanitize the HTML content from Quill
+        insight.content = nh3.clean(insight.content)
+        
+        # 2. Prepare data for Supabase
+        data = insight.model_dump()
+        
+        # 3. Convert complex types to Supabase-friendly formats
+        if data.get("created_at"):
+            data["created_at"] = data["created_at"].isoformat()
+        if data.get("image_url"):
+            data["image_url"] = str(data["image_url"])
 
-    response = supabase.table("insights").insert(data).execute()
-    return {
-        "message": "Insight saved.",
-        "insight": response.data[0] if response.data else None,
-    }
+        # 4. Insert into Supabase
+        response = supabase.table("insights").insert(data).execute()
+        
+        return {
+            "message": "Insight saved successfully.",
+            "insight": response.data[0] if response.data else None,
+        }
+    except Exception as e:
+        # Log the error here
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")

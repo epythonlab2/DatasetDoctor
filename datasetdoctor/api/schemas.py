@@ -1,19 +1,26 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import BaseModel, Field, field_serializer, HttpUrl
+from enum import Enum
 
+class InsightStatus(str, Enum):
+    DRAFT = "draft"
+    PUBLISHED = "published"
+    ARCHIVED = "archived"
 
 class Insight(BaseModel):
     task_id: str
     title: str
     category: str
-    content: str
+    content: str  # This will hold the sanitized HTML from Quill
     slug: str
-    featured: bool
-    takeaways: str
-    image_url: str
-    created_at: Optional[datetime] = None
+    featured: bool = False
+    takeaways: List[str]  # Use a list for better data handling
+    image_url: Optional[HttpUrl] = None
+    status: InsightStatus = InsightStatus.DRAFT
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    
 
     @field_serializer("created_at")
     def serialize_dt(self, dt: datetime, _info):

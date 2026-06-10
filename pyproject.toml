@@ -22,7 +22,8 @@ dependencies = [
     "requests",
     "supabase",
     "geoip2",
-    "pytest"
+    "pytest",
+    "nh3"
 
 ]
 
