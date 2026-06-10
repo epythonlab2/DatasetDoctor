@@ -1026,6 +1026,63 @@ a { text-decoration: none; }
 .meta-item, .footer-copy {
   font-size: var(--text-sm);
 }
+.hero-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.hero-action-btn:hover {
+    color: var(--primary);
+}
+
+.action-bar {
+    display: flex;
+    gap: 1.5rem;
+}
+.sidebar-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* Space between icon and text */
+    width: 100%;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #334155;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sidebar-btn:hover {
+    background: #f1f5f9; /* Slate-100 */
+    color: var(--primary);
+}
+
+.hero-action-btn.active, .sidebar-btn.active {
+    color: var(--primary);
+}
+
+.hero-action-btn.active i, .sidebar-btn.active i {
+    fill: var(--primary); /* Fills the bookmark icon */
+}
+
+.divider {
+    margin: 3rem 0;
+    border: 0;
+    border-top: 1px solid var(--border);
+}
+
+
 
 /* ==========================================================================
    ARTICLE BODY & PROSE
@@ -1183,30 +1240,23 @@ a { text-decoration: none; }
     padding-left: 0.25rem;
 }
 
-.sidebar-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem; /* Space between icon and text */
-    width: 100%;
-    padding: 0.75rem;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    color: #334155;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
 
-.sidebar-btn:hover {
-    background: #f1f5f9; /* Slate-100 */
-    color: var(--primary);
-}
 .takeaways-list {
     list-style: none;
     padding: 0;
     margin: 0;
-    
+    gap: 1.5rem;
+}
+
+/* Optional: Ensure individual items look good in a grid */
+.takeaways-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+.takeaway-icon {
+    color: var(--primary); /* Uses your primary brand color */
+    flex-shrink: 0;        /* Keeps the icon from squishing */
 }
 
 
@@ -1257,6 +1307,47 @@ a { text-decoration: none; }
     background: #334155;
     color: #fff;
 }
+/* Share Dialog Modal */
+
+.share-modal {
+    margin: auto; /* This forces the browser to center the dialog */
+    max-width: 450px;
+    width: 90%;
+    border-radius: 12px;
+    border: none;
+    background: #1a1a1a;
+    color: white;
+    padding: 20px;
+    /* Optional: box-shadow for a floating effect */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+.share-modal::backdrop {
+    background: rgba(0, 0, 0, 0.7); /* Dark semi-transparent overlay */
+    backdrop-filter: blur(4px);    /* Optional: creates a nice frosted glass effect */
+}
+
+.modal-header { display: flex; justify-content: space-between; align-items: center; }
+.modal-close { background: none; border: none; color: white; cursor: pointer; font-size: 1.5rem; }
+
+.link-box {
+    display: flex;
+    background: #333;
+    padding: 8px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.link-box input {
+    background: transparent; border: none; color: #fff; width: 100%; padding: 5px;
+}
+
+#copy-btn {
+    background: #3b82f6; border: none; padding: 8px 16px; border-radius: 6px; 
+    color: white; cursor: pointer; font-weight: 600;
+}
+
+.disclaimer { font-size: 0.8rem; color: #94a3b8; }
+.social-share { display: flex; justify-content: space-around; margin-top: 20px; color: #94a3b8; }
 
 
 /* Responsive: Stack on small screens */
@@ -1269,6 +1360,9 @@ a { text-decoration: none; }
     .article-sidebar {
         position: static;
         order: -1; /* Optionally move sidebar to top on mobile */
+    }
+    .sidebar-action{
+    	display: none;
     }
 }
 @media (max-width: 768px) {
@@ -1298,6 +1392,22 @@ a { text-decoration: none; }
         --gutter: 1rem; /* Smaller margins for small phone screens */
     }
 }
+
+/* Mobile: Icon Only */
+@media (max-width: 640px) {
+    .btn-text { display: none; }
+    .action-bar { gap: 1rem; }
+    .article-meta { gap: 1rem; }
+    
+    .hero-action-btn .btn-text {
+        display: none; /* Hides the text on small screens */
+    }
+    
+    .hero-action-btn {
+        gap: 0; /* Icons become the sole focus */
+    }
+}
+
 
 /* ==========================================================================
    RESPONSIVE OVERRIDES
