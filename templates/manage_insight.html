@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- [SECTION] HEAD & METADATA -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dataset Health Analysis | DatasetDoctor</title>
+    <meta
+      name="description"
+      content="Diagnose ML readiness with Dataset Doctor. Automate data cleaning, outlier detection, data leakage checks, handle missing data, and fix mismatches fast."
+    />
+
+    <link rel="icon" type="image/svg+xml" href="/static/icons/favicon.svg" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    
+    <link rel="stylesheet" href="/static/css/styles.css" />
+     <link rel="stylesheet" href="/static/css/admin.css" />
+  </head>
+  <body>
+
+    <!-- Fullscreen Loading Overlay 
+    <div id="fullscreen-loader" class="fullscreen-loader">
+        <div class="loader-content">
+            <div class="brand-logo">
+                <img src="/static/icons/favicon.svg" alt="Logo" />
+            </div>
+            <div class="loader-progress-track">
+                <div id="loader-progress-bar" class="loader-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+    -->
+    
+   <div class="app-layout">
+      <!-- [SECTION] SIDEBAR -->
+      {% include 'includes/admin_sidebar.html' %}
+
+      <!-- [SECTION] MAIN CONTENT WRAPPER -->
+      <div class="main-wrapper">
+        <!-- [SUB-SECTION] TOP NAVBAR -->
+        {% include 'includes/admin_navbar.html' %}
+
+        <!-- [SUB-SECTION] DASHBOARD MAIN CONTAINER -->
+        <section class="dashboard-container">
+        
+	    <form id="insight-form" class="dashboard-form">
+		<h2>Create New Insight</h2>
+		
+		<div class="form-grid">
+		    <div class="form-group">
+		        <label for="title">Title</label>
+		        <input type="text" id="title" name="title" required placeholder="e.g., Handling Outliers in Time-Series">
+		    </div>
+
+		    <div class="form-group">
+		        <label for="slug">URL Slug</label>
+		        <input type="text" id="slug" name="slug" readonly placeholder="slug-will-auto-generate">
+		    </div>
+		</div>
+		
+		<div class="form-group">
+		    <label>Featured Image</label>
+		    <div id="drop-zone" class="upload-zone">
+			<i data-lucide="upload-cloud"></i>
+			<span>Click to upload or drag and drop</span>
+			<input type="file" id="image-upload" name="image" accept="image/*" hidden>
+		    </div>
+		    <div id="image-preview" class="image-preview" style="display: none;"></div>
+		</div>
+
+		<div class="form-group">
+		    <label>Content</label>
+		    <div id="editor-container" style="height: 300px;"></div>
+		    <input type="hidden" name="content" id="content-input">
+		</div>
+
+		<div class="form-group" id="takeaways-section">
+		    <label>Key Takeaways</label>
+		    <div id="takeaways-list-container">
+		        </div>
+		    <button type="button" id="add-takeaway-btn" class="btn-form-secondary">+ Add Takeaway</button>
+		</div>
+
+		<div class="form-actions">
+		    <button type="button" id="preview-btn" class="btn-ghost">Preview</button>
+		    <button type="submit" class="btn-form-primary">Publish Insight</button>
+		</div>
+	    </form>
+	</section>
+
+
+
+<script>
+    // Initialize Quill
+    const quill = new Quill('#editor-container', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ header: [1, 2, false] }],
+                ['bold', 'italic', 'underline'],
+                ['link', 'blockquote', 'code-block']
+            ]
+        }
+    });
+
+    // 1. Auto-Slug Logic
+    const titleInput = document.getElementById('title');
+    const slugInput = document.getElementById('slug');
+    titleInput.addEventListener('input', () => {
+        slugInput.value = titleInput.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    });
+
+    // 2. Dynamic Takeaways Logic (Simplified)
+    const container = document.getElementById('takeaways-list-container');
+    document.getElementById('add-takeaway-btn').addEventListener('click', () => {
+        const div = document.createElement('div');
+        div.className = 'takeaway-row';
+        div.innerHTML = `
+            <input type="text" name="takeaway[]" placeholder="Enter key insight..." required>
+            <button type="button" class="remove-btn">Remove</button>
+        `;
+        container.appendChild(div);
+    });
+
+    container.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-btn')) e.target.parentElement.remove();
+    });
+
+    // 3. Form Submission
+    document.getElementById('insight-form').addEventListener('submit', (e) => {
+        // Sync Quill to hidden input
+        document.getElementById('content-input').value = quill.root.innerHTML;
+        
+        // Log/Submit logic here...
+        console.log("Publishing...");
+    });
+    
+    const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('image-upload');
+const preview = document.getElementById('image-preview');
+
+// Trigger hidden input on zone click
+dropZone.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', handleFiles);
+
+function handleFiles(e) {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            preview.innerHTML = `<img src="${event.target.result}">`;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Drag and drop handlers
+['dragover', 'dragleave', 'drop'].forEach(evt => {
+    dropZone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = evt === 'dragover' ? 'var(--primary)' : 'var(--border)';
+    });
+});
+
+dropZone.addEventListener('drop', (e) => {
+    fileInput.files = e.dataTransfer.files;
+    handleFiles({ target: fileInput });
+});
+</script>
+ <!-- [SUB-SECTION] FOOTER -->
+        {% include 'includes/footer.html' %}
+      </div>
+      <!-- End main-wrapper -->
+    </div>
+    <!-- End app-layout -->
+
+    <!-- [SECTION] SCRIPTS -->
+    <script type="module" src="/static/js/main.js"></script>
+    <script type="module" src="/static/js/utils/timeTicker.js"></script>
+    <script type="module" src="/static/js/modalUI/about.js"></script>
+    <script type="module" src="/static/js/modalUI/clean.js"></script>
+  </body>
+</html>
